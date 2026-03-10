@@ -1,0 +1,29 @@
+# Build
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+.vs/
+*.dll
+*.pdb
+*.exe
+!**/apphost.exe
+
+# NuGet
+*.nupkg
+packages/
+.nuget/
+
+# IDE
+.idea/
+*.rsuser
+
+# OS
+Thumbs.db
+.DS_Store
+
+# App data (optional - remove if you want to track)
+# GameTrainerLauncher.UI/bin/
+# GameTrainerLauncher.UI/Data/

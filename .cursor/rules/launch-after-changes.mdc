@@ -1,0 +1,9 @@
+---
+description: 改完代码后由 AI 自己构建并启动项目供用户看效果
+alwaysApply: true
+---
+
+# 修改后由我启动项目
+
+- 每次改完代码后，**由我（AI）自己**执行构建，然后执行 `dotnet run --project GameTrainerLauncher.UI` 启动应用，让用户直接看到效果，无需用户手动运行。
+- 若构建失败是因为本机已有进程占用（exe 被锁定），先尝试结束已运行的 `GameTrainerLauncher.UI` 进程，再重新构建并启动；若无法结束进程，再提示用户先关闭窗口。
