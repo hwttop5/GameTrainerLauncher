@@ -34,6 +34,7 @@ public partial class App : Application
         // UI Services
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IThemeService, ThemeService>();
+        services.AddSingleton<IMyGamesRefreshService, MyGamesRefreshService>();
 
         // ViewModels
         services.AddTransient<MainViewModel>();
