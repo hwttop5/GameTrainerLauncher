@@ -30,4 +30,26 @@ public class AppDbContext : DbContext
             .Ignore(t => t.IsDownloading)
             .Ignore(t => t.DownloadProgress);
     }
+
+    /// <summary>
+    /// Drops columns that were previously mapped on Trainers but are now ignored (NotMapped).
+    /// Run once after EnsureCreatedAsync to fix "NOT NULL constraint failed: Trainers.DownloadProgress" on existing DBs.
+    /// </summary>
+    public async Task MigrateTrainersTableDropIgnoredColumnsAsync(CancellationToken cancellationToken = default)
+    {
+        var columnsToDrop = new[] { "DownloadProgress", "IsDownloading", "IsLoading" };
+        foreach (var col in columnsToDrop)
+        {
+            try
+            {
+                await Database.ExecuteSqlRawAsync(
+                    $"ALTER TABLE Trainers DROP COLUMN [{col}];",
+                    cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Column may not exist (new DB or already dropped); ignore.
+            }
+        }
+    }
 }

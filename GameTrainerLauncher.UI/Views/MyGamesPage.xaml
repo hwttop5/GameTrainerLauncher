@@ -25,19 +25,16 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         
-                        <Border Grid.Column="0" Width="48" Height="48" CornerRadius="4" Background="#eee" ClipToBounds="True">
+                        <Border Grid.Column="0" Width="48" Height="48" CornerRadius="4" Background="#333" ClipToBounds="True">
                             <Grid>
-                                <ui:SymbolIcon Symbol="Games24" FontSize="24" 
-                                               Visibility="{Binding MatchedTrainer.ImageUrl, Converter={StaticResource NullOrEmptyToVisibilityConverter}}"/>
-                                <Image Source="{Binding MatchedTrainer.ImageUrl}" Stretch="UniformToFill">
+                                <ui:SymbolIcon Symbol="Games24" FontSize="24" Foreground="Gray"
+                                               Visibility="{Binding Converter={StaticResource GameCoverPlaceholderVisibilityConverter}}"/>
+                                <Image Source="{Binding Converter={StaticResource GameCoverUrlConverter}}" Stretch="UniformToFill">
                                     <Image.Style>
                                         <Style TargetType="Image">
                                             <Setter Property="Visibility" Value="Visible"/>
                                             <Style.Triggers>
-                                                <DataTrigger Binding="{Binding MatchedTrainer.ImageUrl}" Value="{x:Null}">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding MatchedTrainer.ImageUrl}" Value="">
+                                                <DataTrigger Binding="{Binding Converter={StaticResource GameCoverUrlConverter}}" Value="{x:Null}">
                                                     <Setter Property="Visibility" Value="Collapsed"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
@@ -49,17 +46,24 @@
                         
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
                             <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16"/>
-                            <StackPanel Orientation="Horizontal">
-                                <ui:Badge Appearance="Secondary" Content="{Binding Platform}" Margin="0,0,5,0"/>
-                                <TextBlock Text="{Binding InstallPath}" Foreground="Gray" FontStyle="Italic" TextTrimming="CharacterEllipsis" MaxWidth="400"/>
-                            </StackPanel>
+                            <TextBlock Foreground="Gray" FontSize="11" Margin="0,2,0,0">
+                                <TextBlock.Text>
+                                    <Binding Path="MatchedTrainer.LastUpdated" StringFormat="{}{0:yyyy.MM.dd}" TargetNullValue="—"/>
+                                </TextBlock.Text>
+                            </TextBlock>
                             
                             <ProgressBar Value="{Binding MatchedTrainer.DownloadProgress}" Maximum="100" Height="4" Margin="0,5,0,0">
                                 <ProgressBar.Style>
                                     <Style TargetType="ProgressBar" BasedOn="{StaticResource {x:Type ProgressBar}}">
                                         <Setter Property="Visibility" Value="Collapsed"/>
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding MatchedTrainer.IsDownloading}" Value="True">
+                                            <DataTrigger Value="True">
+                                                <DataTrigger.Binding>
+                                                    <MultiBinding Converter="{StaticResource IsCurrentDownloadingConverter}">
+                                                        <Binding/>
+                                                        <Binding Path="DataContext.CurrentDownloadingGameId" RelativeSource="{RelativeSource AncestorType=Page}"/>
+                                                    </MultiBinding>
+                                                </DataTrigger.Binding>
                                                 <Setter Property="Visibility" Value="Visible"/>
                                             </DataTrigger>
                                         </Style.Triggers>
@@ -84,12 +88,18 @@
                                 <ui:Button Command="{Binding DataContext.DownloadTrainerCommand, RelativeSource={RelativeSource AncestorType=Page}}" 
                                            CommandParameter="{Binding}" Margin="4" Appearance="Secondary"
                                            Content="{DynamicResource BtnDownload}">
+                                    <ui:Button.IsEnabled>
+                                        <MultiBinding Converter="{StaticResource CanDownloadConverter}">
+                                            <Binding/>
+                                            <Binding Path="DataContext.CurrentDownloadingGameId" RelativeSource="{RelativeSource AncestorType=Page}"/>
+                                        </MultiBinding>
+                                    </ui:Button.IsEnabled>
                                     <ui:Button.Style>
                                         <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
-                                            <Setter Property="IsEnabled" Value="True"/>
+                                            <Setter Property="Visibility" Value="Visible"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding MatchedTrainer.IsDownloaded}" Value="True">
-                                                    <Setter Property="IsEnabled" Value="False"/>
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -98,19 +108,34 @@
 
                                 <ui:Button Command="{Binding DataContext.LaunchTrainerCommand, RelativeSource={RelativeSource AncestorType=Page}}" 
                                            CommandParameter="{Binding}" Margin="4" Appearance="Primary">
+                                    <ui:Button.IsEnabled>
+                                        <MultiBinding Converter="{StaticResource CanLaunchConverter}">
+                                            <Binding/>
+                                            <Binding Path="DataContext.CurrentLaunchingGameId" RelativeSource="{RelativeSource AncestorType=Page}"/>
+                                        </MultiBinding>
+                                    </ui:Button.IsEnabled>
                                     <ui:Button.Style>
                                         <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
                                             <Setter Property="Content" Value="{DynamicResource BtnLaunch}"/>
                                             <Setter Property="Background" Value="#107C10"/>
                                             <Setter Property="Foreground" Value="White"/>
-                                            
+                                            <Setter Property="ToolTip" Value="{DynamicResource BtnLaunch}"/>
                                             <Style.Triggers>
-                                                <DataTrigger Binding="{Binding MatchedTrainer.IsLoading}" Value="True">
+                                                <DataTrigger Value="True">
+                                                    <DataTrigger.Binding>
+                                                        <MultiBinding Converter="{StaticResource IsCurrentLaunchingConverter}">
+                                                            <Binding/>
+                                                            <Binding Path="DataContext.CurrentLaunchingGameId" RelativeSource="{RelativeSource AncestorType=Page}"/>
+                                                        </MultiBinding>
+                                                    </DataTrigger.Binding>
                                                     <Setter Property="IsEnabled" Value="False"/>
                                                     <Setter Property="Content" Value="{DynamicResource StatusDownloading}"/>
                                                 </DataTrigger>
                                                 <DataTrigger Binding="{Binding MatchedTrainer}" Value="{x:Null}">
                                                      <Setter Property="IsEnabled" Value="False"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding MatchedTrainer.IsDownloaded}" Value="False">
+                                                     <Setter Property="ToolTip" Value="{DynamicResource MsgDownloadFirst}"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>

@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GameTrainerLauncher.Core.Entities;
+using GameTrainerLauncher.UI;
 using GameTrainerLauncher.Core.Interfaces;
 using GameTrainerLauncher.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -12,17 +13,23 @@ public partial class MyGamesViewModel : ObservableObject
 {
     private readonly AppDbContext _dbContext;
     private readonly ITrainerManager _trainerManager;
-    private readonly IEnumerable<IGameScanner> _scanners;
     private readonly IScraperService _scraperService;
 
     [ObservableProperty]
     private ObservableCollection<Game> _games = new();
 
-    public MyGamesViewModel(AppDbContext dbContext, ITrainerManager trainerManager, IEnumerable<IGameScanner> scanners, IScraperService scraperService)
+    /// <summary>When set, only this game row's download button is disabled (by Game.Id, so each row is independent).</summary>
+    [ObservableProperty]
+    private int? _currentDownloadingGameId;
+
+    /// <summary>When set, only this game row's launch button shows loading/disabled (by Game.Id).</summary>
+    [ObservableProperty]
+    private int? _currentLaunchingGameId;
+
+    public MyGamesViewModel(AppDbContext dbContext, ITrainerManager trainerManager, IScraperService scraperService)
     {
         _dbContext = dbContext;
         _trainerManager = trainerManager;
-        _scanners = scanners;
         _scraperService = scraperService;
         LoadGamesCommand.ExecuteAsync(null);
     }
@@ -34,78 +41,69 @@ public partial class MyGamesViewModel : ObservableObject
         try 
         {
             await _dbContext.Database.EnsureCreatedAsync();
+            await _dbContext.MigrateTrainersTableDropIgnoredColumnsAsync();
 
             var dbGames = await _dbContext.Games.Include(g => g.MatchedTrainer).ToListAsync();
-            
+
             // De-duplicate logic (though DB primary key handles ID, we want to ensure uniqueness by name for display)
             // Rebuild the observable collection
             Games.Clear();
             var uniqueGames = dbGames.GroupBy(g => g.Name).Select(g => g.First());
-            foreach (var g in uniqueGames) Games.Add(g);
-
-            // Scan logic - improved logging
-            var scanReport = new System.Text.StringBuilder();
-            bool hasErrors = false;
-
-            foreach (var scanner in _scanners)
+            foreach (var g in uniqueGames)
             {
-                try
+                if (g.MatchedTrainer != null && g.MatchedTrainer.IsDownloaded &&
+                    (string.IsNullOrEmpty(g.MatchedTrainer.LocalExePath) || !System.IO.File.Exists(g.MatchedTrainer.LocalExePath)))
                 {
-                    System.Diagnostics.Debug.WriteLine($"Starting scan for {scanner.PlatformName}");
-                    scanReport.AppendLine($"Scanning {scanner.PlatformName}...");
-                    
-                    var scanned = await scanner.ScanAsync();
-                    System.Diagnostics.Debug.WriteLine($"Scanned {scanned.Count} games from {scanner.PlatformName}");
-                    scanReport.AppendLine($"  Found {scanned.Count} games.");
-                    
-                    foreach (var g in scanned)
-                    {
-                        if (!Games.Any(x => x.Name == g.Name))
-                        {
-                            // Try to fetch cover image if missing
-                            if (string.IsNullOrEmpty(g.CoverUrl))
-                            {
-                                try 
-                                {
-                                    var searchResults = await _scraperService.SearchAsync(g.Name);
-                                    var bestMatch = searchResults.FirstOrDefault();
-                                    if (bestMatch != null)
-                                    {
-                                        g.CoverUrl = bestMatch.ImageUrl;
-                                        // Also link trainer if available
-                                        if (g.MatchedTrainer == null)
-                                        {
-                                            // We don't fetch full details here to save time, 
-                                            // but we could set a basic Trainer object or let user trigger download later
-                                            // Ideally, DownloadTrainerAsync handles the search again.
-                                        }
-                                    }
-                                }
-                                catch 
-                                {
-                                    // Ignore image fetch errors during scan to avoid blocking
-                                }
-                            }
-                            
-                            Games.Add(g);
-                            _dbContext.Games.Add(g);
-                        }
-                    }
+                    g.MatchedTrainer.IsDownloaded = false;
+                    g.MatchedTrainer.LocalExePath = null;
+                    g.MatchedTrainer.LocalZipPath = null;
+                    _dbContext.Trainers.Update(g.MatchedTrainer);
                 }
-                catch (Exception ex)
-                {
-                    hasErrors = true;
-                    System.Diagnostics.Debug.WriteLine($"Scanner error ({scanner.PlatformName}): {ex}");
-                    scanReport.AppendLine($"  Error: {ex.Message}");
-                }
+                Games.Add(g);
             }
             await _dbContext.SaveChangesAsync();
-            
-            if (Games.Count == 0 && hasErrors)
+
+            // For locally scanned games (no cover / no trainer), fetch cover and date from Fling
+            foreach (var game in Games.ToList())
             {
-                var msg = GetString("MsgScanReportBody", scanReport.ToString());
-                var title = GetString("MsgScanReportTitle");
-                System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                var needCover = string.IsNullOrWhiteSpace(game.MatchedTrainer?.ImageUrl) && string.IsNullOrWhiteSpace(game.CoverUrl);
+                if (!needCover) continue;
+                try
+                {
+                    var results = await _scraperService.SearchAsync(game.Name);
+                    var first = results.FirstOrDefault();
+                    if (first == null) continue;
+                    var details = await _scraperService.GetTrainerDetailsAsync(first.PageUrl);
+                    if (game.MatchedTrainer == null)
+                    {
+                        var trainer = new Trainer
+                        {
+                            Title = details.Title,
+                            PageUrl = details.PageUrl,
+                            DownloadUrl = details.DownloadUrl,
+                            ImageUrl = details.ImageUrl,
+                            LastUpdated = details.LastUpdated,
+                            IsDownloaded = false
+                        };
+                        _dbContext.Trainers.Add(trainer);
+                        await _dbContext.SaveChangesAsync();
+                        game.MatchedTrainerId = trainer.Id;
+                        game.MatchedTrainer = trainer;
+                        _dbContext.Games.Update(game);
+                    }
+                    else
+                    {
+                        if (string.IsNullOrWhiteSpace(game.MatchedTrainer.DownloadUrl) && !string.IsNullOrWhiteSpace(details.DownloadUrl))
+                            game.MatchedTrainer.DownloadUrl = details.DownloadUrl;
+                        if (string.IsNullOrWhiteSpace(game.MatchedTrainer.ImageUrl) && !string.IsNullOrWhiteSpace(details.ImageUrl))
+                            game.MatchedTrainer.ImageUrl = details.ImageUrl;
+                        if (details.LastUpdated != null)
+                            game.MatchedTrainer.LastUpdated = details.LastUpdated;
+                        _dbContext.Trainers.Update(game.MatchedTrainer);
+                    }
+                    await _dbContext.SaveChangesAsync();
+                }
+                catch { /* ignore per-game fetch */ }
             }
         }
         catch (Exception ex)
@@ -127,7 +125,7 @@ public partial class MyGamesViewModel : ObservableObject
              return;
         }
 
-        // 3s timeout logic
+        CurrentLaunchingGameId = game.Id;
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
         try
         {
@@ -152,6 +150,7 @@ public partial class MyGamesViewModel : ObservableObject
         finally
         {
             game.MatchedTrainer.IsLoading = false;
+            CurrentLaunchingGameId = null;
         }
     }
 
@@ -211,6 +210,14 @@ public partial class MyGamesViewModel : ObservableObject
         return args.Length > 0 ? string.Format(resource, args) : resource;
     }
 
+    /// <summary>
+    /// 点击「下载」后的完整流程：
+    /// 1) 若当前游戏没有 MatchedTrainer：用游戏名 SearchAsync，取第一个结果 GetTrainerDetailsAsync，写入 DB 并赋给 game.MatchedTrainer。
+    /// 2) 若有 Trainer 但无 DownloadUrl：用 PageUrl 调 GetTrainerDetailsAsync 补全 DownloadUrl/ImageUrl/LastUpdated 并保存。
+    /// 3) 设置 CurrentDownloadingTrainerId、IsDownloading、DownloadProgress，调用 TrainerManager.DownloadTrainerAsync(trainer, progress)。
+    /// 4) 若失败且存在 PageUrl：重新拉取详情更新 DownloadUrl 后重试一次。
+    /// 5) 成功则设置 IsDownloaded、更新 DB；失败则弹窗 "Download failed"；finally 里清除 IsDownloading 和 CurrentDownloadingTrainerId。
+    /// </summary>
     [RelayCommand]
     public async Task DownloadTrainerAsync(Game game)
     {
@@ -233,10 +240,20 @@ public partial class MyGamesViewModel : ObservableObject
                  return; 
              }
         }
+        else if (game.MatchedTrainer != null && string.IsNullOrWhiteSpace(game.MatchedTrainer.DownloadUrl) && !string.IsNullOrWhiteSpace(game.MatchedTrainer.PageUrl))
+        {
+             var details = await _scraperService.GetTrainerDetailsAsync(game.MatchedTrainer.PageUrl);
+             game.MatchedTrainer.DownloadUrl = details.DownloadUrl;
+             game.MatchedTrainer.LastUpdated = details.LastUpdated;
+             if (!string.IsNullOrEmpty(details.ImageUrl)) game.MatchedTrainer.ImageUrl = details.ImageUrl;
+             _dbContext.Trainers.Update(game.MatchedTrainer);
+             await _dbContext.SaveChangesAsync();
+        }
 
         if (game.MatchedTrainer != null)
         {
             var trainer = game.MatchedTrainer;
+            CurrentDownloadingGameId = game.Id;
             trainer.IsDownloading = true;
             trainer.DownloadProgress = 0;
 
@@ -248,9 +265,27 @@ public partial class MyGamesViewModel : ObservableObject
             try
             {
                 var success = await _trainerManager.DownloadTrainerAsync(trainer, progress);
+                if (!success && !string.IsNullOrWhiteSpace(trainer.PageUrl))
+                {
+                    try
+                    {
+                        var details = await _scraperService.GetTrainerDetailsAsync(trainer.PageUrl);
+                        if (!string.IsNullOrWhiteSpace(details.DownloadUrl))
+                        {
+                            trainer.DownloadUrl = details.DownloadUrl;
+                            trainer.LastUpdated = details.LastUpdated;
+                            if (!string.IsNullOrEmpty(details.ImageUrl)) trainer.ImageUrl = details.ImageUrl;
+                            _dbContext.Trainers.Update(trainer);
+                            await _dbContext.SaveChangesAsync();
+                            success = await _trainerManager.DownloadTrainerAsync(trainer, progress);
+                        }
+                    }
+                    catch { /* ignore retry fetch */ }
+                }
                 if (success)
                 {
                     trainer.IsDownloaded = true;
+                    _dbContext.Trainers.Update(trainer);
                     _dbContext.Games.Update(game);
                     await _dbContext.SaveChangesAsync();
                 }
@@ -269,6 +304,7 @@ public partial class MyGamesViewModel : ObservableObject
             finally
             {
                 trainer.IsDownloading = false;
+                CurrentDownloadingGameId = null;
             }
         }
     }

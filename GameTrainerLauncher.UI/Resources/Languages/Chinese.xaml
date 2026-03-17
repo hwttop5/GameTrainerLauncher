@@ -32,6 +32,7 @@
     <system:String x:Key="MsgInfoTitle">提示</system:String>
     <system:String x:Key="MsgSearchTitle">搜索</system:String>
     <system:String x:Key="MsgNoTrainerFound">未找到该游戏的修改器。</system:String>
+    <system:String x:Key="MsgDownloadFirst">请先下载修改器后再启动</system:String>
     <system:String x:Key="MsgLaunchTimeout">启动超时（3 秒）。</system:String>
     <system:String x:Key="MsgLaunchFailed">启动失败。</system:String>
     <system:String x:Key="MsgConfirmRemoveTitle">确认移除</system:String>

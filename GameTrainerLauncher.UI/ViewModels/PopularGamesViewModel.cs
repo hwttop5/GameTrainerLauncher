@@ -117,34 +117,28 @@ public partial class PopularGamesViewModel : ObservableObject
                  return;
             }
 
+            // Each game gets its own Trainer row so download state is per-game (no shared trainer)
+            var newTrainer = new Trainer
+            {
+                Title = trainer.Title,
+                PageUrl = trainer.PageUrl,
+                DownloadUrl = trainer.DownloadUrl,
+                ImageUrl = trainer.ImageUrl,
+                LastUpdated = trainer.LastUpdated,
+                IsDownloaded = false
+            };
             var game = new Game
             {
                 Name = trainer.Title,
-                MatchedTrainer = trainer,
+                MatchedTrainer = newTrainer,
                 AddedDate = DateTime.Now,
-                CoverUrl = trainer.ImageUrl // Ensure cover is saved
+                CoverUrl = trainer.ImageUrl
             };
-            
-            // Fix: Detach trainer if it's already tracked to avoid duplicate key error
-            var trackedTrainer = _dbContext.Trainers.Local.FirstOrDefault(t => t.Title == trainer.Title);
-            if (trackedTrainer != null)
-            {
-                 game.MatchedTrainer = trackedTrainer;
-            }
-            else
-            {
-                 // Check if trainer exists in DB but not in local cache
-                 var existingTrainer = _dbContext.Trainers.FirstOrDefault(t => t.Title == trainer.Title);
-                 if (existingTrainer != null)
-                 {
-                     game.MatchedTrainer = existingTrainer;
-                 }
-            }
 
             _dbContext.Games.Add(game);
             await _dbContext.SaveChangesAsync();
             
-            trainer.IsDownloaded = true; // Update UI
+            trainer.IsDownloaded = true; // Update UI on the list card
             
             var successMsg = (string)System.Windows.Application.Current.FindResource("MsgAddedToMyGames");
             var successTitle = (string)System.Windows.Application.Current.FindResource("MsgSuccessTitle");
