@@ -77,10 +77,8 @@ public partial class MyGamesViewModel : ObservableObject
 
             var dbGames = await _dbContext.Games.Include(g => g.MatchedTrainer).ToListAsync();
 
-            // De-duplicate logic (though DB primary key handles ID, we want to ensure uniqueness by name for display)
-            // Rebuild the observable collection
-            Games.Clear();
-            var uniqueGames = dbGames.GroupBy(g => g.Name).Select(g => g.First());
+            // De-duplicate and fix invalid IsDownloaded
+            var uniqueGames = dbGames.GroupBy(g => g.Name).Select(g => g.First()).ToList();
             foreach (var g in uniqueGames)
             {
                 if (g.MatchedTrainer != null && g.MatchedTrainer.IsDownloaded &&
@@ -91,9 +89,19 @@ public partial class MyGamesViewModel : ObservableObject
                     g.MatchedTrainer.LocalZipPath = null;
                     _dbContext.Trainers.Update(g.MatchedTrainer);
                 }
-                Games.Add(g);
             }
             await _dbContext.SaveChangesAsync();
+
+            // 必须在 UI 线程更新 ObservableCollection 和 IsDataLoaded，否则打包后可能列表与“暂无游戏”状态不同步
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                Games.Clear();
+                foreach (var g in uniqueGames)
+                    Games.Add(g);
+                IsDataLoaded = true;
+                OnPropertyChanged(nameof(HasGames));
+                OnPropertyChanged(nameof(ShowNoGamesEmptyState));
+            });
 
             // For locally scanned games (no cover / no trainer), fetch cover and date from Fling
             foreach (var game in Games.ToList())
@@ -143,16 +151,15 @@ public partial class MyGamesViewModel : ObservableObject
                 }
                 catch { /* ignore per-game fetch */ }
             }
-            
-            IsDataLoaded = true;
-            OnPropertyChanged(nameof(HasGames));
-            OnPropertyChanged(nameof(ShowNoGamesEmptyState));
         }
         catch (Exception ex)
         {
-             IsDataLoaded = true;
-             OnPropertyChanged(nameof(ShowNoGamesEmptyState));
-             var title = GetString("MsgErrorTitle");
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                IsDataLoaded = true;
+                OnPropertyChanged(nameof(ShowNoGamesEmptyState));
+            });
+            var title = GetString("MsgErrorTitle");
              var msg = GetString("MsgDatabaseError") + " " + ex.Message;
              System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }

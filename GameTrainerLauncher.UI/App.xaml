@@ -37,6 +37,32 @@
             <SolidColorBrush x:Key="ListItemHoverBrush" Color="#2d2d2d" />
             <!-- 空状态标题（暂无游戏/No Games）：暗色主题白字，亮色主题深色字 -->
             <SolidColorBrush x:Key="EmptyStateTitleBrush" Color="White" />
+            <!-- 顶部搜索按钮：亮/暗主题下均固定为蓝底白字，避免白色模式下样式被主题覆盖 -->
+            <SolidColorBrush x:Key="SearchButtonBackgroundBrush" Color="#0078D4" />
+            <SolidColorBrush x:Key="SearchButtonForegroundBrush" Color="White" />
+
+            <!-- 统一“左侧菜单选中态”同款：蓝底白字按钮样式 -->
+            <Style x:Key="BluePrimaryButtonStyle" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                <Setter Property="Appearance" Value="Primary" />
+                <Setter Property="Background" Value="#0078D4" />
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="BorderBrush" Value="#0078D4" />
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#106EBE" />
+                        <Setter Property="BorderBrush" Value="#106EBE" />
+                    </Trigger>
+                    <Trigger Property="IsPressed" Value="True">
+                        <Setter Property="Background" Value="#005A9E" />
+                        <Setter Property="BorderBrush" Value="#005A9E" />
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Background" Value="#A0A0A0" />
+                        <Setter Property="BorderBrush" Value="#A0A0A0" />
+                        <Setter Property="Foreground" Value="White" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
