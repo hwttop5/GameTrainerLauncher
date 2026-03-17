@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Media;
+using GameTrainerLauncher.Infrastructure;
 using Wpf.Ui.Appearance;
 
 namespace GameTrainerLauncher.UI.Services;
@@ -31,9 +32,8 @@ public class ThemeService : IThemeService
     {
         try
         {
-            var appFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
-            Directory.CreateDirectory(appFolder);
-            _settingsPath = Path.Combine(appFolder, "settings.json");
+            AppPaths.EnsureDataFolderExists();
+            _settingsPath = Path.Combine(AppPaths.DataFolder, "settings.json");
         }
         catch (Exception)
         {
@@ -86,8 +86,10 @@ public class ThemeService : IThemeService
         var cardBgColor = isLight ? Color.FromRgb(0xff, 0xff, 0xff) : Color.FromRgb(0x25, 0x25, 0x25);
         var cardBorderColor = isLight ? Color.FromRgb(0xe0, 0xe0, 0xe0) : Color.FromRgb(0x3a, 0x3a, 0x3a);
         var listItemHoverColor = isLight ? Color.FromRgb(0xe8, 0xe8, 0xe8) : Color.FromRgb(0x2d, 0x2d, 0x2d);
+        var emptyStateTitleColor = isLight ? Color.FromRgb(0x1e, 0x1e, 0x1e) : Colors.White;
         var app = Application.Current;
         if (app?.Resources == null) return;
+        app.Resources["EmptyStateTitleBrush"] = new SolidColorBrush(emptyStateTitleColor);
         app.Resources["SystemControlBackgroundChromeMediumLowBrush"] = new SolidColorBrush(sidebarColor);
         app.Resources["ApplicationBackgroundBrush"] = new SolidColorBrush(bgColor);
         app.Resources["WindowBackground"] = new SolidColorBrush(bgColor);

@@ -1,5 +1,6 @@
 using GameTrainerLauncher.Core.Entities;
 using GameTrainerLauncher.Core.Interfaces;
+using GameTrainerLauncher.Infrastructure;
 using GameTrainerLauncher.Infrastructure.Data;
 using GameTrainerLauncher.Infrastructure.Services;
 using GameTrainerLauncher.UI.Services;
@@ -58,8 +59,8 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
-        // Configure NLog：日志写在 程序目录\Data\Logs\log.txt，确保目录存在
-        var logDir = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Logs");
+        // Configure NLog：日志写在 %LocalAppData%\GameTrainerLauncher\Data\Logs\log.txt
+        var logDir = System.IO.Path.Combine(AppPaths.DataFolder, "Logs");
         try { System.IO.Directory.CreateDirectory(logDir); } catch { }
         var config = new NLog.Config.LoggingConfiguration();
         var logfile = new NLog.Targets.FileTarget("logfile") { FileName = System.IO.Path.Combine(logDir, "log.txt") };

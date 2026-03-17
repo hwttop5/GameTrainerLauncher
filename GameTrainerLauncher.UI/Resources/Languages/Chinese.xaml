@@ -50,4 +50,7 @@
     <system:String x:Key="MsgErrorWithDetail">错误：{0}</system:String>
     <system:String x:Key="MsgScanReportBody">扫描完成但存在错误：&#x0a;{0}</system:String>
     <system:String x:Key="MsgNavigationError">导航错误：{0}</system:String>
+    <system:String x:Key="MsgNoGamesTitle">暂无游戏</system:String>
+    <system:String x:Key="MsgNoGamesDescription">您的游戏库为空，前往热门游戏页面添加游戏吧！</system:String>
+    <system:String x:Key="BtnExplorePopular">浏览热门游戏</system:String>
 </ResourceDictionary>

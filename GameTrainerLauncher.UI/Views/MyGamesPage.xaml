@@ -8,7 +8,7 @@
         <converters:LessThanConverter x:Key="LessThanConverter"/>
     </Page.Resources>
     <Grid Margin="10">
-        <ListView ItemsSource="{Binding Games}" SelectionMode="Single">
+        <ListView ItemsSource="{Binding Games}" SelectionMode="Single" Visibility="{Binding HasGames, Converter={StaticResource BooleanToVisibilityConverter}}">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
                     <Setter Property="Margin" Value="0,0"/>
@@ -164,5 +164,14 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+        <!-- 仅当「我的游戏」加载完成且无数据时显示空状态 -->
+        <Grid Visibility="{Binding ShowNoGamesEmptyState, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ui:SymbolIcon Symbol="Games24" FontSize="64" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,16"/>
+                <TextBlock Text="{DynamicResource MsgNoGamesTitle}" FontSize="18" FontWeight="Bold" Margin="0,0,0,8" HorizontalAlignment="Center" Foreground="{DynamicResource EmptyStateTitleBrush}"/>
+                <TextBlock Text="{DynamicResource MsgNoGamesDescription}" FontSize="14" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,16" HorizontalAlignment="Center" TextWrapping="Wrap" MaxWidth="600"/>
+                <ui:Button Content="{DynamicResource BtnExplorePopular}" Appearance="Primary" Command="{Binding DataContext.NavigateToPopularCommand, RelativeSource={RelativeSource AncestorType=Page}}" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>

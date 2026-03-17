@@ -35,6 +35,8 @@
             <SolidColorBrush x:Key="CardBackgroundBrush" Color="#252525" />
             <SolidColorBrush x:Key="CardBorderBrush" Color="#3a3a3a" />
             <SolidColorBrush x:Key="ListItemHoverBrush" Color="#2d2d2d" />
+            <!-- 空状态标题（暂无游戏/No Games）：暗色主题白字，亮色主题深色字 -->
+            <SolidColorBrush x:Key="EmptyStateTitleBrush" Color="White" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

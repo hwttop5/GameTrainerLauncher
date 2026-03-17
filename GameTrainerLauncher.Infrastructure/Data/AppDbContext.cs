@@ -10,14 +10,8 @@ public class AppDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        var appPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
-        
-        if (!System.IO.Directory.Exists(appPath))
-        {
-            System.IO.Directory.CreateDirectory(appPath);
-        }
-
-        var dbPath = System.IO.Path.Join(appPath, "game_trainer_launcher.db");
+        AppPaths.EnsureDataFolderExists();
+        var dbPath = System.IO.Path.Join(AppPaths.DataFolder, "game_trainer_launcher.db");
         optionsBuilder.UseSqlite($"Data Source={dbPath}");
     }
 

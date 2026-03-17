@@ -91,10 +91,9 @@ public class TrainerManager : ITrainerManager
                 return false;
             }
 
-            // 下载目录：标题中的 : * ? " < > | \ / 等非法字符必须去掉，否则 Windows 报「目录名称无效」
-            var localAppData = AppDomain.CurrentDomain.BaseDirectory;
+            // 下载目录：%LocalAppData%\GameTrainerLauncher\Data\Trainers\<文件夹名>
             var folderName = SanitizeFileName(trainer.Title);
-            var trainerFolder = Path.Combine(localAppData, "Data", "Trainers", folderName);
+            var trainerFolder = Path.Combine(AppPaths.DataFolder, "Trainers", folderName);
             Directory.CreateDirectory(trainerFolder);
 
             var zipPath = Path.Combine(trainerFolder, "trainer.zip");
