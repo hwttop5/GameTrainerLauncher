@@ -8,7 +8,6 @@ using GameTrainerLauncher.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Text.Json;
 using System.Text;
 
 namespace GameTrainerLauncher.UI.ViewModels;
@@ -104,32 +103,6 @@ public partial class MyGamesViewModel : ObservableObject
                 OnPropertyChanged(nameof(ShowNoGamesEmptyState));
             });
 
-            // #region agent log
-            try
-            {
-                var sample = Games.FirstOrDefault();
-                File.AppendAllText(
-                    Path.Combine(Environment.CurrentDirectory, "debug-d901ba.log"),
-                    JsonSerializer.Serialize(new
-                    {
-                        sessionId = "d901ba",
-                        runId = "pre-fix",
-                        hypothesisId = "H_cover",
-                        location = "MyGamesViewModel.cs:LoadGamesAsync",
-                        message = "Before cover backfill",
-                        data = new
-                        {
-                            gamesCount = Games.Count,
-                            sampleName = sample?.Name,
-                            sampleCoverUrl = sample?.CoverUrl,
-                            sampleTrainerImageUrl = sample?.MatchedTrainer?.ImageUrl
-                        },
-                        timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-                    }) + Environment.NewLine);
-            }
-            catch { }
-            // #endregion
-
             // For locally scanned games (no cover / no trainer), fetch cover and date from Fling
             var coverUpdatedCount = 0;
             var coverNeedCount = 0;
@@ -194,34 +167,6 @@ public partial class MyGamesViewModel : ObservableObject
                     Games = new ObservableCollection<Game>(Games);
                 });
             }
-
-            // #region agent log
-            try
-            {
-                var sample2 = Games.FirstOrDefault(g => !string.IsNullOrWhiteSpace(g.CoverUrl) || !string.IsNullOrWhiteSpace(g.MatchedTrainer?.ImageUrl));
-                File.AppendAllText(
-                    Path.Combine(Environment.CurrentDirectory, "debug-d901ba.log"),
-                    JsonSerializer.Serialize(new
-                    {
-                        sessionId = "d901ba",
-                        runId = "pre-fix",
-                        hypothesisId = "H_cover",
-                        location = "MyGamesViewModel.cs:LoadGamesAsync",
-                        message = "After cover backfill",
-                        data = new
-                        {
-                            coverNeedCount,
-                            coverAttemptCount,
-                            coverUpdatedCount,
-                            sampleWithCoverName = sample2?.Name,
-                            sampleWithCoverCoverUrl = sample2?.CoverUrl,
-                            sampleWithCoverTrainerImageUrl = sample2?.MatchedTrainer?.ImageUrl
-                        },
-                        timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-                    }) + Environment.NewLine);
-            }
-            catch { }
-            // #endregion
         }
         catch (Exception ex)
         {

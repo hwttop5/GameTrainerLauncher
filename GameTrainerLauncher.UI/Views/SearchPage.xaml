@@ -7,7 +7,8 @@
     <Grid Margin="10">
         <ui:ProgressRing IsIndeterminate="True"
                          Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
-                         VerticalAlignment="Center" HorizontalAlignment="Center" Width="60" Height="60"/>
+                         VerticalAlignment="Center" HorizontalAlignment="Center" Width="60" Height="60"
+                         Panel.ZIndex="1000"/>
 
         <TextBlock Text="{DynamicResource MsgNoResults}"
                    Visibility="{Binding HasNoResults, Converter={StaticResource BooleanToVisibilityConverter}}"

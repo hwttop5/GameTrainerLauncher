@@ -2,14 +2,13 @@ using System;
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
-using System.IO;
-using System.Text.Json;
 
 namespace GameTrainerLauncher.UI.Converters;
 
 /// <summary>
 /// IMultiValueConverter: values[0]=MatchedTrainer.ImageUrl, values[1]=CoverUrl.
 /// Returns BitmapImage from the first non-empty URL so that when MatchedTrainer.ImageUrl updates (e.g. backfill), the binding refreshes.
+/// Uses BitmapCacheOption.OnLoad so cover displays in installed app (no lazy decode/cache under Program Files).
 /// </summary>
 public class GameCoverFromPartsConverter : IMultiValueConverter
 {
@@ -27,28 +26,16 @@ public class GameCoverFromPartsConverter : IMultiValueConverter
                 url = FlingBaseUrl + url;
             else if (!url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
                 url = FlingBaseUrl + "/" + url.TrimStart('/');
-            return new BitmapImage(new Uri(url, UriKind.Absolute));
+            var uri = new Uri(url, UriKind.Absolute);
+            var img = new BitmapImage();
+            img.BeginInit();
+            img.CacheOption = BitmapCacheOption.OnLoad;
+            img.UriSource = uri;
+            img.EndInit();
+            return img;
         }
         catch
         {
-            // #region agent log
-            try
-            {
-                File.AppendAllText(
-                    Path.Combine(Environment.CurrentDirectory, "debug-d901ba.log"),
-                    JsonSerializer.Serialize(new
-                    {
-                        sessionId = "d901ba",
-                        runId = "pre-fix",
-                        hypothesisId = "H_coverimg",
-                        location = "GameCoverFromPartsConverter.cs:Convert",
-                        message = "Failed to create BitmapImage",
-                        data = new { url },
-                        timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-                    }) + Environment.NewLine);
-            }
-            catch { }
-            // #endregion
             return null;
         }
     }
