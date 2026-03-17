@@ -1,7 +1,7 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
-    <system:String x:Key="AppTitle">Game Trainer Manager</system:String>
+    <system:String x:Key="AppTitle">Game Trainer Launcher</system:String>
     <system:String x:Key="SearchPlaceholder">Search by game English name only</system:String>
     <system:String x:Key="MsgSearchEmpty">Please enter a game name (in English) before searching.</system:String>
     <system:String x:Key="NavPopular">Popular Games</system:String>
@@ -30,7 +30,7 @@
     <system:String x:Key="BtnRemove">Remove</system:String>
     <system:String x:Key="LabelUpdated">Updated: </system:String>
     <system:String x:Key="MsgSuccessTitle">Success</system:String>
-    <system:String x:Key="MsgAddedToMyGames">Added to My Games!</system:String>
+    <system:String x:Key="MsgAddedToMyGames">Added to My Library!</system:String>
     <system:String x:Key="MsgAlreadyInLibrary">This game is already in your library.</system:String>
     <system:String x:Key="MsgInfoTitle">Info</system:String>
     <system:String x:Key="MsgSearchTitle">Search</system:String>

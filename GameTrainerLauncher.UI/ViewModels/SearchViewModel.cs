@@ -4,6 +4,8 @@ using GameTrainerLauncher.Core.Entities;
 using GameTrainerLauncher.Core.Interfaces;
 using GameTrainerLauncher.Infrastructure.Data;
 using GameTrainerLauncher.UI.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
@@ -16,6 +18,7 @@ public partial class SearchViewModel : ObservableObject
     private readonly AppDbContext _dbContext;
     private readonly ITrainerManager _trainerManager;
     private readonly IMyGamesRefreshService _myGamesRefreshService;
+    private readonly IServiceScopeFactory _scopeFactory;
 
     [ObservableProperty]
     private ObservableCollection<Trainer> _searchResults = new();
@@ -26,16 +29,36 @@ public partial class SearchViewModel : ObservableObject
     [ObservableProperty]
     private string _searchKeyword = string.Empty;
 
-    public SearchViewModel(IScraperService scraperService, AppDbContext dbContext, ITrainerManager trainerManager, IMyGamesRefreshService myGamesRefreshService)
+    public SearchViewModel(IScraperService scraperService, AppDbContext dbContext, ITrainerManager trainerManager, IMyGamesRefreshService myGamesRefreshService, IServiceScopeFactory scopeFactory)
     {
         _scraperService = scraperService;
         _dbContext = dbContext;
         _trainerManager = trainerManager;
         _myGamesRefreshService = myGamesRefreshService;
+        _scopeFactory = scopeFactory;
     }
 
     [ObservableProperty]
     private bool _hasNoResults;
+
+    /// <summary>根据库中最新数据刷新搜索结果中每项的「已添加」状态。</summary>
+    [RelayCommand]
+    public async Task RefreshAlreadyInLibraryAsync()
+    {
+        if (SearchResults.Count == 0) return;
+        try
+        {
+            await using var scope = _scopeFactory.CreateAsyncScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var existingNames = (await db.Games.Select(g => g.Name).ToListAsync()).ToHashSet();
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                foreach (var t in SearchResults)
+                    t.IsDownloaded = existingNames.Contains(t.Title);
+            });
+        }
+        catch { /* ignore */ }
+    }
 
     /// <summary>Run search using current SearchKeyword (for in-page search box).</summary>
     [RelayCommand]
