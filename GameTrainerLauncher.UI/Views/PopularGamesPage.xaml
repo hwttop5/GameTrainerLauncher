@@ -5,9 +5,34 @@
       xmlns:controls="clr-namespace:GameTrainerLauncher.UI.Controls"
       Title="{DynamicResource NavPopular}">
     <Grid Margin="10">
-        <ui:ProgressRing IsIndeterminate="True"
-                         Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
-                         VerticalAlignment="Center" HorizontalAlignment="Center" Width="60" Height="60"/>
+        <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Opacity" Value="0"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+            <ui:ProgressRing IsIndeterminate="True"
+                             Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                             Width="60" Height="60"/>
+        </Grid>
 
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel>

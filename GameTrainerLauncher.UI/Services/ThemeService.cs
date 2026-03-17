@@ -85,6 +85,7 @@ public class ThemeService : IThemeService
         var secondaryTextColor = isLight ? Color.FromRgb(0x60, 0x60, 0x60) : Color.FromRgb(0x80, 0x80, 0x80);
         var cardBgColor = isLight ? Color.FromRgb(0xff, 0xff, 0xff) : Color.FromRgb(0x25, 0x25, 0x25);
         var cardBorderColor = isLight ? Color.FromRgb(0xe0, 0xe0, 0xe0) : Color.FromRgb(0x3a, 0x3a, 0x3a);
+        var listItemHoverColor = isLight ? Color.FromRgb(0xe8, 0xe8, 0xe8) : Color.FromRgb(0x2d, 0x2d, 0x2d);
         var app = Application.Current;
         if (app?.Resources == null) return;
         app.Resources["SystemControlBackgroundChromeMediumLowBrush"] = new SolidColorBrush(sidebarColor);
@@ -95,6 +96,7 @@ public class ThemeService : IThemeService
         app.Resources["SecondaryTextBrush"] = new SolidColorBrush(secondaryTextColor);
         app.Resources["CardBackgroundBrush"] = new SolidColorBrush(cardBgColor);
         app.Resources["CardBorderBrush"] = new SolidColorBrush(cardBorderColor);
+        app.Resources["ListItemHoverBrush"] = new SolidColorBrush(listItemHoverColor);
     }
 
     public void SetLanguage(string languageCode)

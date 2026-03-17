@@ -4,7 +4,35 @@
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:converters="clr-namespace:GameTrainerLauncher.UI.Converters"
              Width="220" MinHeight="280">
-    <ui:Card Margin="10" Padding="0" VerticalAlignment="Top">
+    <ui:Card Margin="10" Padding="0" VerticalAlignment="Top" Cursor="Hand"
+             RenderTransformOrigin="0.5,0.5">
+        <ui:Card.RenderTransform>
+            <ScaleTransform ScaleX="1" ScaleY="1"/>
+        </ui:Card.RenderTransform>
+        <ui:Card.Style>
+            <Style TargetType="ui:Card" BasedOn="{StaticResource {x:Type ui:Card}}">
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Trigger.EnterActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.02" Duration="0:0:0.12"/>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.02" Duration="0:0:0.12"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </Trigger.EnterActions>
+                        <Trigger.ExitActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.12"/>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.12"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </Trigger.ExitActions>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </ui:Card.Style>
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="140"/>
