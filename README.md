@@ -4,6 +4,8 @@
 
 受够了手动下载管理众多的游戏修改器.exe文件，又不想在 flyy.cn 和 wemod 这种平台上充会员？试试这款基于 [FlingTrainer](https://flingtrainer.com) 的 Windows 桌面应用：浏览、搜索、下载并启动游戏修改器，轻松管理你的游戏修改器。
 
+**下载安装包**：[https://github.com/hwttop5/GameTrainerLauncher/releases](https://github.com/hwttop5/GameTrainerLauncher/releases)
+
 ---
 
 ## 功能概览
@@ -19,11 +21,11 @@
 
 | 搜索 | 热门游戏 |
 |------|----------|
-| ![搜索](Doc/Images/Search.png) | ![热门游戏](Doc/Images/PopularGames.png) |
+| ![搜索](Docs/Images/Search.png) | ![热门游戏](Docs/Images/PopularGames.png) |
 
 | 我的游戏 | 设置 |
 |----------|------|
-| ![我的游戏](Doc/Images/MyLibrary.png) | ![设置](Doc/Images/Settings.png) |
+| ![我的游戏](Docs/Images/MyLibrary.png) | ![设置](Docs/Images/Settings.png) |
 
 ---
 

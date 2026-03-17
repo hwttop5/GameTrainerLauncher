@@ -4,6 +4,8 @@
 
 Tired of manually downloading and managing lots of game trainer .exe files, and don't want to pay for platforms like flyy.cn or wemod? Try this Windows desktop app based on [FlingTrainer](https://flingtrainer.com): browse, search, download, and launch trainers, and manage your game trainers with ease.
 
+**Download**: [https://github.com/hwttop5/GameTrainerLauncher/releases](https://github.com/hwttop5/GameTrainerLauncher/releases)
+
 ---
 
 ## Features
@@ -19,11 +21,11 @@ Tired of manually downloading and managing lots of game trainer .exe files, and 
 
 | Search | Popular Games |
 |--------|---------------|
-| ![Search](Doc/Images/Search.png) | ![Popular Games](Doc/Images/PopularGames.png) |
+| ![Search](Docs/Images/Search.png) | ![Popular Games](Docs/Images/PopularGames.png) |
 
 | My Library | Settings |
 |------------|----------|
-| ![My Library](Doc/Images/MyLibrary.png) | ![Settings](Doc/Images/Settings.png) |
+| ![My Library](Docs/Images/MyLibrary.png) | ![Settings](Docs/Images/Settings.png) |
 
 ---
 
