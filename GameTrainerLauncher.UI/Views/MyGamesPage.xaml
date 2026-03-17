@@ -23,7 +23,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="60"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*" MinWidth="230"/>
                         </Grid.ColumnDefinitions>
                         
                         <Border Grid.Column="0" Width="48" Height="48" CornerRadius="4" Background="{DynamicResource CoverPlaceholderBrush}" ClipToBounds="True">
@@ -46,7 +46,7 @@
                         </Border>
                         
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
-                            <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16"/>
+                            <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16" TextTrimming="CharacterEllipsis"/>
                             <TextBlock Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11" Margin="0,6,0,4">
                                 <TextBlock.Text>
                                     <Binding Path="MatchedTrainer.LastUpdated" StringFormat="{}{0:yyyy.MM.dd}" TargetNullValue="—"/>
@@ -73,8 +73,8 @@
                             </ProgressBar>
                         </StackPanel>
                         
-                        <Grid Grid.Column="2" VerticalAlignment="Center">
-                            <StackPanel Orientation="Horizontal">
+                        <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                 <StackPanel.Style>
                                     <Style TargetType="StackPanel">
                                         <Setter Property="Orientation" Value="Horizontal"/>
@@ -85,27 +85,6 @@
                                         </Style.Triggers>
                                     </Style>
                                 </StackPanel.Style>
-
-                                <ui:Button Command="{Binding DataContext.DownloadTrainerCommand, RelativeSource={RelativeSource AncestorType=Page}}" 
-                                           CommandParameter="{Binding}" Margin="4" Appearance="Secondary"
-                                           Content="{DynamicResource BtnDownload}">
-                                    <ui:Button.IsEnabled>
-                                        <MultiBinding Converter="{StaticResource CanDownloadConverter}">
-                                            <Binding/>
-                                            <Binding Path="DataContext.CurrentDownloadingGame" RelativeSource="{RelativeSource AncestorType=Page}"/>
-                                        </MultiBinding>
-                                    </ui:Button.IsEnabled>
-                                    <ui:Button.Style>
-                                        <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding MatchedTrainer.IsDownloaded}" Value="True">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </ui:Button.Style>
-                                </ui:Button>
 
                                 <ui:Button Command="{Binding DataContext.LaunchTrainerCommand, RelativeSource={RelativeSource AncestorType=Page}}" 
                                            CommandParameter="{Binding}" Margin="4" Appearance="Primary">

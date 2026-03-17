@@ -22,6 +22,7 @@
     <system:String x:Key="MsgTrainerNotFound">Trainer not found for {0}</system:String>
     <system:String x:Key="MsgDownloadSuccess">Download complete!</system:String>
     <system:String x:Key="StatusAdded">Added</system:String>
+    <system:String x:Key="StatusAdding">Adding...</system:String>
     <system:String x:Key="BtnLoadMore">Load More</system:String>
     <system:String x:Key="StatusNoTrainer">No Trainer</system:String>
     <system:String x:Key="BtnRemove">Remove</system:String>
