@@ -6,8 +6,7 @@ using GameTrainerLauncher.Core.Entities;
 namespace GameTrainerLauncher.UI.Converters;
 
 /// <summary>
-/// MultiValueConverter: (Game, CurrentLaunchingGameId).
-/// Returns true when the launch button should be enabled: has trainer, is downloaded, and this row is not the one currently launching.
+/// MultiValueConverter: (Game, CurrentLaunchingGame). Enable when no launch in progress or this row is not the one launching (by reference).
 /// </summary>
 public class CanLaunchConverter : IMultiValueConverter
 {
@@ -18,9 +17,9 @@ public class CanLaunchConverter : IMultiValueConverter
         if (game?.MatchedTrainer == null) return false;
         if (!game.MatchedTrainer.IsDownloaded) return false;
         if (values[1] == null || values[1] == System.Windows.DependencyProperty.UnsetValue) return true;
-        var currentGameId = values[1] as int?;
-        if (currentGameId == null) return true;
-        return game.Id != currentGameId.Value;
+        var current = values[1] as Game;
+        if (current == null) return true;
+        return !ReferenceEquals(game, current);
     }
 
     public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

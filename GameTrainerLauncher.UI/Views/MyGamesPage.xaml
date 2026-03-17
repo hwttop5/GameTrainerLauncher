@@ -46,13 +46,13 @@
                         
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
                             <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16"/>
-                            <TextBlock Foreground="Gray" FontSize="11" Margin="0,2,0,0">
+                            <TextBlock Foreground="Gray" FontSize="11" Margin="0,1,0,0">
                                 <TextBlock.Text>
                                     <Binding Path="MatchedTrainer.LastUpdated" StringFormat="{}{0:yyyy.MM.dd}" TargetNullValue="—"/>
                                 </TextBlock.Text>
                             </TextBlock>
                             
-                            <ProgressBar Value="{Binding MatchedTrainer.DownloadProgress}" Maximum="100" Height="4" Margin="0,5,0,0">
+                            <ProgressBar Value="{Binding MatchedTrainer.DownloadProgress}" Maximum="100" Height="4" Margin="0,2,0,0">
                                 <ProgressBar.Style>
                                     <Style TargetType="ProgressBar" BasedOn="{StaticResource {x:Type ProgressBar}}">
                                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -61,7 +61,7 @@
                                                 <DataTrigger.Binding>
                                                     <MultiBinding Converter="{StaticResource IsCurrentDownloadingConverter}">
                                                         <Binding/>
-                                                        <Binding Path="DataContext.CurrentDownloadingGameId" RelativeSource="{RelativeSource AncestorType=Page}"/>
+                                                        <Binding Path="DataContext.CurrentDownloadingGame" RelativeSource="{RelativeSource AncestorType=Page}"/>
                                                     </MultiBinding>
                                                 </DataTrigger.Binding>
                                                 <Setter Property="Visibility" Value="Visible"/>
@@ -91,7 +91,7 @@
                                     <ui:Button.IsEnabled>
                                         <MultiBinding Converter="{StaticResource CanDownloadConverter}">
                                             <Binding/>
-                                            <Binding Path="DataContext.CurrentDownloadingGameId" RelativeSource="{RelativeSource AncestorType=Page}"/>
+                                            <Binding Path="DataContext.CurrentDownloadingGame" RelativeSource="{RelativeSource AncestorType=Page}"/>
                                         </MultiBinding>
                                     </ui:Button.IsEnabled>
                                     <ui:Button.Style>
@@ -111,7 +111,7 @@
                                     <ui:Button.IsEnabled>
                                         <MultiBinding Converter="{StaticResource CanLaunchConverter}">
                                             <Binding/>
-                                            <Binding Path="DataContext.CurrentLaunchingGameId" RelativeSource="{RelativeSource AncestorType=Page}"/>
+                                            <Binding Path="DataContext.CurrentLaunchingGame" RelativeSource="{RelativeSource AncestorType=Page}"/>
                                         </MultiBinding>
                                     </ui:Button.IsEnabled>
                                     <ui:Button.Style>
@@ -121,11 +121,15 @@
                                             <Setter Property="Foreground" Value="White"/>
                                             <Setter Property="ToolTip" Value="{DynamicResource BtnLaunch}"/>
                                             <Style.Triggers>
+                                                <DataTrigger Binding="{Binding MatchedTrainer.IsDownloaded}" Value="True">
+                                                    <Setter Property="Background" Value="#107C10"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                </DataTrigger>
                                                 <DataTrigger Value="True">
                                                     <DataTrigger.Binding>
                                                         <MultiBinding Converter="{StaticResource IsCurrentLaunchingConverter}">
                                                             <Binding/>
-                                                            <Binding Path="DataContext.CurrentLaunchingGameId" RelativeSource="{RelativeSource AncestorType=Page}"/>
+                                                            <Binding Path="DataContext.CurrentLaunchingGame" RelativeSource="{RelativeSource AncestorType=Page}"/>
                                                         </MultiBinding>
                                                     </DataTrigger.Binding>
                                                     <Setter Property="IsEnabled" Value="False"/>

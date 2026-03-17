@@ -91,9 +91,10 @@ public class TrainerManager : ITrainerManager
                 return false;
             }
 
-            // 下载目录：<程序运行目录>\Data\Trainers\<Trainer标题_下划线>\，例如 ...\bin\Debug\net8.0-windows\Data\Trainers\Slay_the_Spire_2_Trainer\
+            // 下载目录：标题中的 : * ? " < > | \ / 等非法字符必须去掉，否则 Windows 报「目录名称无效」
             var localAppData = AppDomain.CurrentDomain.BaseDirectory;
-            var trainerFolder = Path.Combine(localAppData, "Data", "Trainers", trainer.Title.Replace(" ", "_"));
+            var folderName = SanitizeFileName(trainer.Title);
+            var trainerFolder = Path.Combine(localAppData, "Data", "Trainers", folderName);
             Directory.CreateDirectory(trainerFolder);
 
             var zipPath = Path.Combine(trainerFolder, "trainer.zip");
@@ -103,7 +104,11 @@ public class TrainerManager : ITrainerManager
             request.Headers.TryAddWithoutValidation("Referer", trainer.PageUrl ?? FlingBaseUrl);
             using (var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
             {
-                response.EnsureSuccessStatusCode();
+                if (!response.IsSuccessStatusCode)
+                {
+                    Logger.Warn("Download first request failed for [{Title}]: Status={StatusCode}, Url={Url}", trainer.Title, response.StatusCode, downloadUrl);
+                    response.EnsureSuccessStatusCode();
+                }
                 var contentType = response.Content.Headers.ContentType?.MediaType ?? "";
                 var totalBytes = response.Content.Headers.ContentLength ?? -1L;
                 var canReportProgress = totalBytes != -1 && totalBytes > 0;
@@ -137,13 +142,18 @@ public class TrainerManager : ITrainerManager
                     var realZipUrl = TryGetZipUrlFromHtml(html, downloadUrl);
                     if (string.IsNullOrEmpty(realZipUrl))
                     {
-                        Logger.Warn("Download returned HTML but no zip link found for {Title}", trainer.Title);
+                        var preview = bytes.Length > 300 ? System.Text.Encoding.UTF8.GetString(bytes, 0, 300) + "..." : System.Text.Encoding.UTF8.GetString(bytes);
+                        Logger.Warn("Download returned HTML but no zip link found for [{Title}]. ContentLength={Len}, Preview={Preview}", trainer.Title, bytes.Length, preview);
                         return false;
                     }
                     using var req2 = new HttpRequestMessage(HttpMethod.Get, realZipUrl);
                     req2.Headers.TryAddWithoutValidation("Referer", trainer.PageUrl ?? FlingBaseUrl);
                     using var resp2 = await _httpClient.SendAsync(req2, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-                    resp2.EnsureSuccessStatusCode();
+                    if (!resp2.IsSuccessStatusCode)
+                    {
+                        Logger.Warn("Download second request failed for [{Title}]: Status={StatusCode}, Url={Url}", trainer.Title, resp2.StatusCode, realZipUrl);
+                        resp2.EnsureSuccessStatusCode();
+                    }
                     var totalBytes2 = resp2.Content.Headers.ContentLength ?? -1L;
                     var canReportProgress2 = totalBytes2 != -1 && totalBytes2 > 0;
                     using var stream2 = await resp2.Content.ReadAsStreamAsync(cancellationToken);
@@ -207,7 +217,7 @@ public class TrainerManager : ITrainerManager
         }
         catch (Exception ex)
         {
-            Logger.Error(ex, "Failed to download trainer");
+            Logger.Error(ex, "Failed to download trainer [{Title}]: {Message}", trainer?.Title ?? "(null)", ex.Message);
             return false;
         }
     }

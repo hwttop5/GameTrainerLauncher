@@ -5,25 +5,31 @@
       Title="{DynamicResource NavSettings}"
       Background="{DynamicResource ApplicationBackgroundBrush}">
     <Grid Margin="24" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{DynamicResource ApplicationBackgroundBrush}">
-        <StackPanel MaxWidth="480" HorizontalAlignment="Center" VerticalAlignment="Top">
-            <ui:Card Margin="0,0,0,12" Padding="16">
-                <StackPanel>
-                    <TextBlock Text="{DynamicResource LabelLanguage}" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,12"/>
-                    <StackPanel Orientation="Horizontal">
-                        <RadioButton x:Name="LangEn" Content="English" GroupName="Lang" Tag="en-US" Checked="Language_Checked" Margin="0,0,24,0"/>
-                        <RadioButton x:Name="LangZh" Content="中文" GroupName="Lang" Tag="zh-CN" Checked="Language_Checked"/>
+        <StackPanel MaxWidth="640" HorizontalAlignment="Center" VerticalAlignment="Top">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <ui:Card Grid.Column="0" Margin="0,0,6,0" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource LabelLanguage}" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,12"/>
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton x:Name="LangEn" Content="English" GroupName="Lang" Tag="en-US" Checked="Language_Checked" Margin="0,0,24,0"/>
+                            <RadioButton x:Name="LangZh" Content="中文" GroupName="Lang" Tag="zh-CN" Checked="Language_Checked"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
-            </ui:Card>
-            <ui:Card Margin="0,0,0,12" Padding="16">
-                <StackPanel>
-                    <TextBlock Text="{DynamicResource LabelTheme}" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,12"/>
-                    <StackPanel Orientation="Horizontal">
-                        <RadioButton x:Name="ThemeLight" Content="{DynamicResource ThemeLight}" GroupName="Theme" Tag="Light" Checked="Theme_Checked" Margin="0,0,24,0"/>
-                        <RadioButton x:Name="ThemeDark" Content="{DynamicResource ThemeDark}" GroupName="Theme" Tag="Dark" Checked="Theme_Checked"/>
+                </ui:Card>
+                <ui:Card Grid.Column="1" Margin="6,0,0,0" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource LabelTheme}" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,12"/>
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton x:Name="ThemeLight" Content="{DynamicResource ThemeLight}" GroupName="Theme" Tag="Light" Checked="Theme_Checked" Margin="0,0,24,0"/>
+                            <RadioButton x:Name="ThemeDark" Content="{DynamicResource ThemeDark}" GroupName="Theme" Tag="Dark" Checked="Theme_Checked"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
-            </ui:Card>
+                </ui:Card>
+            </Grid>
         </StackPanel>
     </Grid>
 </Page>
