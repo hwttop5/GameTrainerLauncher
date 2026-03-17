@@ -34,6 +34,7 @@
             <SolidColorBrush x:Key="SecondaryTextBrush" Color="#808080" />
             <SolidColorBrush x:Key="CardBackgroundBrush" Color="#252525" />
             <SolidColorBrush x:Key="CardBorderBrush" Color="#3a3a3a" />
+            <SolidColorBrush x:Key="ListItemHoverBrush" Color="#2d2d2d" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
