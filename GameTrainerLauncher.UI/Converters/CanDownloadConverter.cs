@@ -6,8 +6,7 @@ using GameTrainerLauncher.Core.Entities;
 namespace GameTrainerLauncher.UI.Converters;
 
 /// <summary>
-/// MultiValueConverter: (Game, CurrentDownloadingGameId).
-/// Returns true when the download button should be enabled: has trainer, not downloaded, and this row is not the one currently downloading.
+/// MultiValueConverter: (Game, CurrentDownloadingGame). Enable when no download in progress or this row is not the one downloading (by reference).
 /// </summary>
 public class CanDownloadConverter : IMultiValueConverter
 {
@@ -18,9 +17,9 @@ public class CanDownloadConverter : IMultiValueConverter
         if (game?.MatchedTrainer == null) return false;
         if (game.MatchedTrainer.IsDownloaded) return false;
         if (values[1] == null || values[1] == System.Windows.DependencyProperty.UnsetValue) return true;
-        var currentGameId = values[1] as int?;
-        if (currentGameId == null) return true;
-        return game.Id != currentGameId.Value;
+        var current = values[1] as Game;
+        if (current == null) return true;
+        return !ReferenceEquals(game, current);
     }
 
     public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

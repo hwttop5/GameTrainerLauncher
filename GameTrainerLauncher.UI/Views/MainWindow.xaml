@@ -12,7 +12,6 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" MinHeight="36"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -23,27 +22,7 @@
              </ui:TitleBar.Icon>
         </ui:TitleBar>
 
-        <!-- Top search bar: centered at top of app -->
-        <Grid Grid.Row="1" Margin="8,6" Background="Transparent" IsHitTestVisible="True" Panel.ZIndex="1"
-              HorizontalAlignment="Center">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="320"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <ui:TextBox Grid.Column="0" Focusable="True"
-                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                        PlaceholderText="{DynamicResource SearchPlaceholder}"
-                        Width="320" VerticalAlignment="Center" Margin="0,0,8,0">
-                <ui:TextBox.InputBindings>
-                    <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
-                </ui:TextBox.InputBindings>
-            </ui:TextBox>
-            <ui:Button Grid.Column="1" Content="{DynamicResource BtnSearch}" 
-                       Command="{Binding SearchCommand}" 
-                       Appearance="Primary" VerticalAlignment="Center"/>
-        </Grid>
-
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="200"/>
                 <ColumnDefinition Width="*"/>
@@ -68,8 +47,31 @@
                         Appearance="{Binding IsSettingsSelected, Converter={StaticResource BoolToAppearanceConverter}}"/>
             </StackPanel>
 
-            <!-- Content Area -->
-            <Frame x:Name="MainFrame" Grid.Column="1" NavigationUIVisibility="Hidden" Margin="10" Background="{DynamicResource ApplicationBackgroundBrush}"/>
+            <!-- Content Area: search bar centered in this column, then frame -->
+            <Grid Grid.Column="1" Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0" Margin="0,0,0,8" HorizontalAlignment="Center" IsHitTestVisible="True" Panel.ZIndex="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="320"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBox Grid.Column="0" Focusable="True"
+                                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                PlaceholderText="{DynamicResource SearchPlaceholder}"
+                                Width="320" VerticalAlignment="Center" Margin="0,0,8,0">
+                        <ui:TextBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
+                        </ui:TextBox.InputBindings>
+                    </ui:TextBox>
+                    <ui:Button Grid.Column="1" Content="{DynamicResource BtnSearch}"
+                               Command="{Binding SearchCommand}"
+                               Appearance="Primary" VerticalAlignment="Center"/>
+                </Grid>
+                <Frame x:Name="MainFrame" Grid.Row="1" NavigationUIVisibility="Hidden" Background="{DynamicResource ApplicationBackgroundBrush}"/>
+            </Grid>
         </Grid>
     </Grid>
 </ui:FluentWindow>

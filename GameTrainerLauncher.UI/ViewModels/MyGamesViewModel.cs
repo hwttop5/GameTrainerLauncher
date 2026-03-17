@@ -18,13 +18,13 @@ public partial class MyGamesViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<Game> _games = new();
 
-    /// <summary>When set, only this game row's download button is disabled (by Game.Id, so each row is independent).</summary>
+    /// <summary>When set, only this Game row's download button is disabled (by reference, no shared state).</summary>
     [ObservableProperty]
-    private int? _currentDownloadingGameId;
+    private Game? _currentDownloadingGame;
 
-    /// <summary>When set, only this game row's launch button shows loading/disabled (by Game.Id).</summary>
+    /// <summary>When set, only this Game row's launch button shows loading/disabled.</summary>
     [ObservableProperty]
-    private int? _currentLaunchingGameId;
+    private Game? _currentLaunchingGame;
 
     public MyGamesViewModel(AppDbContext dbContext, ITrainerManager trainerManager, IScraperService scraperService)
     {
@@ -125,7 +125,7 @@ public partial class MyGamesViewModel : ObservableObject
              return;
         }
 
-        CurrentLaunchingGameId = game.Id;
+        CurrentLaunchingGame = game;
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
         try
         {
@@ -150,7 +150,7 @@ public partial class MyGamesViewModel : ObservableObject
         finally
         {
             game.MatchedTrainer.IsLoading = false;
-            CurrentLaunchingGameId = null;
+            _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(() => CurrentLaunchingGame = null);
         }
     }
 
@@ -253,7 +253,7 @@ public partial class MyGamesViewModel : ObservableObject
         if (game.MatchedTrainer != null)
         {
             var trainer = game.MatchedTrainer;
-            CurrentDownloadingGameId = game.Id;
+            CurrentDownloadingGame = game;
             trainer.IsDownloading = true;
             trainer.DownloadProgress = 0;
 
@@ -304,7 +304,7 @@ public partial class MyGamesViewModel : ObservableObject
             finally
             {
                 trainer.IsDownloading = false;
-                CurrentDownloadingGameId = null;
+                _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(() => CurrentDownloadingGame = null);
             }
         }
     }
