@@ -50,4 +50,7 @@
     <system:String x:Key="MsgErrorWithDetail">Error: {0}</system:String>
     <system:String x:Key="MsgScanReportBody">Scan completed with errors:&#x0a;{0}</system:String>
     <system:String x:Key="MsgNavigationError">Navigation error: {0}</system:String>
+    <system:String x:Key="MsgNoGamesTitle">No Games</system:String>
+    <system:String x:Key="MsgNoGamesDescription">Your library is empty. Explore popular games to add games!</system:String>
+    <system:String x:Key="BtnExplorePopular">Explore Popular Games</system:String>
 </ResourceDictionary>

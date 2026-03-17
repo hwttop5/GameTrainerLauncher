@@ -2,7 +2,7 @@
 
 | [中文版](README.md)
 
-Tired of manually downloading and managing lots of game trainer .exe files, and don’t want to pay for platforms like flyy.cn or wemod? Try this Windows desktop app based on [FlingTrainer](https://flingtrainer.com): browse, search, download, and launch trainers, and manage your game launcher with ease.
+Tired of manually downloading and managing lots of game trainer .exe files, and don't want to pay for platforms like flyy.cn or wemod? Try this Windows desktop app based on [FlingTrainer](https://flingtrainer.com): browse, search, download, and launch trainers, and manage your game trainers with ease.
 
 ---
 
@@ -10,7 +10,7 @@ Tired of manually downloading and managing lots of game trainer .exe files, and 
 
 - **Search**: Search FlingTrainer by game name (English); add results to library; multiple simultaneous adds with per-card state.
 - **Popular Games**: Fetches popular trainers from FlingTrainer; add to library with one click (download + add), progress bar and timeout (1 min).
-- **My Library**: List of added trainers; launch or remove; covers are checked and fetched when entering the page; download missing trainers from this page.
+- **My Library**: List of added trainers; launch or remove; covers are checked and fetched when entering the page; download missing trainers from this page; displays a friendly no-data prompt when the library is empty.
 - **Settings**: Language (Chinese/English), theme (light/dark).
 
 ---
@@ -61,9 +61,17 @@ Trainers and data live under `Data` next to the executable (e.g. `Data/Trainers`
 
 ---
 
-## License
+## Building the exe installer
 
-This project is licensed under the **[GNU General Public License v3.0 (GPL-3.0)](LICENSE)**. Use, modification, and distribution must comply with the license.
+This repo only supports building a single-file setup (.exe) with [Inno Setup](https://jrsoftware.org/isinfo.php). **Install Inno Setup 6 first.**
+
+**One-step build** (from repo root):
+```powershell
+.\Installer\build-installer.ps1
+```
+The setup executable is created at `Installer\Output\GameTrainerLauncher_Setup_1.0.0.exe`.
+
+Alternatively: run `dotnet publish GameTrainerLauncher.UI -p:PublishProfile=FolderProfile`, then open `Installer\GameTrainerLauncher.iss` in Inno Setup and compile.
 
 ---
 
@@ -71,3 +79,9 @@ This project is licensed under the **[GNU General Public License v3.0 (GPL-3.0)]
 
 - Trainer availability and content depend on FlingTrainer; if the site structure changes, the scraper may need updates.
 - This tool is for learning and personal use only; please comply with local laws and game/platform terms.
+
+---
+
+## License
+
+This project is licensed under the **[GNU General Public License v3.0 (GPL-3.0)](LICENSE)**. Use, modification, and distribution must comply with the license.

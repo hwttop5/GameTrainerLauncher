@@ -52,11 +52,14 @@ public partial class PopularGamesViewModel : ObservableObject
         {
             await using var scope = _scopeFactory.CreateAsyncScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var existingNames = (await db.Games.Select(g => g.Name).ToListAsync()).ToHashSet();
+            var existingNames = await db.Games.Select(g => g.Name).ToListAsync();
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 foreach (var t in Trainers)
-                    t.IsDownloaded = existingNames.Contains(t.Title);
+                {
+                    t.IsDownloaded = existingNames.Any(name => 
+                        string.Equals(name.Trim(), t.Title.Trim(), StringComparison.OrdinalIgnoreCase));
+                }
             });
         }
         catch { /* ignore */ }
@@ -76,13 +79,14 @@ public partial class PopularGamesViewModel : ObservableObject
             
             // Get existing game names to check for duplicates/added status
             await _dbContext.Database.EnsureCreatedAsync();
-            var existingNames = _dbContext.Games.Select(g => g.Name).ToHashSet();
+            var existingNames = _dbContext.Games.Select(g => g.Name).ToList();
 
             foreach (var t in data) 
             {
-                // Simple check: if game name exists, mark as added (UI can disable button)
-                // Note: Trainer entity might need an IsAdded property for UI binding
-                if (existingNames.Contains(t.Title))
+                // Use case-insensitive comparison to check if game is already added
+                bool isAdded = existingNames.Any(name => 
+                    string.Equals(name.Trim(), t.Title.Trim(), StringComparison.OrdinalIgnoreCase));
+                if (isAdded)
                 {
                     t.IsDownloaded = true; // Reusing this flag for "Added" status in UI for now, or add a new property
                 }
@@ -113,10 +117,12 @@ public partial class PopularGamesViewModel : ObservableObject
             else
             {
                 await _dbContext.Database.EnsureCreatedAsync();
-                var existingNames = _dbContext.Games.Select(g => g.Name).ToHashSet();
+                var existingNames = _dbContext.Games.Select(g => g.Name).ToList();
                 foreach (var t in data)
                 {
-                    if (existingNames.Contains(t.Title))
+                    bool isAdded = existingNames.Any(name => 
+                        string.Equals(name.Trim(), t.Title.Trim(), StringComparison.OrdinalIgnoreCase));
+                    if (isAdded)
                     {
                         t.IsDownloaded = true; 
                     }

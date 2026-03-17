@@ -4,7 +4,7 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         Title="{DynamicResource AppTitle}" Height="768" Width="1024" MinWidth="920"
         WindowStartupLocation="CenterScreen"
-        Icon="/Assets/logo.png"
+        Icon="/Assets/logo.ico"
         WindowBackdropType="None"
         Background="{DynamicResource ApplicationBackgroundBrush}"
         ExtendsContentIntoTitleBar="True">
@@ -18,7 +18,7 @@
         <!-- Title bar: icon 16x16 to fit without clipping -->
         <ui:TitleBar Title="{DynamicResource AppTitle}" Grid.Row="0">
              <ui:TitleBar.Icon>
-                 <ui:ImageIcon Source="/Assets/logo.png" Width="16" Height="16"/>
+                 <ui:ImageIcon Source="/Assets/logo.ico" Width="16" Height="16"/>
              </ui:TitleBar.Icon>
         </ui:TitleBar>
 

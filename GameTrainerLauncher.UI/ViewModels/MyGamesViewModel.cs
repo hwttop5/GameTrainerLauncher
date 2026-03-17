@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GameTrainerLauncher.Core.Entities;
 using GameTrainerLauncher.UI;
+using GameTrainerLauncher.UI.Services;
 using GameTrainerLauncher.Core.Interfaces;
 using GameTrainerLauncher.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,7 @@ public partial class MyGamesViewModel : ObservableObject
     private readonly AppDbContext _dbContext;
     private readonly ITrainerManager _trainerManager;
     private readonly IScraperService _scraperService;
+    private readonly INavigationService _navigationService;
 
     [ObservableProperty]
     private ObservableCollection<Game> _games = new();
@@ -28,12 +30,40 @@ public partial class MyGamesViewModel : ObservableObject
     [ObservableProperty]
     private Game? _currentLaunchingGame;
 
-    public MyGamesViewModel(AppDbContext dbContext, ITrainerManager trainerManager, IScraperService scraperService)
+    /// <summary>Whether there are any games in the collection.</summary>
+    public bool HasGames => Games.Count > 0;
+
+    /// <summary>True after the first LoadGamesAsync has completed (avoids showing empty state while loading).</summary>
+    [ObservableProperty]
+    private bool _isDataLoaded;
+
+    /// <summary>Only show "暂无游戏" when we're on My Games and load finished with no data.</summary>
+    public bool ShowNoGamesEmptyState => IsDataLoaded && !HasGames;
+
+    partial void OnGamesChanged(ObservableCollection<Game> value)
+    {
+        OnPropertyChanged(nameof(HasGames));
+        OnPropertyChanged(nameof(ShowNoGamesEmptyState));
+    }
+
+    partial void OnIsDataLoadedChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowNoGamesEmptyState));
+    }
+
+    public MyGamesViewModel(AppDbContext dbContext, ITrainerManager trainerManager, IScraperService scraperService, INavigationService navigationService)
     {
         _dbContext = dbContext;
         _trainerManager = trainerManager;
         _scraperService = scraperService;
+        _navigationService = navigationService;
         // 加载与封面拉取由页面 Loaded 时统一触发，保证每次进入「我的游戏」都会检查并补封面
+    }
+
+    [RelayCommand]
+    public void NavigateToPopular()
+    {
+        _navigationService.NavigateTo("Popular");
     }
 
     [RelayCommand]
@@ -113,9 +143,15 @@ public partial class MyGamesViewModel : ObservableObject
                 }
                 catch { /* ignore per-game fetch */ }
             }
+            
+            IsDataLoaded = true;
+            OnPropertyChanged(nameof(HasGames));
+            OnPropertyChanged(nameof(ShowNoGamesEmptyState));
         }
         catch (Exception ex)
         {
+             IsDataLoaded = true;
+             OnPropertyChanged(nameof(ShowNoGamesEmptyState));
              var title = GetString("MsgErrorTitle");
              var msg = GetString("MsgDatabaseError") + " " + ex.Message;
              System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
@@ -202,12 +238,17 @@ public partial class MyGamesViewModel : ObservableObject
                 var popularVM = (System.Windows.Application.Current as App)?.Services.GetService(typeof(PopularGamesViewModel)) as PopularGamesViewModel;
                 if (popularVM != null)
                 {
-                    var trainer = popularVM.Trainers.FirstOrDefault(t => t.Title == game.Name); // Assuming Name matches Title
+                    // Use case-insensitive matching and trim whitespace to handle slight differences
+                    var trainer = popularVM.Trainers.FirstOrDefault(t => 
+                        string.Equals(t.Title.Trim(), game.Name.Trim(), StringComparison.OrdinalIgnoreCase));
                     if (trainer != null)
                     {
                         trainer.IsDownloaded = false;
                     }
                 }
+                
+                OnPropertyChanged(nameof(HasGames));
+                OnPropertyChanged(nameof(ShowNoGamesEmptyState));
             }
             catch (Exception ex)
             {

@@ -37,6 +37,7 @@ public partial class MainViewModel : ObservableObject
         _scraperService = scraperService;
         _navigationService = navigationService;
         _serviceProvider = serviceProvider;
+        _navigationService.Navigated += (_, key) => CurrentPageKey = key;
     }
 
     [RelayCommand]

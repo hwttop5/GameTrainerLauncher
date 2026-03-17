@@ -2,7 +2,7 @@
 
 | [English Version](README.en.md)
 
-受够了手动下载管理众多的游戏修改器.exe文件，又不想在 flyy.cn 和 wemod 这种平台上充会员？试试这款基于 [FlingTrainer](https://flingtrainer.com) 的 Windows 桌面应用：浏览、搜索、下载并启动游戏修改器，轻松管理你的游戏启动器。
+受够了手动下载管理众多的游戏修改器.exe文件，又不想在 flyy.cn 和 wemod 这种平台上充会员？试试这款基于 [FlingTrainer](https://flingtrainer.com) 的 Windows 桌面应用：浏览、搜索、下载并启动游戏修改器，轻松管理你的游戏修改器。
 
 ---
 
@@ -10,7 +10,7 @@
 
 - **搜索**：按游戏英文名检索 FlingTrainer，结果可「下载并添加」到我的游戏；支持多任务同时添加、每张卡片独立状态。
 - **热门游戏**：拉取 FlingTrainer 热门修改器列表，一键「下载并添加」到我的游戏，带进度条与超时提示。
-- **我的游戏**：已添加的修改器列表，支持启动、移除；进入页面时自动检查并补全封面；可在此页对未下载项单独下载。
+- **我的游戏**：已添加的修改器列表，支持启动、移除；进入页面时自动检查并补全封面；可在此页对未下载项单独下载；当游戏库为空时显示友好的无数据提示。
 - **设置**：语言（中文/英文）、主题（亮色/暗色）。
 
 ---
@@ -61,9 +61,17 @@
 
 ---
 
-## 开源协议
+## 打包为 exe 安装包
 
-本项目采用 **[GNU General Public License v3.0 (GPL-3.0)](LICENSE)** 开源协议。使用、修改与分发须遵守该协议。
+本仓库仅支持通过 [Inno Setup](https://jrsoftware.org/isinfo.php) 生成单文件安装包（.exe）。**需先安装 Inno Setup 6**。
+
+**一键打包**（在仓库根目录执行）：
+```powershell
+.\Installer\build-installer.ps1
+```
+安装包生成在 `Installer\Output\GameTrainerLauncher_Setup_1.0.0.exe`。
+
+也可分步执行：先 `dotnet publish GameTrainerLauncher.UI -p:PublishProfile=FolderProfile`，再用 Inno Setup 打开 `Installer\GameTrainerLauncher.iss` 编译。
 
 ---
 
@@ -71,3 +79,9 @@
 
 - 修改器内容与可用性依赖 FlingTrainer 站点；若站点结构调整，爬虫可能需要更新。
 - 本工具仅供学习与个人使用，请遵守当地法律与游戏/平台条款。
+
+---
+
+## 开源协议
+
+本项目采用 **[GNU General Public License v3.0 (GPL-3.0)](LICENSE)** 开源协议。使用、修改与分发须遵守该协议。
