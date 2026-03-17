@@ -99,6 +99,9 @@ public class ThemeService : IThemeService
         app.Resources["CardBackgroundBrush"] = new SolidColorBrush(cardBgColor);
         app.Resources["CardBorderBrush"] = new SolidColorBrush(cardBorderColor);
         app.Resources["ListItemHoverBrush"] = new SolidColorBrush(listItemHoverColor);
+        // 搜索按钮固定蓝底白字，不随主题变
+        app.Resources["SearchButtonBackgroundBrush"] = new SolidColorBrush(Color.FromRgb(0x00, 0x78, 0xD4));
+        app.Resources["SearchButtonForegroundBrush"] = new SolidColorBrush(Colors.White);
     }
 
     public void SetLanguage(string languageCode)

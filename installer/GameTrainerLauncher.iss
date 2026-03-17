@@ -12,6 +12,8 @@ AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ; 卸载列表中只显示应用名，不显示 "version x.x.x"
 AppVerName={#MyAppName}
+; 进一步强制卸载列表标题（DisplayName）只显示应用名
+UninstallDisplayName={#MyAppName}
 AppPublisher=GameTrainerLauncher
 DefaultDirName={autopf}\GameTrainerLauncher
 DefaultGroupName={#MyAppName}

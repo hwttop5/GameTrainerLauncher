@@ -66,9 +66,14 @@
                             <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
                         </ui:TextBox.InputBindings>
                     </ui:TextBox>
-                    <ui:Button Grid.Column="1" Content="{DynamicResource BtnSearch}"
+                    <!-- 搜索按钮：与左侧菜单选中态一致（蓝底白字） -->
+                    <ui:Button x:Name="SearchButton"
+                               Grid.Column="1"
+                               Content="{DynamicResource BtnSearch}"
                                Command="{Binding SearchCommand}"
-                               Appearance="Primary" VerticalAlignment="Center"/>
+                               Style="{StaticResource BluePrimaryButtonStyle}"
+                               Padding="16,6"
+                               VerticalAlignment="Center"/>
                 </Grid>
                 <Frame x:Name="MainFrame" Grid.Row="1" NavigationUIVisibility="Hidden" Background="{DynamicResource ApplicationBackgroundBrush}"/>
             </Grid>
