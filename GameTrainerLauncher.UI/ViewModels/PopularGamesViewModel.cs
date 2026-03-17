@@ -20,10 +20,6 @@ public partial class PopularGamesViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<Trainer> _trainers = new();
 
-    /// <summary>When set, only this card's Add button shows loading (by reference).</summary>
-    [ObservableProperty]
-    private Trainer? _currentAddingTrainer;
-
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLoadMoreVisible))]
     private bool _isLoading;
@@ -125,12 +121,12 @@ public partial class PopularGamesViewModel : ObservableObject
                 System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 return;
             }
-            CurrentAddingTrainer = trainer;
+            trainer.IsAdding = true;
             _ = RunDownloadThenAddAsync(trainer);
         }
         catch (Exception ex)
         {
-            CurrentAddingTrainer = null;
+            trainer.IsAdding = false;
             var msg = (string)System.Windows.Application.Current.FindResource("MsgAddFailed") + " " + ex.Message;
             var title = (string)System.Windows.Application.Current.FindResource("MsgErrorTitle");
             System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
@@ -177,7 +173,7 @@ public partial class PopularGamesViewModel : ObservableObject
             {
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    CurrentAddingTrainer = null;
+                    trainer.IsAdding = false;
                     System.Windows.MessageBox.Show(
                         (string)System.Windows.Application.Current.FindResource("MsgDownloadFailed"),
                         (string)System.Windows.Application.Current.FindResource("MsgErrorTitle"),
@@ -186,9 +182,10 @@ public partial class PopularGamesViewModel : ObservableObject
                 return;
             }
 
-            // 模拟进度：多数下载无 Content-Length，真实进度不可用，用每秒约 5% 的模拟进度，下载完成后显示 100%
+            // 模拟进度 + 1 分钟下载超时
             trainer.DownloadProgress = 0;
             progressCts = new CancellationTokenSource();
+            var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
             var progressTask = RunSimulatedProgressAsync(trainer, progressCts.Token);
 
             var progress = new Progress<double>(p =>
@@ -198,7 +195,27 @@ public partial class PopularGamesViewModel : ObservableObject
                     if (p > trainer.DownloadProgress) trainer.DownloadProgress = Math.Min(99, p);
                 });
             });
-            var success = await _trainerManager.DownloadTrainerAsync(newTrainer, progress);
+
+            bool success;
+            try
+            {
+                success = await _trainerManager.DownloadTrainerAsync(newTrainer, progress, timeoutCts.Token);
+            }
+            catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
+            {
+                progressCts.Cancel();
+                try { await progressTask; } catch (OperationCanceledException) { }
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    trainer.IsAdding = false;
+                    trainer.DownloadProgress = 0;
+                    System.Windows.MessageBox.Show(
+                        (string)System.Windows.Application.Current.FindResource("MsgDownloadTimeout"),
+                        (string)System.Windows.Application.Current.FindResource("MsgErrorTitle"),
+                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                });
+                return;
+            }
 
             progressCts.Cancel();
             try { await progressTask; } catch (OperationCanceledException) { }
@@ -225,7 +242,7 @@ public partial class PopularGamesViewModel : ObservableObject
             {
                 trainer.IsDownloaded = success;
                 trainer.DownloadProgress = 0;
-                CurrentAddingTrainer = null;
+                trainer.IsAdding = false;
                 var successTitle = (string)System.Windows.Application.Current.FindResource("MsgSuccessTitle");
                 var successMsg = success
                     ? (string)System.Windows.Application.Current.FindResource("MsgAddedToMyGames")
@@ -240,7 +257,7 @@ public partial class PopularGamesViewModel : ObservableObject
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 trainer.DownloadProgress = 0;
-                CurrentAddingTrainer = null;
+                trainer.IsAdding = false;
                 var msg = (string)System.Windows.Application.Current.FindResource("MsgAddFailed") + " " + ex.Message;
                 var title = (string)System.Windows.Application.Current.FindResource("MsgErrorTitle");
                 System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);

@@ -58,13 +58,7 @@
                                     <Setter Property="IsEnabled" Value="False"/>
                                     <Setter Property="Content" Value="{DynamicResource StatusAdded}"/>
                                 </DataTrigger>
-                                <DataTrigger Value="True">
-                                    <DataTrigger.Binding>
-                                        <MultiBinding Converter="{StaticResource IsCurrentAddingConverter}">
-                                            <Binding/>
-                                            <Binding Path="DataContext.CurrentAddingTrainer" RelativeSource="{RelativeSource AncestorType=Page}"/>
-                                        </MultiBinding>
-                                    </DataTrigger.Binding>
+                                <DataTrigger Binding="{Binding IsAdding}" Value="True">
                                     <Setter Property="IsEnabled" Value="False"/>
                                     <Setter Property="Content" Value="{DynamicResource StatusAdding}"/>
                                 </DataTrigger>
@@ -72,24 +66,8 @@
                         </Style>
                     </ui:Button.Style>
                 </ui:Button>
-                <ProgressBar Value="{Binding DownloadProgress}" Maximum="100" Height="6" Margin="0,6,0,0">
-                    <ProgressBar.Style>
-                        <Style TargetType="ProgressBar" BasedOn="{StaticResource {x:Type ProgressBar}}">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                            <Style.Triggers>
-                                <DataTrigger Value="True">
-                                    <DataTrigger.Binding>
-                                        <MultiBinding Converter="{StaticResource IsCurrentAddingConverter}">
-                                            <Binding/>
-                                            <Binding Path="DataContext.CurrentAddingTrainer" RelativeSource="{RelativeSource AncestorType=Page}"/>
-                                        </MultiBinding>
-                                    </DataTrigger.Binding>
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </ProgressBar.Style>
-                </ProgressBar>
+                <ProgressBar Value="{Binding DownloadProgress}" Maximum="100" Height="6" Margin="0,6,0,0"
+                             Visibility="{Binding IsAdding, Converter={StaticResource BooleanToVisibilityConverter}}"/>
             </StackPanel>
         </Grid>
     </ui:Card>

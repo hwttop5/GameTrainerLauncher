@@ -28,7 +28,8 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Trainer>()
             .Ignore(t => t.IsLoading)
             .Ignore(t => t.IsDownloading)
-            .Ignore(t => t.DownloadProgress);
+            .Ignore(t => t.DownloadProgress)
+            .Ignore(t => t.IsAdding);
     }
 
     /// <summary>
