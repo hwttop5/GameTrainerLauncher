@@ -13,6 +13,7 @@
     <system:String x:Key="BtnLaunch">Launch</system:String>
     <system:String x:Key="StatusReady">Ready</system:String>
     <system:String x:Key="StatusDownloading">Downloading...</system:String>
+    <system:String x:Key="StatusLaunching">Launching...</system:String>
     <system:String x:Key="LabelLanguage">Language</system:String>
     <system:String x:Key="LabelTheme">Theme</system:String>
     <system:String x:Key="ThemeLight">Light</system:String>

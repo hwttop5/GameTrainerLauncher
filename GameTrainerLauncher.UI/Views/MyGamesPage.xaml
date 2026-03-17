@@ -28,14 +28,32 @@
                         
                         <Border Grid.Column="0" Width="48" Height="48" CornerRadius="4" Background="{DynamicResource CoverPlaceholderBrush}" ClipToBounds="True">
                             <Grid>
-                                <ui:SymbolIcon Symbol="Games24" FontSize="24" Foreground="{DynamicResource SecondaryTextBrush}"
-                                               Visibility="{Binding Converter={StaticResource GameCoverPlaceholderVisibilityConverter}}"/>
-                                <Image Source="{Binding Converter={StaticResource GameCoverUrlConverter}}" Stretch="UniformToFill">
+                                <ui:SymbolIcon Symbol="Games24" FontSize="24" Foreground="{DynamicResource SecondaryTextBrush}">
+                                    <ui:SymbolIcon.Visibility>
+                                        <MultiBinding Converter="{StaticResource GameCoverPlaceholderFromPartsConverter}">
+                                            <Binding Path="MatchedTrainer.ImageUrl"/>
+                                            <Binding Path="CoverUrl"/>
+                                        </MultiBinding>
+                                    </ui:SymbolIcon.Visibility>
+                                </ui:SymbolIcon>
+                                <Image Stretch="UniformToFill">
+                                    <Image.Source>
+                                        <MultiBinding Converter="{StaticResource GameCoverFromPartsConverter}">
+                                            <Binding Path="MatchedTrainer.ImageUrl"/>
+                                            <Binding Path="CoverUrl"/>
+                                        </MultiBinding>
+                                    </Image.Source>
                                     <Image.Style>
                                         <Style TargetType="Image">
                                             <Setter Property="Visibility" Value="Visible"/>
                                             <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Converter={StaticResource GameCoverUrlConverter}}" Value="{x:Null}">
+                                                <DataTrigger Value="{x:Null}">
+                                                    <DataTrigger.Binding>
+                                                        <MultiBinding Converter="{StaticResource GameCoverFromPartsConverter}">
+                                                            <Binding Path="MatchedTrainer.ImageUrl"/>
+                                                            <Binding Path="CoverUrl"/>
+                                                        </MultiBinding>
+                                                    </DataTrigger.Binding>
                                                     <Setter Property="Visibility" Value="Collapsed"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
@@ -113,7 +131,7 @@
                                                         </MultiBinding>
                                                     </DataTrigger.Binding>
                                                     <Setter Property="IsEnabled" Value="False"/>
-                                                    <Setter Property="Content" Value="{DynamicResource StatusDownloading}"/>
+                                                    <Setter Property="Content" Value="{DynamicResource StatusLaunching}"/>
                                                 </DataTrigger>
                                                 <DataTrigger Binding="{Binding MatchedTrainer}" Value="{x:Null}">
                                                      <Setter Property="IsEnabled" Value="False"/>

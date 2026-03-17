@@ -151,11 +151,12 @@ public partial class PopularGamesViewModel : ObservableObject
                 LastUpdated = trainer.LastUpdated,
                 IsDownloaded = false
             };
-            if (string.IsNullOrWhiteSpace(newTrainer.DownloadUrl) && !string.IsNullOrWhiteSpace(newTrainer.PageUrl))
+            if (!string.IsNullOrWhiteSpace(newTrainer.PageUrl) &&
+                (string.IsNullOrWhiteSpace(newTrainer.DownloadUrl) || string.IsNullOrWhiteSpace(newTrainer.ImageUrl)))
             {
                 var details = await _scraperService.GetTrainerDetailsAsync(newTrainer.PageUrl);
-                newTrainer.DownloadUrl = details.DownloadUrl;
-                newTrainer.LastUpdated = details.LastUpdated;
+                if (string.IsNullOrWhiteSpace(newTrainer.DownloadUrl)) newTrainer.DownloadUrl = details.DownloadUrl;
+                if (details.LastUpdated != null) newTrainer.LastUpdated = details.LastUpdated;
                 if (!string.IsNullOrEmpty(details.ImageUrl)) newTrainer.ImageUrl = details.ImageUrl;
             }
             if (string.IsNullOrWhiteSpace(newTrainer.DownloadUrl))
@@ -182,7 +183,7 @@ public partial class PopularGamesViewModel : ObservableObject
                     Name = trainer.Title,
                     MatchedTrainer = newTrainer,
                     AddedDate = DateTime.Now,
-                    CoverUrl = trainer.ImageUrl
+                    CoverUrl = newTrainer.ImageUrl ?? trainer.ImageUrl
                 };
                 _dbContext.Trainers.Add(newTrainer);
                 _dbContext.Games.Add(game);

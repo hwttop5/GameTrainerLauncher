@@ -17,6 +17,8 @@
             <converters:BoolToAppearanceConverter x:Key="BoolToAppearanceConverter" />
             <converters:GameCoverUrlConverter x:Key="GameCoverUrlConverter" />
             <converters:GameCoverPlaceholderVisibilityConverter x:Key="GameCoverPlaceholderVisibilityConverter" />
+            <converters:GameCoverFromPartsConverter x:Key="GameCoverFromPartsConverter" />
+            <converters:GameCoverPlaceholderFromPartsConverter x:Key="GameCoverPlaceholderFromPartsConverter" />
             <converters:CanDownloadConverter x:Key="CanDownloadConverter" />
             <converters:IsCurrentDownloadingConverter x:Key="IsCurrentDownloadingConverter" />
             <converters:CanLaunchConverter x:Key="CanLaunchConverter" />
