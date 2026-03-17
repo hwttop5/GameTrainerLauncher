@@ -26,6 +26,11 @@
             <SolidColorBrush x:Key="ApplicationBackgroundBrush" Color="#1e2021" />
             <SolidColorBrush x:Key="WindowBackground" Color="#1e2021" />
             <Color x:Key="WindowBackgroundColor">#1e2021</Color>
+            <!-- 主题相关：亮色主题下覆盖为浅色，暗色为深灰 -->
+            <SolidColorBrush x:Key="CoverPlaceholderBrush" Color="#2a2a2a" />
+            <SolidColorBrush x:Key="SecondaryTextBrush" Color="#808080" />
+            <SolidColorBrush x:Key="CardBackgroundBrush" Color="#252525" />
+            <SolidColorBrush x:Key="CardBorderBrush" Color="#3a3a3a" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -75,18 +75,26 @@ public class ThemeService : IThemeService
         SaveSettings();
     }
 
-    /// <summary>Update sidebar and window background brushes for light/dark theme.</summary>
+    /// <summary>Update sidebar, window and card-related brushes for light/dark theme.</summary>
     private static void ApplyThemeBrushes(ApplicationTheme theme)
     {
         var isLight = theme == ApplicationTheme.Light;
         var sidebarColor = isLight ? Color.FromRgb(0xf3, 0xf3, 0xf3) : Color.FromRgb(0x1e, 0x20, 0x21);
         var bgColor = isLight ? Color.FromRgb(0xfa, 0xfa, 0xfa) : Color.FromRgb(0x1e, 0x20, 0x21);
+        var coverPlaceholderColor = isLight ? Color.FromRgb(0xe8, 0xe8, 0xe8) : Color.FromRgb(0x2a, 0x2a, 0x2a);
+        var secondaryTextColor = isLight ? Color.FromRgb(0x60, 0x60, 0x60) : Color.FromRgb(0x80, 0x80, 0x80);
+        var cardBgColor = isLight ? Color.FromRgb(0xff, 0xff, 0xff) : Color.FromRgb(0x25, 0x25, 0x25);
+        var cardBorderColor = isLight ? Color.FromRgb(0xe0, 0xe0, 0xe0) : Color.FromRgb(0x3a, 0x3a, 0x3a);
         var app = Application.Current;
         if (app?.Resources == null) return;
         app.Resources["SystemControlBackgroundChromeMediumLowBrush"] = new SolidColorBrush(sidebarColor);
         app.Resources["ApplicationBackgroundBrush"] = new SolidColorBrush(bgColor);
         app.Resources["WindowBackground"] = new SolidColorBrush(bgColor);
         app.Resources["WindowBackgroundColor"] = bgColor;
+        app.Resources["CoverPlaceholderBrush"] = new SolidColorBrush(coverPlaceholderColor);
+        app.Resources["SecondaryTextBrush"] = new SolidColorBrush(secondaryTextColor);
+        app.Resources["CardBackgroundBrush"] = new SolidColorBrush(cardBgColor);
+        app.Resources["CardBorderBrush"] = new SolidColorBrush(cardBorderColor);
     }
 
     public void SetLanguage(string languageCode)

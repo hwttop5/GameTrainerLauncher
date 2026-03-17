@@ -11,23 +11,24 @@
         <ListView ItemsSource="{Binding Games}" SelectionMode="Single">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
-                    <Setter Property="Margin" Value="0,4"/>
-                    <Setter Property="Padding" Value="8"/>
+                    <Setter Property="Margin" Value="0,0"/>
+                    <Setter Property="Padding" Value="6"/>
                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                 </Style>
             </ListView.ItemContainerStyle>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Grid Margin="5">
+                    <Border Margin="2" Padding="12,6,12,6" Background="{DynamicResource CardBackgroundBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="6">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="60"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         
-                        <Border Grid.Column="0" Width="48" Height="48" CornerRadius="4" Background="#333" ClipToBounds="True">
+                        <Border Grid.Column="0" Width="48" Height="48" CornerRadius="4" Background="{DynamicResource CoverPlaceholderBrush}" ClipToBounds="True">
                             <Grid>
-                                <ui:SymbolIcon Symbol="Games24" FontSize="24" Foreground="Gray"
+                                <ui:SymbolIcon Symbol="Games24" FontSize="24" Foreground="{DynamicResource SecondaryTextBrush}"
                                                Visibility="{Binding Converter={StaticResource GameCoverPlaceholderVisibilityConverter}}"/>
                                 <Image Source="{Binding Converter={StaticResource GameCoverUrlConverter}}" Stretch="UniformToFill">
                                     <Image.Style>
@@ -46,7 +47,7 @@
                         
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
                             <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16"/>
-                            <TextBlock Foreground="Gray" FontSize="11" Margin="0,1,0,0">
+                            <TextBlock Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11" Margin="0,6,0,4">
                                 <TextBlock.Text>
                                     <Binding Path="MatchedTrainer.LastUpdated" StringFormat="{}{0:yyyy.MM.dd}" TargetNullValue="—"/>
                                 </TextBlock.Text>
@@ -117,12 +118,12 @@
                                     <ui:Button.Style>
                                         <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
                                             <Setter Property="Content" Value="{DynamicResource BtnLaunch}"/>
-                                            <Setter Property="Background" Value="#107C10"/>
+                                            <Setter Property="Background" Value="#0078D4"/>
                                             <Setter Property="Foreground" Value="White"/>
                                             <Setter Property="ToolTip" Value="{DynamicResource BtnLaunch}"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding MatchedTrainer.IsDownloaded}" Value="True">
-                                                    <Setter Property="Background" Value="#107C10"/>
+                                                    <Setter Property="Background" Value="#0078D4"/>
                                                     <Setter Property="Foreground" Value="White"/>
                                                 </DataTrigger>
                                                 <DataTrigger Value="True">
@@ -152,6 +153,7 @@
                             </StackPanel>
                         </Grid>
                     </Grid>
+                    </Border>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

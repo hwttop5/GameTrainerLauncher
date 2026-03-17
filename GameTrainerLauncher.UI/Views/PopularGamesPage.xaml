@@ -2,89 +2,33 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:controls="clr-namespace:GameTrainerLauncher.UI.Controls"
       Title="{DynamicResource NavPopular}">
     <Grid Margin="10">
-        <ui:ProgressRing IsIndeterminate="True" 
-                         Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" 
+        <ui:ProgressRing IsIndeterminate="True"
+                         Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
                          VerticalAlignment="Center" HorizontalAlignment="Center" Width="60" Height="60"/>
-        
+
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-             <StackPanel>
-                 <ItemsControl ItemsSource="{Binding Trainers}">
-                     <ItemsControl.ItemsPanel>
-                         <ItemsPanelTemplate>
-                             <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left"/>
-                         </ItemsPanelTemplate>
-                     </ItemsControl.ItemsPanel>
-                     <ItemsControl.ItemTemplate>
-                         <DataTemplate>
-                             <ui:Card Margin="10" Padding="0" Width="220" Height="295" VerticalAlignment="Top">
-                                 <Grid>
-                                     <Grid.RowDefinitions>
-                                         <RowDefinition Height="140"/>
-                                         <RowDefinition Height="95"/>
-                                         <RowDefinition Height="60"/>
-                                     </Grid.RowDefinitions>
-                                     
-                                    <!-- Cover Image Placeholder -->
-                                    <Border Grid.Row="0" Background="#333" CornerRadius="4,4,0,0" ClipToBounds="True">
-                                         <Grid>
-                                             <ui:SymbolIcon Symbol="Games24" FontSize="48" Foreground="Gray"
-                                                            Visibility="{Binding ImageUrl, Converter={StaticResource NullOrEmptyToVisibilityConverter}}"/>
-                                             <Image Source="{Binding ImageUrl}" Stretch="UniformToFill">
-                                                 <Image.Style>
-                                                     <Style TargetType="Image">
-                                                         <Setter Property="Visibility" Value="Visible"/>
-                                                         <Style.Triggers>
-                                                             <DataTrigger Binding="{Binding ImageUrl}" Value="{x:Null}">
-                                                                 <Setter Property="Visibility" Value="Collapsed"/>
-                                                             </DataTrigger>
-                                                             <DataTrigger Binding="{Binding ImageUrl}" Value="">
-                                                                 <Setter Property="Visibility" Value="Collapsed"/>
-                                                             </DataTrigger>
-                                                         </Style.Triggers>
-                                                     </Style>
-                                                 </Image.Style>
-                                             </Image>
-                                         </Grid>
-                                    </Border>
-                                     
-                                     <StackPanel Grid.Row="1" Margin="10,8,10,4" VerticalAlignment="Top">
-                                         <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" Height="60" TextTrimming="CharacterEllipsis"/>
-                                         <TextBlock Foreground="Gray" FontSize="11" Margin="0,4,0,0">
-                                         <TextBlock.Text>
-                                             <Binding Path="LastUpdated" StringFormat="{}{0:yyyy.MM.dd}" TargetNullValue="—"/>
-                                         </TextBlock.Text>
-                                     </TextBlock>
-                                     </StackPanel>
-                                     
-                                     <ui:Button Grid.Row="2" 
-                                                Command="{Binding DataContext.AddToMyGamesCommand, RelativeSource={RelativeSource AncestorType=Page}}" 
-                                                CommandParameter="{Binding}" 
-                                                Margin="10,4,10,10" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Appearance="Primary">
-                                         <ui:Button.Style>
-                                             <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
-                                                 <Setter Property="Content" Value="{DynamicResource BtnAdd}"/>
-                                                 <Style.Triggers>
-                                                     <DataTrigger Binding="{Binding IsDownloaded}" Value="True">
-                                                         <Setter Property="IsEnabled" Value="False"/>
-                                                         <Setter Property="Content" Value="{DynamicResource StatusAdded}"/>
-                                                     </DataTrigger>
-                                                 </Style.Triggers>
-                                             </Style>
-                                         </ui:Button.Style>
-                                     </ui:Button>
-                                 </Grid>
-                             </ui:Card>
-                         </DataTemplate>
-                     </ItemsControl.ItemTemplate>
-                 </ItemsControl>
-                 
-                 <ui:Button Content="{DynamicResource BtnLoadMore}" 
-                            Command="{Binding LoadMoreCommand}" 
+            <StackPanel>
+                <ItemsControl ItemsSource="{Binding Trainers}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <controls:TrainerCard/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <ui:Button Content="{DynamicResource BtnLoadMore}"
+                            Command="{Binding LoadMoreCommand}"
                             Visibility="{Binding IsLoadMoreVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                             HorizontalAlignment="Center" Margin="0,20" Appearance="Secondary" Width="200"/>
-             </StackPanel>
+            </StackPanel>
         </ScrollViewer>
     </Grid>
 </Page>
