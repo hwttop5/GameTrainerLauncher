@@ -135,8 +135,22 @@ public partial class SearchViewModel : ObservableObject
         }
     }
 
+    /// <summary>模拟进度：每秒约 +5%，上限 90%，用于无 Content-Length 的下载。</summary>
+    private async Task RunSimulatedProgressAsync(Trainer trainer, CancellationToken ct)
+    {
+        while (!ct.IsCancellationRequested && trainer.DownloadProgress < 90)
+        {
+            await Task.Delay(1000, ct);
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                trainer.DownloadProgress = Math.Min(90, trainer.DownloadProgress + 5);
+            });
+        }
+    }
+
     private async Task RunDownloadThenAddAsync(Trainer trainer)
     {
+        CancellationTokenSource? progressCts = null;
         try
         {
             var newTrainer = new Trainer
@@ -169,8 +183,25 @@ public partial class SearchViewModel : ObservableObject
                 return;
             }
 
-            var progress = new Progress<double>(p => newTrainer.DownloadProgress = p);
+            // 模拟进度：多数下载无 Content-Length，用每秒约 5% 的模拟进度，下载完成后显示 100%
+            trainer.DownloadProgress = 0;
+            progressCts = new CancellationTokenSource();
+            var progressTask = RunSimulatedProgressAsync(trainer, progressCts.Token);
+
+            var progress = new Progress<double>(p =>
+            {
+                Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    if (p > trainer.DownloadProgress) trainer.DownloadProgress = Math.Min(99, p);
+                });
+            });
             var success = await _trainerManager.DownloadTrainerAsync(newTrainer, progress);
+
+            progressCts.Cancel();
+            try { await progressTask; } catch (OperationCanceledException) { }
+
+            await Application.Current.Dispatcher.InvokeAsync(() => trainer.DownloadProgress = 100);
+            await Task.Delay(400);
 
             if (success)
             {
@@ -190,6 +221,7 @@ public partial class SearchViewModel : ObservableObject
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 trainer.IsDownloaded = success;
+                trainer.DownloadProgress = 0;
                 CurrentAddingTrainer = null;
                 var successTitle = (string)System.Windows.Application.Current.FindResource("MsgSuccessTitle");
                 var successMsg = success
@@ -201,8 +233,10 @@ public partial class SearchViewModel : ObservableObject
         }
         catch (Exception ex)
         {
+            progressCts?.Cancel();
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
+                trainer.DownloadProgress = 0;
                 CurrentAddingTrainer = null;
                 var msg = (string)System.Windows.Application.Current.FindResource("MsgAddFailed") + " " + ex.Message;
                 var title = (string)System.Windows.Application.Current.FindResource("MsgErrorTitle");

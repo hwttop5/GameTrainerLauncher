@@ -33,7 +33,7 @@ public partial class MyGamesViewModel : ObservableObject
         _dbContext = dbContext;
         _trainerManager = trainerManager;
         _scraperService = scraperService;
-        LoadGamesCommand.ExecuteAsync(null);
+        // 加载与封面拉取由页面 Loaded 时统一触发，保证每次进入「我的游戏」都会检查并补封面
     }
 
     [RelayCommand]

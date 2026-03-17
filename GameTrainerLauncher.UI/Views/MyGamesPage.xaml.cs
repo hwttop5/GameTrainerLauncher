@@ -24,6 +24,9 @@ public partial class MyGamesPage : Page
             if (DataContext is MyGamesViewModel vm)
                 _ = vm.LoadGamesCommand.ExecuteAsync(null);
         });
+        // 每次进入「我的游戏」页面都重新加载并检查/拉取缺失封面
+        if (DataContext is MyGamesViewModel vm)
+            _ = vm.LoadGamesCommand.ExecuteAsync(null);
     }
 
     private void OnUnloaded(object sender, System.Windows.RoutedEventArgs e)
