@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
+using System.Text;
 
 namespace GameTrainerLauncher.UI.ViewModels;
 
@@ -103,13 +104,44 @@ public partial class MyGamesViewModel : ObservableObject
                 OnPropertyChanged(nameof(ShowNoGamesEmptyState));
             });
 
+            // #region agent log
+            try
+            {
+                var sample = Games.FirstOrDefault();
+                File.AppendAllText(
+                    Path.Combine(Environment.CurrentDirectory, "debug-d901ba.log"),
+                    JsonSerializer.Serialize(new
+                    {
+                        sessionId = "d901ba",
+                        runId = "pre-fix",
+                        hypothesisId = "H_cover",
+                        location = "MyGamesViewModel.cs:LoadGamesAsync",
+                        message = "Before cover backfill",
+                        data = new
+                        {
+                            gamesCount = Games.Count,
+                            sampleName = sample?.Name,
+                            sampleCoverUrl = sample?.CoverUrl,
+                            sampleTrainerImageUrl = sample?.MatchedTrainer?.ImageUrl
+                        },
+                        timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                    }) + Environment.NewLine);
+            }
+            catch { }
+            // #endregion
+
             // For locally scanned games (no cover / no trainer), fetch cover and date from Fling
+            var coverUpdatedCount = 0;
+            var coverNeedCount = 0;
+            var coverAttemptCount = 0;
             foreach (var game in Games.ToList())
             {
                 var needCover = string.IsNullOrWhiteSpace(game.MatchedTrainer?.ImageUrl) && string.IsNullOrWhiteSpace(game.CoverUrl);
                 if (!needCover) continue;
+                coverNeedCount++;
                 try
                 {
+                    coverAttemptCount++;
                     var results = await _scraperService.SearchAsync(game.Name);
                     var first = results.FirstOrDefault();
                     if (first == null) continue;
@@ -131,6 +163,7 @@ public partial class MyGamesViewModel : ObservableObject
                         game.MatchedTrainer = trainer;
                         if (!string.IsNullOrWhiteSpace(details.ImageUrl)) game.CoverUrl = details.ImageUrl;
                         _dbContext.Games.Update(game);
+                        coverUpdatedCount++;
                     }
                     else
                     {
@@ -140,6 +173,7 @@ public partial class MyGamesViewModel : ObservableObject
                         {
                             game.MatchedTrainer.ImageUrl = details.ImageUrl;
                             game.CoverUrl = details.ImageUrl;
+                            coverUpdatedCount++;
                         }
                         if (details.LastUpdated != null)
                             game.MatchedTrainer.LastUpdated = details.LastUpdated;
@@ -151,6 +185,43 @@ public partial class MyGamesViewModel : ObservableObject
                 }
                 catch { /* ignore per-game fetch */ }
             }
+
+            // 如果封面是在加载后补齐的：因为 EF 实体不触发 PropertyChanged，必须刷新集合以触发封面绑定重新计算
+            if (coverUpdatedCount > 0)
+            {
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    Games = new ObservableCollection<Game>(Games);
+                });
+            }
+
+            // #region agent log
+            try
+            {
+                var sample2 = Games.FirstOrDefault(g => !string.IsNullOrWhiteSpace(g.CoverUrl) || !string.IsNullOrWhiteSpace(g.MatchedTrainer?.ImageUrl));
+                File.AppendAllText(
+                    Path.Combine(Environment.CurrentDirectory, "debug-d901ba.log"),
+                    JsonSerializer.Serialize(new
+                    {
+                        sessionId = "d901ba",
+                        runId = "pre-fix",
+                        hypothesisId = "H_cover",
+                        location = "MyGamesViewModel.cs:LoadGamesAsync",
+                        message = "After cover backfill",
+                        data = new
+                        {
+                            coverNeedCount,
+                            coverAttemptCount,
+                            coverUpdatedCount,
+                            sampleWithCoverName = sample2?.Name,
+                            sampleWithCoverCoverUrl = sample2?.CoverUrl,
+                            sampleWithCoverTrainerImageUrl = sample2?.MatchedTrainer?.ImageUrl
+                        },
+                        timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                    }) + Environment.NewLine);
+            }
+            catch { }
+            // #endregion
         }
         catch (Exception ex)
         {

@@ -75,26 +75,32 @@
 
             <!-- Add button：添加中显示 loading + 进度条，下载完成后弹添加成功 -->
             <StackPanel Grid.Row="2" Margin="10,0,10,10">
-                <ui:Button Command="{Binding DataContext.AddToMyGamesCommand, RelativeSource={RelativeSource AncestorType=Page}}"
-                           CommandParameter="{Binding}"
-                           HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                           >
-                    <ui:Button.Style>
-                        <Style TargetType="ui:Button" BasedOn="{StaticResource BluePrimaryButtonStyle}">
-                            <Setter Property="Content" Value="{DynamicResource BtnAdd}"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsDownloaded}" Value="True">
-                                    <Setter Property="IsEnabled" Value="False"/>
-                                    <Setter Property="Content" Value="{DynamicResource StatusAdded}"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding IsAdding}" Value="True">
-                                    <Setter Property="IsEnabled" Value="False"/>
-                                    <Setter Property="Content" Value="{DynamicResource StatusAdding}"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </ui:Button.Style>
-                </ui:Button>
+                <Border BorderThickness="1"
+                        BorderBrush="{Binding ElementName=AddButton, Path=Foreground, Converter={StaticResource BrushOpacityConverter}, ConverterParameter=0.25}"
+                        CornerRadius="4">
+                    <ui:Button x:Name="AddButton"
+                               Command="{Binding DataContext.AddToMyGamesCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                               CommandParameter="{Binding}"
+                               HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                               Foreground="{Binding RelativeSource={RelativeSource Self}, Path=IsEnabled, Converter={StaticResource EnabledToPrimaryForegroundBrushConverter}}"
+                               BorderThickness="0">
+                        <ui:Button.Style>
+                            <Style TargetType="ui:Button" BasedOn="{StaticResource BluePrimaryButtonStyle}">
+                                <Setter Property="Content" Value="{DynamicResource BtnAdd}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsDownloaded}" Value="True">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                        <Setter Property="Content" Value="{DynamicResource StatusAdded}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsAdding}" Value="True">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                        <Setter Property="Content" Value="{DynamicResource StatusAdding}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ui:Button.Style>
+                    </ui:Button>
+                </Border>
                 <ProgressBar Value="{Binding DownloadProgress}" Maximum="100" Height="6" Margin="0,6,0,0"
                              Visibility="{Binding IsAdding, Converter={StaticResource BooleanToVisibilityConverter}}"/>
             </StackPanel>

@@ -2,6 +2,8 @@ using System;
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
+using System.IO;
+using System.Text.Json;
 
 namespace GameTrainerLauncher.UI.Converters;
 
@@ -29,6 +31,24 @@ public class GameCoverFromPartsConverter : IMultiValueConverter
         }
         catch
         {
+            // #region agent log
+            try
+            {
+                File.AppendAllText(
+                    Path.Combine(Environment.CurrentDirectory, "debug-d901ba.log"),
+                    JsonSerializer.Serialize(new
+                    {
+                        sessionId = "d901ba",
+                        runId = "pre-fix",
+                        hypothesisId = "H_coverimg",
+                        location = "GameCoverFromPartsConverter.cs:Convert",
+                        message = "Failed to create BitmapImage",
+                        data = new { url },
+                        timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                    }) + Environment.NewLine);
+            }
+            catch { }
+            // #endregion
             return null;
         }
     }
