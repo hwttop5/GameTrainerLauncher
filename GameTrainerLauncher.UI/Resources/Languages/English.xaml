@@ -20,6 +20,7 @@
     <system:String x:Key="ThemeDark">Dark</system:String>
     <system:String x:Key="MsgErrorTitle">Error</system:String>
     <system:String x:Key="MsgDownloadFailed">Download failed. Check logs.</system:String>
+    <system:String x:Key="MsgDownloadTimeout">Network issue, download timed out (1 minute).</system:String>
     <system:String x:Key="MsgTrainerNotFound">Trainer not found for {0}</system:String>
     <system:String x:Key="MsgDownloadSuccess">Download complete!</system:String>
     <system:String x:Key="StatusAdded">Added</system:String>

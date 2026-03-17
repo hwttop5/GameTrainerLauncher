@@ -20,6 +20,7 @@
     <system:String x:Key="ThemeDark">暗色</system:String>
     <system:String x:Key="MsgErrorTitle">错误</system:String>
     <system:String x:Key="MsgDownloadFailed">下载修改器失败，请检查日志。</system:String>
+    <system:String x:Key="MsgDownloadTimeout">网络不好，下载超时（1 分钟）。</system:String>
     <system:String x:Key="MsgTrainerNotFound">未找到 {0} 的修改器</system:String>
     <system:String x:Key="MsgDownloadSuccess">下载完成！</system:String>
     <system:String x:Key="StatusAdded">已添加</system:String>
