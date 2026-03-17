@@ -32,6 +32,7 @@
     <system:String x:Key="MsgInfoTitle">Info</system:String>
     <system:String x:Key="MsgSearchTitle">Search</system:String>
     <system:String x:Key="MsgNoTrainerFound">No trainer found for this game.</system:String>
+    <system:String x:Key="MsgDownloadFirst">Download the trainer first to launch</system:String>
     <system:String x:Key="MsgLaunchTimeout">Launch timed out (3s).</system:String>
     <system:String x:Key="MsgLaunchFailed">Launch failed.</system:String>
     <system:String x:Key="MsgConfirmRemoveTitle">Confirm Remove</system:String>

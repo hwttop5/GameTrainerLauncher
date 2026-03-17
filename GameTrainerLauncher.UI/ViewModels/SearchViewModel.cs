@@ -69,6 +69,21 @@ public partial class SearchViewModel : ObservableObject
                 SearchResults.Add(t);
             }
 
+            // Enrich with details so cards show LastUpdated (and have DownloadUrl when adding to my games)
+            for (var i = 0; i < SearchResults.Count; i++)
+            {
+                var t = SearchResults[i];
+                if (string.IsNullOrEmpty(t.PageUrl)) continue;
+                try
+                {
+                    var details = await _scraperService.GetTrainerDetailsAsync(t.PageUrl);
+                    t.LastUpdated = details.LastUpdated;
+                    t.DownloadUrl = details.DownloadUrl;
+                    t.ImageUrl = string.IsNullOrEmpty(details.ImageUrl) ? t.ImageUrl : details.ImageUrl;
+                }
+                catch { /* keep existing values */ }
+            }
+
             if (SearchResults.Count == 0)
             {
                 HasNoResults = true;
@@ -101,10 +116,20 @@ public partial class SearchViewModel : ObservableObject
                  return;
             }
 
+            // Each game gets its own Trainer row so download state is per-game
+            var newTrainer = new Trainer
+            {
+                Title = trainer.Title,
+                PageUrl = trainer.PageUrl,
+                DownloadUrl = trainer.DownloadUrl,
+                ImageUrl = trainer.ImageUrl,
+                LastUpdated = trainer.LastUpdated,
+                IsDownloaded = false
+            };
             var game = new Game
             {
                 Name = trainer.Title,
-                MatchedTrainer = trainer,
+                MatchedTrainer = newTrainer,
                 AddedDate = DateTime.Now,
                 CoverUrl = trainer.ImageUrl
             };

@@ -15,6 +15,12 @@
             <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
             <converters:NullOrEmptyToVisibilityConverter x:Key="NullOrEmptyToVisibilityConverter" />
             <converters:BoolToAppearanceConverter x:Key="BoolToAppearanceConverter" />
+            <converters:GameCoverUrlConverter x:Key="GameCoverUrlConverter" />
+            <converters:GameCoverPlaceholderVisibilityConverter x:Key="GameCoverPlaceholderVisibilityConverter" />
+            <converters:CanDownloadConverter x:Key="CanDownloadConverter" />
+            <converters:IsCurrentDownloadingConverter x:Key="IsCurrentDownloadingConverter" />
+            <converters:CanLaunchConverter x:Key="CanLaunchConverter" />
+            <converters:IsCurrentLaunchingConverter x:Key="IsCurrentLaunchingConverter" />
             
             <SolidColorBrush x:Key="SystemControlBackgroundChromeMediumLowBrush" Color="#1e2021" />
             <SolidColorBrush x:Key="ApplicationBackgroundBrush" Color="#1e2021" />

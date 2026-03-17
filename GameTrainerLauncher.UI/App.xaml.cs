@@ -1,7 +1,6 @@
 using GameTrainerLauncher.Core.Interfaces;
 using GameTrainerLauncher.Infrastructure.Data;
 using GameTrainerLauncher.Infrastructure.Services;
-using GameTrainerLauncher.Infrastructure.Services.Scanners;
 using GameTrainerLauncher.UI.Services;
 using GameTrainerLauncher.UI.ViewModels;
 using GameTrainerLauncher.UI.Views;
@@ -31,11 +30,6 @@ public partial class App : Application
         services.AddDbContext<AppDbContext>();
         services.AddSingleton<IScraperService, FlingScraperService>();
         services.AddSingleton<ITrainerManager, TrainerManager>();
-        
-        // Scanners
-        services.AddSingleton<IGameScanner, SteamScanner>();
-        services.AddSingleton<IGameScanner, EpicScanner>();
-        services.AddSingleton<IGameScanner, XboxScanner>();
 
         // UI Services
         services.AddSingleton<INavigationService, NavigationService>();

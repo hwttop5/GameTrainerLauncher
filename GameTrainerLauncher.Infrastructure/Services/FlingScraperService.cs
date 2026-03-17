@@ -153,34 +153,116 @@ public class FlingScraperService : IScraperService
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
 
-            var titleNode = doc.DocumentNode.SelectSingleNode("//h1[contains(@class, 'entry-title')]");
-            var title = System.Net.WebUtility.HtmlDecode(titleNode?.InnerText.Trim() ?? "Unknown Trainer");
-            
+            var title = System.Net.WebUtility.HtmlDecode(
+                doc.DocumentNode.SelectSingleNode("//h1[contains(@class, 'entry-title')]")?.InnerText.Trim()
+                ?? doc.DocumentNode.SelectSingleNode("//meta[@property='og:title']")?.GetAttributeValue("content", "")?.Trim()
+                ?? doc.DocumentNode.SelectSingleNode("//h1")?.InnerText.Trim()
+                ?? doc.DocumentNode.SelectSingleNode("//title")?.InnerText?.Replace(" - Fling Trainer", "").Trim()
+                ?? "Unknown Trainer");
+
+            // Cover image: og:image or first post image
+            var imageUrl = doc.DocumentNode.SelectSingleNode("//meta[@property='og:image']")?.GetAttributeValue("content", "")
+                ?? doc.DocumentNode.SelectSingleNode("//article//img")?.GetAttributeValue("src", "")
+                ?? "";
+
             string? downloadUrl = null;
-            
-            // Try to find the specific "Standalone Versions" section if mentioned
-            // But usually Fling has attachments.
-            // Let's look for any link that looks like an attachment download
-            var attachmentLinks = doc.DocumentNode.SelectNodes("//a[contains(@href, 'attachment_id')]");
-            
-            if (attachmentLinks != null && attachmentLinks.Count > 0)
+            DateTime? lastUpdated = null;
+
+            // "Standalone Versions" / Download table: first row's link is the latest trainer
+            var tables = doc.DocumentNode.SelectNodes("//table");
+            if (tables != null)
             {
-                 // Take the first one as requested ("first download link")
-                 downloadUrl = attachmentLinks[0].GetAttributeValue("href", "");
-            }
-            else
-            {
-                // Fallback: look for any zip link
-                var zipLink = doc.DocumentNode.SelectSingleNode("//a[contains(@href, '.zip')]");
-                if (zipLink != null)
+                foreach (var table in tables)
                 {
-                    downloadUrl = zipLink.GetAttributeValue("href", "");
+                    var rows = table.SelectNodes(".//tr");
+                    if (rows == null || rows.Count < 2) continue;
+                    var headerText = rows[0].InnerText ?? "";
+                    bool isDownloadTable = headerText.Contains("Date added", StringComparison.OrdinalIgnoreCase)
+                        || headerText.Contains("File", StringComparison.OrdinalIgnoreCase)
+                        || headerText.Contains("Version", StringComparison.OrdinalIgnoreCase);
+                    if (!isDownloadTable)
+                        continue;
+                    var firstDataRow = rows[1];
+                    var linkNode = firstDataRow.SelectSingleNode(".//a[contains(@href,'downloads')]")
+                        ?? firstDataRow.SelectSingleNode(".//a[contains(@href,'download')]")
+                        ?? firstDataRow.SelectSingleNode(".//a[contains(@href,'.zip')]")
+                        ?? firstDataRow.SelectSingleNode(".//a[contains(@href,'/file')]");
+                    if (linkNode != null)
+                    {
+                        downloadUrl = linkNode.GetAttributeValue("href", "");
+                        if (!string.IsNullOrEmpty(downloadUrl) && !downloadUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                            downloadUrl = new Uri(new Uri(BaseUrl), downloadUrl).ToString();
+                    }
+                    var cells = firstDataRow.SelectNodes(".//td");
+                    if (cells != null && cells.Count >= 2)
+                    {
+                        var dateStr = cells[1].InnerText?.Trim();
+                        if (!string.IsNullOrEmpty(dateStr) && DateTime.TryParse(dateStr, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dt))
+                            lastUpdated = dt;
+                    }
+                    if (!string.IsNullOrEmpty(downloadUrl)) break;
                 }
             }
 
-            // Parse "Last Updated: 2026.03.07" from page content
-            var bodyText = doc.DocumentNode.InnerText ?? "";
-            var lastUpdated = ParseLastUpdatedFromText(bodyText) ?? DateTime.Now;
+            // Fallbacks: any table row with a download-like link, then page-wide links
+            if (string.IsNullOrEmpty(downloadUrl) && tables != null)
+            {
+                foreach (var table in tables)
+                {
+                    var allLinks = table.SelectNodes(".//a[@href]");
+                    if (allLinks == null) continue;
+                    foreach (HtmlNode a in allLinks)
+                    {
+                        var href = a.GetAttributeValue("href", "");
+                        if (string.IsNullOrEmpty(href)) continue;
+                        if (href.Contains("download", StringComparison.OrdinalIgnoreCase) || href.Contains(".zip", StringComparison.OrdinalIgnoreCase) || href.Contains("/file", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (!href.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                                href = new Uri(new Uri(BaseUrl), href).ToString();
+                            downloadUrl = href;
+                            break;
+                        }
+                    }
+                    if (!string.IsNullOrEmpty(downloadUrl)) break;
+                }
+            }
+
+            if (string.IsNullOrEmpty(downloadUrl))
+            {
+                var attachmentLinks = doc.DocumentNode.SelectNodes("//a[contains(@href, 'attachment_id')]");
+                if (attachmentLinks != null && attachmentLinks.Count > 0)
+                    downloadUrl = attachmentLinks[0].GetAttributeValue("href", "");
+                if (string.IsNullOrEmpty(downloadUrl))
+                {
+                    var zipLink = doc.DocumentNode.SelectSingleNode("//a[contains(@href, '.zip')]");
+                    if (zipLink != null)
+                        downloadUrl = zipLink.GetAttributeValue("href", "");
+                if (string.IsNullOrEmpty(downloadUrl))
+                {
+                    var downloadLinks = doc.DocumentNode.SelectNodes("//article//a[contains(@href, 'download')]");
+                    if (downloadLinks != null && downloadLinks.Count > 0)
+                        downloadUrl = downloadLinks[0].GetAttributeValue("href", "");
+                }
+                if (string.IsNullOrEmpty(downloadUrl))
+                {
+                    var anyDownload = doc.DocumentNode.SelectSingleNode("//a[contains(@href,'/downloads/')]")
+                        ?? doc.DocumentNode.SelectSingleNode("//a[contains(@href,'/file/')]");
+                    if (anyDownload != null)
+                        downloadUrl = anyDownload.GetAttributeValue("href", "");
+                }
+                if (!string.IsNullOrEmpty(downloadUrl) && !downloadUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                    downloadUrl = new Uri(new Uri(BaseUrl), downloadUrl).ToString();
+                }
+            }
+
+            if (!string.IsNullOrEmpty(downloadUrl))
+                downloadUrl = downloadUrl.Trim().TrimEnd(';', ' ');
+
+            if (lastUpdated == null)
+            {
+                var bodyText = doc.DocumentNode.InnerText ?? "";
+                lastUpdated = ParseLastUpdatedFromText(bodyText) ?? DateTime.Now;
+            }
 
             return new Trainer
             {
@@ -188,6 +270,7 @@ public class FlingScraperService : IScraperService
                 PageUrl = url,
                 DownloadUrl = downloadUrl,
                 IsDownloaded = false,
+                ImageUrl = imageUrl,
                 LastUpdated = lastUpdated
             };
         }, $"get details for {url}");
