@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using GameTrainerLauncher.Core.Entities;
 using GameTrainerLauncher.Core.Interfaces;
 using GameTrainerLauncher.Infrastructure.Data;
+using GameTrainerLauncher.UI.Services;
 using System.Collections.ObjectModel;
 using System.Windows;
 
@@ -13,6 +14,7 @@ public partial class PopularGamesViewModel : ObservableObject
     private readonly IScraperService _scraperService;
     private readonly AppDbContext _dbContext;
     private readonly ITrainerManager _trainerManager;
+    private readonly IMyGamesRefreshService _myGamesRefreshService;
     private int _currentPage = 1;
 
     [ObservableProperty]
@@ -32,11 +34,12 @@ public partial class PopularGamesViewModel : ObservableObject
 
     public bool IsLoadMoreVisible => CanLoadMore && !IsLoading;
 
-    public PopularGamesViewModel(IScraperService scraperService, AppDbContext dbContext, ITrainerManager trainerManager)
+    public PopularGamesViewModel(IScraperService scraperService, AppDbContext dbContext, ITrainerManager trainerManager, IMyGamesRefreshService myGamesRefreshService)
     {
         _scraperService = scraperService;
         _dbContext = dbContext;
         _trainerManager = trainerManager;
+        _myGamesRefreshService = myGamesRefreshService;
         LoadDataCommand.ExecuteAsync(null);
     }
 
@@ -123,7 +126,7 @@ public partial class PopularGamesViewModel : ObservableObject
                 return;
             }
             CurrentAddingTrainer = trainer;
-            _ = RunAddAndDownloadAsync(trainer);
+            _ = RunDownloadThenAddAsync(trainer);
         }
         catch (Exception ex)
         {
@@ -134,7 +137,8 @@ public partial class PopularGamesViewModel : ObservableObject
         }
     }
 
-    private async Task RunAddAndDownloadAsync(Trainer trainer)
+    /// <summary>Download first, then add to DB so the game only appears in My Games after download completes.</summary>
+    private async Task RunDownloadThenAddAsync(Trainer trainer)
     {
         try
         {
@@ -147,26 +151,54 @@ public partial class PopularGamesViewModel : ObservableObject
                 LastUpdated = trainer.LastUpdated,
                 IsDownloaded = false
             };
-            var game = new Game
+            if (string.IsNullOrWhiteSpace(newTrainer.DownloadUrl) && !string.IsNullOrWhiteSpace(newTrainer.PageUrl))
             {
-                Name = trainer.Title,
-                MatchedTrainer = newTrainer,
-                AddedDate = DateTime.Now,
-                CoverUrl = trainer.ImageUrl
-            };
-            _dbContext.Games.Add(game);
-            await _dbContext.SaveChangesAsync();
+                var details = await _scraperService.GetTrainerDetailsAsync(newTrainer.PageUrl);
+                newTrainer.DownloadUrl = details.DownloadUrl;
+                newTrainer.LastUpdated = details.LastUpdated;
+                if (!string.IsNullOrEmpty(details.ImageUrl)) newTrainer.ImageUrl = details.ImageUrl;
+            }
+            if (string.IsNullOrWhiteSpace(newTrainer.DownloadUrl))
+            {
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    CurrentAddingTrainer = null;
+                    System.Windows.MessageBox.Show(
+                        (string)System.Windows.Application.Current.FindResource("MsgDownloadFailed"),
+                        (string)System.Windows.Application.Current.FindResource("MsgErrorTitle"),
+                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                });
+                return;
+            }
 
-            var downloadOk = await DownloadAfterAddAsync(newTrainer);
+            var progress = new Progress<double>(p => newTrainer.DownloadProgress = p);
+            var success = await _trainerManager.DownloadTrainerAsync(newTrainer, progress);
+
+            if (success)
+            {
+                newTrainer.IsDownloaded = true;
+                var game = new Game
+                {
+                    Name = trainer.Title,
+                    MatchedTrainer = newTrainer,
+                    AddedDate = DateTime.Now,
+                    CoverUrl = trainer.ImageUrl
+                };
+                _dbContext.Trainers.Add(newTrainer);
+                _dbContext.Games.Add(game);
+                await _dbContext.SaveChangesAsync();
+            }
+
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                trainer.IsDownloaded = downloadOk;
+                trainer.IsDownloaded = success;
                 CurrentAddingTrainer = null;
                 var successTitle = (string)System.Windows.Application.Current.FindResource("MsgSuccessTitle");
-                var successMsg = downloadOk
+                var successMsg = success
                     ? (string)System.Windows.Application.Current.FindResource("MsgAddedToMyGames")
-                    : ((string)System.Windows.Application.Current.FindResource("MsgAddedToMyGames") ?? "已添加") + "，但下载失败，请检查网络后重试。";
-                System.Windows.MessageBox.Show(successMsg, successTitle, System.Windows.MessageBoxButton.OK, downloadOk ? System.Windows.MessageBoxImage.Information : System.Windows.MessageBoxImage.Warning);
+                    : (string)System.Windows.Application.Current.FindResource("MsgDownloadFailed");
+                System.Windows.MessageBox.Show(successMsg, successTitle, System.Windows.MessageBoxButton.OK, success ? System.Windows.MessageBoxImage.Information : System.Windows.MessageBoxImage.Error);
+                if (success) _myGamesRefreshService.RequestRefresh();
             });
         }
         catch (Exception ex)
@@ -178,40 +210,6 @@ public partial class PopularGamesViewModel : ObservableObject
                 var title = (string)System.Windows.Application.Current.FindResource("MsgErrorTitle");
                 System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             });
-        }
-    }
-
-    private async Task<bool> DownloadAfterAddAsync(Trainer newTrainer)
-    {
-        try
-        {
-            if (string.IsNullOrWhiteSpace(newTrainer.DownloadUrl) && !string.IsNullOrWhiteSpace(newTrainer.PageUrl))
-            {
-                var details = await _scraperService.GetTrainerDetailsAsync(newTrainer.PageUrl);
-                newTrainer.DownloadUrl = details.DownloadUrl;
-                newTrainer.LastUpdated = details.LastUpdated;
-                if (!string.IsNullOrEmpty(details.ImageUrl)) newTrainer.ImageUrl = details.ImageUrl;
-                _dbContext.Trainers.Update(newTrainer);
-                await _dbContext.SaveChangesAsync();
-            }
-            if (string.IsNullOrWhiteSpace(newTrainer.DownloadUrl)) return false;
-
-            var progress = new Progress<double>(p => newTrainer.DownloadProgress = p);
-            var success = await _trainerManager.DownloadTrainerAsync(newTrainer, progress);
-            await Application.Current.Dispatcher.InvokeAsync(async () =>
-            {
-                if (success)
-                {
-                    newTrainer.IsDownloaded = true;
-                    _dbContext.Trainers.Update(newTrainer);
-                    await _dbContext.SaveChangesAsync();
-                }
-            });
-            return success;
-        }
-        catch
-        {
-            return false;
         }
     }
 }
