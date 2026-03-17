@@ -21,6 +21,7 @@
             <converters:IsCurrentDownloadingConverter x:Key="IsCurrentDownloadingConverter" />
             <converters:CanLaunchConverter x:Key="CanLaunchConverter" />
             <converters:IsCurrentLaunchingConverter x:Key="IsCurrentLaunchingConverter" />
+            <converters:IsCurrentAddingConverter x:Key="IsCurrentAddingConverter" />
             
             <SolidColorBrush x:Key="SystemControlBackgroundChromeMediumLowBrush" Color="#1e2021" />
             <SolidColorBrush x:Key="ApplicationBackgroundBrush" Color="#1e2021" />

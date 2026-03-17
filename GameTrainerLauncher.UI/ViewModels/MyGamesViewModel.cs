@@ -6,6 +6,8 @@ using GameTrainerLauncher.Core.Interfaces;
 using GameTrainerLauncher.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Text.Json;
 
 namespace GameTrainerLauncher.UI.ViewModels;
 
@@ -114,42 +116,49 @@ public partial class MyGamesViewModel : ObservableObject
         }
     }
 
+    /// <summary>Like Remove: command returns immediately, only UI trigger disables the one row (no shared command disabling).</summary>
     [RelayCommand]
-    public async Task LaunchTrainerAsync(Game game)
+    public void LaunchTrainer(Game game)
     {
-        if (game.MatchedTrainer == null)
+        if (game?.MatchedTrainer == null)
         {
-             var msg = GetString("MsgNoTrainerFound");
-             var title = GetString("MsgErrorTitle");
-             System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-             return;
+            var msg = GetString("MsgNoTrainerFound");
+            var title = GetString("MsgErrorTitle");
+            System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            return;
         }
-
         CurrentLaunchingGame = game;
+        _ = RunLaunchInBackgroundAsync(game);
+    }
+
+    private async Task RunLaunchInBackgroundAsync(Game game)
+    {
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
         try
         {
-            game.MatchedTrainer.IsLoading = true;
-            await Task.Run(async () => 
+            game.MatchedTrainer!.IsLoading = true;
+            await Task.Run(async () =>
             {
-                await _trainerManager.LaunchTrainerAsync(game.MatchedTrainer);
+                await _trainerManager.LaunchTrainerAsync(game.MatchedTrainer!);
             }, cts.Token);
         }
         catch (OperationCanceledException)
         {
-             var msg = GetString("MsgLaunchTimeout");
-             var title = GetString("MsgTimeoutTitle");
-             System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                System.Windows.MessageBox.Show(GetString("MsgLaunchTimeout"), GetString("MsgTimeoutTitle"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+            });
         }
         catch (Exception ex)
         {
-             var msg = GetString("MsgLaunchFailed") + " " + ex.Message;
-             var title = GetString("MsgErrorTitle");
-             System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                System.Windows.MessageBox.Show(GetString("MsgLaunchFailed") + " " + ex.Message, GetString("MsgErrorTitle"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            });
         }
         finally
         {
-            game.MatchedTrainer.IsLoading = false;
+            game.MatchedTrainer!.IsLoading = false;
             _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(() => CurrentLaunchingGame = null);
         }
     }
