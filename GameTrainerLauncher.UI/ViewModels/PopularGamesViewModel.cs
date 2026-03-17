@@ -4,6 +4,8 @@ using GameTrainerLauncher.Core.Entities;
 using GameTrainerLauncher.Core.Interfaces;
 using GameTrainerLauncher.Infrastructure.Data;
 using GameTrainerLauncher.UI.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.Windows;
 
@@ -15,6 +17,7 @@ public partial class PopularGamesViewModel : ObservableObject
     private readonly AppDbContext _dbContext;
     private readonly ITrainerManager _trainerManager;
     private readonly IMyGamesRefreshService _myGamesRefreshService;
+    private readonly IServiceScopeFactory _scopeFactory;
     private int _currentPage = 1;
 
     [ObservableProperty]
@@ -30,13 +33,33 @@ public partial class PopularGamesViewModel : ObservableObject
 
     public bool IsLoadMoreVisible => CanLoadMore && !IsLoading;
 
-    public PopularGamesViewModel(IScraperService scraperService, AppDbContext dbContext, ITrainerManager trainerManager, IMyGamesRefreshService myGamesRefreshService)
+    public PopularGamesViewModel(IScraperService scraperService, AppDbContext dbContext, ITrainerManager trainerManager, IMyGamesRefreshService myGamesRefreshService, IServiceScopeFactory scopeFactory)
     {
         _scraperService = scraperService;
         _dbContext = dbContext;
         _trainerManager = trainerManager;
         _myGamesRefreshService = myGamesRefreshService;
+        _scopeFactory = scopeFactory;
         LoadDataCommand.ExecuteAsync(null);
+    }
+
+    /// <summary>根据库中最新数据刷新列表中每项的「已添加」状态，避免在别处添加后仍显示蓝色添加按钮。</summary>
+    [RelayCommand]
+    public async Task RefreshAlreadyInLibraryAsync()
+    {
+        if (Trainers.Count == 0) return;
+        try
+        {
+            await using var scope = _scopeFactory.CreateAsyncScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var existingNames = (await db.Games.Select(g => g.Name).ToListAsync()).ToHashSet();
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                foreach (var t in Trainers)
+                    t.IsDownloaded = existingNames.Contains(t.Title);
+            });
+        }
+        catch { /* ignore */ }
     }
 
     [RelayCommand]

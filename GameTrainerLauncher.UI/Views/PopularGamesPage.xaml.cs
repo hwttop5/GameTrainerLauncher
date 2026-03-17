@@ -9,5 +9,6 @@ public partial class PopularGamesPage : Page
     {
         InitializeComponent();
         DataContext = viewModel;
+        Loaded += (_, _) => { _ = viewModel.RefreshAlreadyInLibraryCommand.ExecuteAsync(null); };
     }
 }

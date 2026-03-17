@@ -1,7 +1,7 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
-    <system:String x:Key="AppTitle">游戏修改器管理</system:String>
+    <system:String x:Key="AppTitle">游戏修改器启动</system:String>
     <system:String x:Key="SearchPlaceholder">仅支持游戏英文名检索</system:String>
     <system:String x:Key="MsgSearchEmpty">请输入游戏英文名后再搜索</system:String>
     <system:String x:Key="NavPopular">热门游戏</system:String>
