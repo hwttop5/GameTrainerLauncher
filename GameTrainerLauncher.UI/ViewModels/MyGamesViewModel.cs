@@ -91,6 +91,7 @@ public partial class MyGamesViewModel : ObservableObject
                         await _dbContext.SaveChangesAsync();
                         game.MatchedTrainerId = trainer.Id;
                         game.MatchedTrainer = trainer;
+                        if (!string.IsNullOrWhiteSpace(details.ImageUrl)) game.CoverUrl = details.ImageUrl;
                         _dbContext.Games.Update(game);
                     }
                     else
@@ -98,10 +99,15 @@ public partial class MyGamesViewModel : ObservableObject
                         if (string.IsNullOrWhiteSpace(game.MatchedTrainer.DownloadUrl) && !string.IsNullOrWhiteSpace(details.DownloadUrl))
                             game.MatchedTrainer.DownloadUrl = details.DownloadUrl;
                         if (string.IsNullOrWhiteSpace(game.MatchedTrainer.ImageUrl) && !string.IsNullOrWhiteSpace(details.ImageUrl))
+                        {
                             game.MatchedTrainer.ImageUrl = details.ImageUrl;
+                            game.CoverUrl = details.ImageUrl;
+                        }
                         if (details.LastUpdated != null)
                             game.MatchedTrainer.LastUpdated = details.LastUpdated;
                         _dbContext.Trainers.Update(game.MatchedTrainer);
+                        if (!string.IsNullOrWhiteSpace(game.CoverUrl))
+                            _dbContext.Games.Update(game);
                     }
                     await _dbContext.SaveChangesAsync();
                 }

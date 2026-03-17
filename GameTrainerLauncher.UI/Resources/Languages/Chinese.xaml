@@ -13,6 +13,7 @@
     <system:String x:Key="BtnLaunch">启动</system:String>
     <system:String x:Key="StatusReady">就绪</system:String>
     <system:String x:Key="StatusDownloading">下载中...</system:String>
+    <system:String x:Key="StatusLaunching">启动中...</system:String>
     <system:String x:Key="LabelLanguage">语言</system:String>
     <system:String x:Key="LabelTheme">主题</system:String>
     <system:String x:Key="ThemeLight">亮色</system:String>
