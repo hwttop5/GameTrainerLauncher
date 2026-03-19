@@ -12,7 +12,7 @@ Tired of manually downloading and managing lots of game trainer .exe files, and 
 
 - **Search**: Search FlingTrainer by game name (English); add results to library; multiple simultaneous adds with per-card state.
 - **Popular Games**: Fetches popular trainers from FlingTrainer; add to library with one click (download + add), progress bar and timeout (1 min).
-- **My Library**: List of added trainers; launch or remove; covers are downloaded locally when adding; when entering this page it checks whether each game has a local cover and backfills missing ones automatically; download missing trainers from this page; displays a friendly no-data prompt when the library is empty.
+- **My Library**: List of added trainers; default order is newest first, drag to reorder; launch or remove; covers are downloaded locally when adding; when entering this page it checks whether each game has a local cover and backfills missing ones automatically; download missing trainers from this page; displays a friendly no-data prompt when the library is empty.
 - **Settings**: Language (Chinese/English), theme (light/dark).
 
 ---

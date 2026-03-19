@@ -8,7 +8,8 @@
         <converters:LessThanConverter x:Key="LessThanConverter"/>
     </Page.Resources>
     <Grid Margin="10">
-        <ListView ItemsSource="{Binding Games}" SelectionMode="Single" Visibility="{Binding HasGames, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <ListView x:Name="GamesList" ItemsSource="{Binding Games}" SelectionMode="Single" AllowDrop="True"
+                  Visibility="{Binding HasGames, Converter={StaticResource BooleanToVisibilityConverter}}">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
                     <Setter Property="Margin" Value="0,0"/>
