@@ -47,4 +47,19 @@ public class AppDbContext : DbContext
             }
         }
     }
+
+    /// <summary>确保 Games 表有 DisplayOrder 列（旧库升级用）。</summary>
+    public async Task EnsureGamesDisplayOrderColumnAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await Database.ExecuteSqlRawAsync(
+                "ALTER TABLE Games ADD COLUMN DisplayOrder INTEGER NULL;",
+                cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            // Column already exists; ignore.
+        }
+    }
 }

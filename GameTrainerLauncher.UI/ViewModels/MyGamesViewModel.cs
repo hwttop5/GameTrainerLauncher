@@ -68,6 +68,32 @@ public partial class MyGamesViewModel : ObservableObject
         _navigationService.NavigateTo("Popular");
     }
 
+    /// <summary>拖拽排序：将游戏从 oldIndex 移到 newIndex，并持久化 DisplayOrder。</summary>
+    public void MoveGameByIndex(int oldIndex, int newIndex)
+    {
+        if (oldIndex < 0 || newIndex < 0 || oldIndex >= Games.Count || newIndex >= Games.Count || oldIndex == newIndex)
+            return;
+        var game = Games[oldIndex];
+        Games.RemoveAt(oldIndex);
+        Games.Insert(newIndex, game);
+        _ = SaveDisplayOrderFromCurrentListAsync();
+    }
+
+    /// <summary>按当前 Games 顺序将 DisplayOrder 写回数据库。</summary>
+    public async Task SaveDisplayOrderFromCurrentListAsync()
+    {
+        try
+        {
+            for (var i = 0; i < Games.Count; i++)
+            {
+                Games[i].DisplayOrder = i;
+                _dbContext.Games.Update(Games[i]);
+            }
+            await _dbContext.SaveChangesAsync();
+        }
+        catch { /* ignore */ }
+    }
+
     [RelayCommand]
     public async Task LoadGamesAsync()
     {
@@ -76,11 +102,18 @@ public partial class MyGamesViewModel : ObservableObject
         {
             await _dbContext.Database.EnsureCreatedAsync();
             await _dbContext.MigrateTrainersTableDropIgnoredColumnsAsync();
+            await _dbContext.EnsureGamesDisplayOrderColumnAsync();
 
             var dbGames = await _dbContext.Games.Include(g => g.MatchedTrainer).ToListAsync();
 
             // De-duplicate and fix invalid IsDownloaded
             var uniqueGames = dbGames.GroupBy(g => g.Name).Select(g => g.First()).ToList();
+            // 默认倒序：最新添加在前；若有自定义排序（DisplayOrder 已设）则按 DisplayOrder 升序，其余按 AddedDate 倒序
+            uniqueGames = uniqueGames
+                .OrderBy(g => g.DisplayOrder.HasValue ? 0 : 1)
+                .ThenBy(g => g.DisplayOrder ?? int.MaxValue)
+                .ThenByDescending(g => g.AddedDate ?? DateTime.MinValue)
+                .ToList();
             foreach (var g in uniqueGames)
             {
                 if (g.MatchedTrainer != null && g.MatchedTrainer.IsDownloaded &&
