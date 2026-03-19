@@ -33,6 +33,7 @@ public partial class App : Application
         services.AddDbContext<AppDbContext>();
         services.AddSingleton<IScraperService, FlingScraperService>();
         services.AddSingleton<ITrainerManager, TrainerManager>();
+        services.AddSingleton<IGameCoverService, GameCoverService>();
 
         // UI Services
         services.AddSingleton<INavigationService, NavigationService>();
@@ -86,6 +87,7 @@ public partial class App : Application
             using var scope = Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var scraper = scope.ServiceProvider.GetRequiredService<IScraperService>();
+            var coverService = scope.ServiceProvider.GetRequiredService<IGameCoverService>();
             await db.Database.EnsureCreatedAsync();
             var games = await db.Games.Include(g => g.MatchedTrainer)
                 .Where(g => (g.MatchedTrainer == null || string.IsNullOrWhiteSpace(g.MatchedTrainer.ImageUrl)) && string.IsNullOrWhiteSpace(g.CoverUrl))
@@ -135,6 +137,23 @@ public partial class App : Application
                 }
                 catch { /* ignore per-game */ }
             }
+
+            // 额外：若已有 URL，但本地缺封面，则补下载（不阻塞 UI，失败忽略）
+            try
+            {
+                var needDownload = await db.Games.Include(g => g.MatchedTrainer)
+                    .Where(g => !string.IsNullOrWhiteSpace(g.CoverUrl) || (g.MatchedTrainer != null && !string.IsNullOrWhiteSpace(g.MatchedTrainer.ImageUrl)))
+                    .ToListAsync();
+                foreach (var g in needDownload)
+                {
+                    if (g.Id <= 0) continue;
+                    if (coverService.HasCover(g.Id)) continue;
+                    var url = g.MatchedTrainer?.ImageUrl ?? g.CoverUrl;
+                    if (string.IsNullOrWhiteSpace(url)) continue;
+                    _ = coverService.EnsureCoverAsync(g.Id, url);
+                }
+            }
+            catch { /* ignore */ }
         }
         catch { /* ignore startup fetch */ }
     }

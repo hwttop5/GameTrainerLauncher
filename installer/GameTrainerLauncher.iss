@@ -3,7 +3,7 @@
 
 #define MyAppName "游戏修改器启动器"
 #define MyAppExeName "GameTrainerLauncher.UI.exe"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.0.1"
 #define PublishDir "..\Publish"
 
 [Setup]

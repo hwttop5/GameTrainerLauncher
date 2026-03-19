@@ -29,5 +29,9 @@ Thumbs.db
 # GameTrainerLauncher.UI/Data/
 
 # Packaging: publish output and installer output (only exe installer is used)
-# Publish/
-# Installer/Output/
+Publish/
+Installer/Output/
+installer/Output/
+
+# Logs
+*.log
