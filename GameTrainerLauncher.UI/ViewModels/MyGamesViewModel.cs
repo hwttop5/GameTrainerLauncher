@@ -18,6 +18,7 @@ public partial class MyGamesViewModel : ObservableObject
     private readonly ITrainerManager _trainerManager;
     private readonly IScraperService _scraperService;
     private readonly INavigationService _navigationService;
+    private readonly IGameCoverService _coverService;
 
     [ObservableProperty]
     private ObservableCollection<Game> _games = new();
@@ -51,12 +52,13 @@ public partial class MyGamesViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowNoGamesEmptyState));
     }
 
-    public MyGamesViewModel(AppDbContext dbContext, ITrainerManager trainerManager, IScraperService scraperService, INavigationService navigationService)
+    public MyGamesViewModel(AppDbContext dbContext, ITrainerManager trainerManager, IScraperService scraperService, INavigationService navigationService, IGameCoverService coverService)
     {
         _dbContext = dbContext;
         _trainerManager = trainerManager;
         _scraperService = scraperService;
         _navigationService = navigationService;
+        _coverService = coverService;
         // 加载与封面拉取由页面 Loaded 时统一触发，保证每次进入「我的游戏」都会检查并补封面
     }
 
@@ -103,64 +105,79 @@ public partial class MyGamesViewModel : ObservableObject
                 OnPropertyChanged(nameof(ShowNoGamesEmptyState));
             });
 
-            // For locally scanned games (no cover / no trainer), fetch cover and date from Fling
+            // 进入「我的游戏」时：只读本地封面；若缺失则抓取 URL 并下载到本地
             var coverUpdatedCount = 0;
-            var coverNeedCount = 0;
-            var coverAttemptCount = 0;
+            var coverDownloadedCount = 0;
             foreach (var game in Games.ToList())
             {
-                var needCover = string.IsNullOrWhiteSpace(game.MatchedTrainer?.ImageUrl) && string.IsNullOrWhiteSpace(game.CoverUrl);
-                if (!needCover) continue;
-                coverNeedCount++;
                 try
                 {
-                    coverAttemptCount++;
-                    var results = await _scraperService.SearchAsync(game.Name);
-                    var first = results.FirstOrDefault();
-                    if (first == null) continue;
-                    var details = await _scraperService.GetTrainerDetailsAsync(first.PageUrl);
-                    if (game.MatchedTrainer == null)
+                    var gameId = game.Id;
+                    var hasLocalCover = gameId > 0 && _coverService.HasCover(gameId);
+
+                    // 先看 DB 是否已有 URL
+                    var coverUrl = game.MatchedTrainer?.ImageUrl ?? game.CoverUrl;
+
+                    // 若本地缺封面且也没有 URL：去网站抓取并写回 DB
+                    if (!hasLocalCover && string.IsNullOrWhiteSpace(coverUrl))
                     {
-                        var trainer = new Trainer
+                        var results = await _scraperService.SearchAsync(game.Name);
+                        var first = results.FirstOrDefault();
+                        if (first == null) continue;
+                        var details = await _scraperService.GetTrainerDetailsAsync(first.PageUrl);
+
+                        if (game.MatchedTrainer == null)
                         {
-                            Title = details.Title,
-                            PageUrl = details.PageUrl,
-                            DownloadUrl = details.DownloadUrl,
-                            ImageUrl = details.ImageUrl,
-                            LastUpdated = details.LastUpdated,
-                            IsDownloaded = false
-                        };
-                        _dbContext.Trainers.Add(trainer);
-                        await _dbContext.SaveChangesAsync();
-                        game.MatchedTrainerId = trainer.Id;
-                        game.MatchedTrainer = trainer;
-                        if (!string.IsNullOrWhiteSpace(details.ImageUrl)) game.CoverUrl = details.ImageUrl;
-                        _dbContext.Games.Update(game);
-                        coverUpdatedCount++;
-                    }
-                    else
-                    {
-                        if (string.IsNullOrWhiteSpace(game.MatchedTrainer.DownloadUrl) && !string.IsNullOrWhiteSpace(details.DownloadUrl))
-                            game.MatchedTrainer.DownloadUrl = details.DownloadUrl;
-                        if (string.IsNullOrWhiteSpace(game.MatchedTrainer.ImageUrl) && !string.IsNullOrWhiteSpace(details.ImageUrl))
-                        {
-                            game.MatchedTrainer.ImageUrl = details.ImageUrl;
-                            game.CoverUrl = details.ImageUrl;
+                            var trainer = new Trainer
+                            {
+                                Title = details.Title,
+                                PageUrl = details.PageUrl,
+                                DownloadUrl = details.DownloadUrl,
+                                ImageUrl = details.ImageUrl,
+                                LastUpdated = details.LastUpdated,
+                                IsDownloaded = false
+                            };
+                            _dbContext.Trainers.Add(trainer);
+                            await _dbContext.SaveChangesAsync();
+                            game.MatchedTrainerId = trainer.Id;
+                            game.MatchedTrainer = trainer;
+                            if (!string.IsNullOrWhiteSpace(details.ImageUrl)) game.CoverUrl = details.ImageUrl;
+                            _dbContext.Games.Update(game);
                             coverUpdatedCount++;
                         }
-                        if (details.LastUpdated != null)
-                            game.MatchedTrainer.LastUpdated = details.LastUpdated;
-                        _dbContext.Trainers.Update(game.MatchedTrainer);
-                        if (!string.IsNullOrWhiteSpace(game.CoverUrl))
-                            _dbContext.Games.Update(game);
+                        else
+                        {
+                            if (string.IsNullOrWhiteSpace(game.MatchedTrainer.DownloadUrl) && !string.IsNullOrWhiteSpace(details.DownloadUrl))
+                                game.MatchedTrainer.DownloadUrl = details.DownloadUrl;
+                            if (string.IsNullOrWhiteSpace(game.MatchedTrainer.ImageUrl) && !string.IsNullOrWhiteSpace(details.ImageUrl))
+                            {
+                                game.MatchedTrainer.ImageUrl = details.ImageUrl;
+                                game.CoverUrl = details.ImageUrl;
+                                coverUpdatedCount++;
+                            }
+                            if (details.LastUpdated != null)
+                                game.MatchedTrainer.LastUpdated = details.LastUpdated;
+                            _dbContext.Trainers.Update(game.MatchedTrainer);
+                            if (!string.IsNullOrWhiteSpace(game.CoverUrl))
+                                _dbContext.Games.Update(game);
+                        }
+                        await _dbContext.SaveChangesAsync();
+
+                        coverUrl = game.MatchedTrainer?.ImageUrl ?? game.CoverUrl;
                     }
-                    await _dbContext.SaveChangesAsync();
+
+                    // 若本地缺封面但已有 URL：下载到本地
+                    if (gameId > 0 && !_coverService.HasCover(gameId) && !string.IsNullOrWhiteSpace(coverUrl))
+                    {
+                        var ok = await _coverService.EnsureCoverAsync(gameId, coverUrl);
+                        if (ok) coverDownloadedCount++;
+                    }
                 }
                 catch { /* ignore per-game fetch */ }
             }
 
-            // 如果封面是在加载后补齐的：因为 EF 实体不触发 PropertyChanged，必须刷新集合以触发封面绑定重新计算
-            if (coverUpdatedCount > 0)
+            // 若 URL 或本地封面在加载后补齐：因为 EF 实体不触发 PropertyChanged，刷新集合以触发封面绑定重新计算
+            if (coverUpdatedCount > 0 || coverDownloadedCount > 0)
             {
                 await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                 {
@@ -238,6 +255,9 @@ public partial class MyGamesViewModel : ObservableObject
         {
             try
             {
+                // 移除时：封面文件一并删除（失败不影响移除）
+                try { if (game.Id > 0) _coverService.DeleteCover(game.Id); } catch { }
+
                 Games.Remove(game);
                 _dbContext.Games.Remove(game);
                 await _dbContext.SaveChangesAsync();

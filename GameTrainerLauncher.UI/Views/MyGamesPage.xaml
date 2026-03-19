@@ -43,6 +43,7 @@
                                         <MultiBinding Converter="{StaticResource GameCoverPlaceholderFromPartsConverter}">
                                             <Binding Path="MatchedTrainer.ImageUrl"/>
                                             <Binding Path="CoverUrl"/>
+                                            <Binding Path="Id"/>
                                         </MultiBinding>
                                     </ui:SymbolIcon.Visibility>
                                 </ui:SymbolIcon>
@@ -51,6 +52,7 @@
                                         <MultiBinding Converter="{StaticResource GameCoverFromPartsConverter}">
                                             <Binding Path="MatchedTrainer.ImageUrl"/>
                                             <Binding Path="CoverUrl"/>
+                                            <Binding Path="Id"/>
                                         </MultiBinding>
                                     </Image.Source>
                                     <Image.Style>
@@ -62,6 +64,7 @@
                                                         <MultiBinding Converter="{StaticResource GameCoverFromPartsConverter}">
                                                             <Binding Path="MatchedTrainer.ImageUrl"/>
                                                             <Binding Path="CoverUrl"/>
+                                                            <Binding Path="Id"/>
                                                         </MultiBinding>
                                                     </DataTrigger.Binding>
                                                     <Setter Property="Visibility" Value="Collapsed"/>

@@ -17,6 +17,7 @@ public partial class SearchViewModel : ObservableObject
     private readonly IScraperService _scraperService;
     private readonly AppDbContext _dbContext;
     private readonly ITrainerManager _trainerManager;
+    private readonly IGameCoverService _coverService;
     private readonly IMyGamesRefreshService _myGamesRefreshService;
     private readonly IServiceScopeFactory _scopeFactory;
 
@@ -29,11 +30,12 @@ public partial class SearchViewModel : ObservableObject
     [ObservableProperty]
     private string _searchKeyword = string.Empty;
 
-    public SearchViewModel(IScraperService scraperService, AppDbContext dbContext, ITrainerManager trainerManager, IMyGamesRefreshService myGamesRefreshService, IServiceScopeFactory scopeFactory)
+    public SearchViewModel(IScraperService scraperService, AppDbContext dbContext, ITrainerManager trainerManager, IGameCoverService coverService, IMyGamesRefreshService myGamesRefreshService, IServiceScopeFactory scopeFactory)
     {
         _scraperService = scraperService;
         _dbContext = dbContext;
         _trainerManager = trainerManager;
+        _coverService = coverService;
         _myGamesRefreshService = myGamesRefreshService;
         _scopeFactory = scopeFactory;
     }
@@ -257,6 +259,14 @@ public partial class SearchViewModel : ObservableObject
                 _dbContext.Trainers.Add(newTrainer);
                 _dbContext.Games.Add(game);
                 await _dbContext.SaveChangesAsync();
+
+                // 添加成功：封面也落地到本地（失败不影响添加）
+                try
+                {
+                    var url = newTrainer.ImageUrl ?? trainer.ImageUrl ?? game.CoverUrl;
+                    _ = _coverService.EnsureCoverAsync(game.Id, url);
+                }
+                catch { /* ignore */ }
             }
 
             await Application.Current.Dispatcher.InvokeAsync(() =>

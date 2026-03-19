@@ -12,7 +12,7 @@
 
 - **搜索**：按游戏英文名检索 FlingTrainer，结果可「下载并添加」到我的游戏；支持多任务同时添加、每张卡片独立状态。
 - **热门游戏**：拉取 FlingTrainer 热门修改器列表，一键「下载并添加」到我的游戏，带进度条与超时提示。
-- **我的游戏**：已添加的修改器列表，支持启动、移除；进入页面时自动检查并补全封面；可在此页对未下载项单独下载；当游戏库为空时显示友好的无数据提示。
+- **我的游戏**：已添加的修改器列表，支持启动、移除；封面会在「添加」时下载到本地，进入页面时会检查是否每个游戏都有本地封面，缺失则自动抓取并补全；可在此页对未下载项单独下载；当游戏库为空时显示友好的无数据提示。
 - **设置**：语言（中文/英文）、主题（亮色/暗色）。
 
 ---
@@ -61,6 +61,9 @@
 
 修改器与数据目录位于程序所在目录下的 `Data`（如 `Data/Trainers`、`Data/game_trainer_launcher.db`、`Data/Logs`）。
 
+> 注：为避免安装到 Program Files 时无写权限，应用数据实际存放在 `%LocalAppData%\GameTrainerLauncher\Data`。
+> 其中封面缓存目录为 `%LocalAppData%\GameTrainerLauncher\Data\Covers`（文件名形如 `game_{id}.png/jpg/...`）。
+
 ---
 
 ## 打包为 exe 安装包
@@ -71,7 +74,7 @@
 ```powershell
 .\Installer\build-installer.ps1
 ```
-安装包生成在 `Installer\Output\GameTrainerLauncher_Setup_1.0.0.exe`。
+安装包生成在 `Installer\Output\GameTrainerLauncher_Setup_1.0.1.exe`。
 
 也可分步执行：先 `dotnet publish GameTrainerLauncher.UI -p:PublishProfile=FolderProfile`，再用 Inno Setup 打开 `Installer\GameTrainerLauncher.iss` 编译。
 

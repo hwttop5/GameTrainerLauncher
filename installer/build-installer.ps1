@@ -18,4 +18,4 @@ Write-Host "Step 2: Compiling installer..." -ForegroundColor Cyan
 & $iscc "Installer\GameTrainerLauncher.iss"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-Write-Host "Done. Installer: Installer\Output\GameTrainerLauncher_Setup_1.0.0.exe" -ForegroundColor Green
+Write-Host "Done. Installer: Installer\Output\GameTrainerLauncher_Setup_1.0.1.exe" -ForegroundColor Green
