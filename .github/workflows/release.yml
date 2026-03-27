@@ -59,7 +59,7 @@ jobs:
 
       - name: Restore project
         shell: pwsh
-        run: dotnet restore $env:PROJECT_PATH
+        run: dotnet restore $env:PROJECT_PATH -r "${{ steps.version.outputs.publish_runtime }}"
 
       - name: Detect test projects
         id: tests
@@ -75,7 +75,7 @@ jobs:
 
       - name: Build Release
         shell: pwsh
-        run: dotnet build $env:PROJECT_PATH -c Release --no-restore -p:ContinuousIntegrationBuild=true
+        run: dotnet build $env:PROJECT_PATH -c Release -r "${{ steps.version.outputs.publish_runtime }}" --no-restore -p:ContinuousIntegrationBuild=true
 
       - name: Run tests
         if: steps.tests.outputs.has_tests == 'true'
@@ -91,7 +91,7 @@ jobs:
 
       - name: Publish
         shell: pwsh
-        run: dotnet publish $env:PROJECT_PATH -p:PublishProfile=FolderProfile -c Release --no-build -p:ContinuousIntegrationBuild=true
+        run: dotnet publish $env:PROJECT_PATH -p:PublishProfile=FolderProfile -c Release -r "${{ steps.version.outputs.publish_runtime }}" --no-build -p:ContinuousIntegrationBuild=true
 
       - name: Validate published file version
         shell: pwsh
