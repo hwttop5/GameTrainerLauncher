@@ -30,6 +30,7 @@ Thumbs.db
 
 # Packaging: publish output and installer output (only exe installer is used)
 Publish/
+artifacts/
 Installer/Output/
 installer/Output/
 

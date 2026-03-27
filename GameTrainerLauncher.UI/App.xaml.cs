@@ -10,11 +10,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows.Threading;
 using System.Windows;
+using NLog;
 
 namespace GameTrainerLauncher.UI;
 
 public partial class App : Application
 {
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     public new static App Current => (App)Application.Current;
     public IServiceProvider Services { get; }
 
@@ -36,8 +38,10 @@ public partial class App : Application
         services.AddSingleton<IGameCoverService, GameCoverService>();
 
         // UI Services
+        services.AddSingleton<IAppSettingsService, AppSettingsService>();
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IThemeService, ThemeService>();
+        services.AddSingleton<IAppUpdateService, AppUpdateService>();
         services.AddSingleton<IMyGamesRefreshService, MyGamesRefreshService>();
 
         // ViewModels
@@ -76,8 +80,24 @@ public partial class App : Application
         var mainWindow = Services.GetRequiredService<MainWindow>();
         mainWindow.Show();
 
+        _ = RunStartupUpdateCheckAsync(mainWindow);
+
         // 启动时后台拉取「我的游戏」中缺失的封面，避免之前添加的游戏不显示封面
         _ = RunStartupCoverFetchAsync();
+    }
+
+    private async Task RunStartupUpdateCheckAsync(Window owner)
+    {
+        try
+        {
+            var updateService = Services.GetRequiredService<IAppUpdateService>();
+            var result = await updateService.CheckForUpdatesAsync(manual: false);
+            await AppUpdateFlow.HandleCheckResultAsync(owner, updateService, result, manual: false);
+        }
+        catch (Exception ex)
+        {
+            Logger.Warn(ex, "Startup update check failed.");
+        }
     }
 
     private async Task RunStartupCoverFetchAsync()

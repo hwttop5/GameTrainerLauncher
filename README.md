@@ -66,17 +66,27 @@
 
 ---
 
-## 打包为 exe 安装包
+## 打包与发布
 
-本仓库仅支持通过 [Inno Setup](https://jrsoftware.org/isinfo.php) 生成单文件安装包（.exe）。**需先安装 Inno Setup 6**。
+项目现在使用 **Velopack + GitHub Releases** 作为安装包和自动更新主链路。
 
-**一键打包**（在仓库根目录执行）：
+**本地打包**（在仓库根目录执行）：
 ```powershell
-.\Installer\build-installer.ps1
+dotnet tool restore
+.\installer\build-velopack.ps1
 ```
-安装包生成在 `Installer\Output\GameTrainerLauncher_Setup_1.0.1.exe`。
+打包产物输出到 `artifacts/velopack`。
 
-也可分步执行：先 `dotnet publish GameTrainerLauncher.UI -p:PublishProfile=FolderProfile`，再用 Inno Setup 打开 `Installer\GameTrainerLauncher.iss` 编译。
+**自动发布 GitHub Release**：
+- 版本号统一定义在 `Directory.Build.props`
+- 推送与版本匹配的标签 `vX.Y.Z`
+- GitHub Actions 会自动构建、校验版本、执行 Velopack 打包并上传 Release 资产
+
+**Legacy Inno Setup**：
+```powershell
+.\installer\build-installer.ps1
+```
+该路径仅作为兼容/遗留安装器保留，不再作为主要更新链路。
 
 ---
 

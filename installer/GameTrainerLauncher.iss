@@ -3,8 +3,10 @@
 
 #define MyAppName "游戏修改器启动器"
 #define MyAppExeName "GameTrainerLauncher.UI.exe"
-#define MyAppVersion "1.0.1"
-#define PublishDir "..\Publish"
+#ifndef MyAppVersion
+  #define MyAppVersion "0.0.0"
+#endif
+#define PublishDir "..\artifacts\publish"
 
 [Setup]
 AppId={{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}

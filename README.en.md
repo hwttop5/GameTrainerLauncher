@@ -66,17 +66,27 @@ Trainers and data live under `Data` next to the executable (e.g. `Data/Trainers`
 
 ---
 
-## Building the exe installer
+## Packaging & release
 
-This repo only supports building a single-file setup (.exe) with [Inno Setup](https://jrsoftware.org/isinfo.php). **Install Inno Setup 6 first.**
+This project now uses **Velopack + GitHub Releases** for installation packages and auto updates.
 
-**One-step build** (from repo root):
+**Local package build** (from repo root):
 ```powershell
-.\Installer\build-installer.ps1
+dotnet tool restore
+.\installer\build-velopack.ps1
 ```
-The setup executable is created at `Installer\Output\GameTrainerLauncher_Setup_1.0.1.exe`.
+Packages are generated under `artifacts/velopack`.
 
-Alternatively: run `dotnet publish GameTrainerLauncher.UI -p:PublishProfile=FolderProfile`, then open `Installer\GameTrainerLauncher.iss` in Inno Setup and compile.
+**Automatic GitHub release**:
+- Version is defined in `Directory.Build.props`
+- Push a matching tag in the form `vX.Y.Z`
+- GitHub Actions builds, validates versions, packs Velopack releases, and uploads assets to GitHub Releases automatically
+
+**Legacy Inno Setup**:
+```powershell
+.\installer\build-installer.ps1
+```
+This path is kept only as a compatibility/legacy installer flow and is no longer the primary update mechanism.
 
 ---
 

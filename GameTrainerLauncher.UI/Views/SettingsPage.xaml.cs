@@ -9,11 +9,13 @@ namespace GameTrainerLauncher.UI.Views;
 public partial class SettingsPage : Page
 {
     private readonly IThemeService _themeService;
+    private readonly IAppUpdateService _appUpdateService;
 
-    public SettingsPage()
+    public SettingsPage(IAppUpdateService appUpdateService)
     {
         InitializeComponent();
         _themeService = ((App)Application.Current).Services.GetRequiredService<IThemeService>();
+        _appUpdateService = appUpdateService;
         LoadCurrentSettings();
     }
 
@@ -25,6 +27,7 @@ public partial class SettingsPage : Page
         var theme = _themeService.GetCurrentTheme();
         ThemeLight.IsChecked = theme == "Light";
         ThemeDark.IsChecked = theme == "Dark";
+        RefreshUpdateStatus();
     }
 
     private void Language_Checked(object sender, RoutedEventArgs e)
@@ -40,5 +43,31 @@ public partial class SettingsPage : Page
             var theme = themeStr == "Dark" ? ApplicationTheme.Dark : ApplicationTheme.Light;
             _themeService.SetTheme(theme);
         }
+    }
+
+    private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)
+    {
+        CheckForUpdatesButton.IsEnabled = false;
+        UpdateStatusText.Text = UpdateTextFormatter.GetString("UpdateChecking");
+
+        try
+        {
+            var result = await _appUpdateService.CheckForUpdatesAsync(manual: true);
+            RefreshUpdateStatus();
+            await AppUpdateFlow.HandleCheckResultAsync(Window.GetWindow(this), _appUpdateService, result, manual: true);
+            RefreshUpdateStatus();
+        }
+        finally
+        {
+            CheckForUpdatesButton.IsEnabled = true;
+        }
+    }
+
+    private void RefreshUpdateStatus()
+    {
+        var snapshot = _appUpdateService.GetStatusSnapshot();
+        CurrentVersionText.Text = snapshot.CurrentVersion;
+        UpdateStatusText.Text = UpdateTextFormatter.GetStatusText(snapshot);
+        UpdateLastCheckedText.Text = UpdateTextFormatter.FormatLastChecked(snapshot.LastCheckedAtUtc);
     }
 }
