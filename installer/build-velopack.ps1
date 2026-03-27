@@ -74,8 +74,8 @@ if (-not (Test-Path $hostFxrPath)) {
 }
 
 $runtimeConfig = Get-Content $runtimeConfigPath -Raw | ConvertFrom-Json
-if (-not $runtimeConfig.runtimeOptions.includedFrameworks) {
-    throw "Published package is not self-contained. runtimeconfig.json is missing includedFrameworks."
+if (-not $runtimeConfig.runtimeOptions.includedFrameworks -and -not (Test-Path $hostFxrPath)) {
+    throw "Published package does not look self-contained."
 }
 
 if ($DownloadPreviousReleases -and -not [string]::IsNullOrWhiteSpace($RepoUrl)) {
