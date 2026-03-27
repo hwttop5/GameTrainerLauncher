@@ -91,7 +91,7 @@ jobs:
 
       - name: Publish
         shell: pwsh
-        run: dotnet publish $env:PROJECT_PATH -p:PublishProfile=FolderProfile -c Release -r "${{ steps.version.outputs.publish_runtime }}" --self-contained true --no-build -p:ContinuousIntegrationBuild=true
+        run: dotnet publish $env:PROJECT_PATH -p:PublishProfile=FolderProfile -c Release -r "${{ steps.version.outputs.publish_runtime }}" --self-contained true -p:ContinuousIntegrationBuild=true
 
       - name: Validate published file version
         shell: pwsh
@@ -120,8 +120,12 @@ jobs:
           }
 
           $runtimeConfig = Get-Content $runtimeConfigPath -Raw | ConvertFrom-Json
-          if (-not $runtimeConfig.runtimeOptions.includedFrameworks -and -not (Test-Path $hostFxrPath)) {
-              throw "Published package does not look self-contained."
+          if (-not $runtimeConfig.runtimeOptions.includedFrameworks) {
+              throw "Published runtime config is not self-contained."
+          }
+
+          if ($runtimeConfig.runtimeOptions.frameworks) {
+              throw "Published runtime config still contains framework references."
           }
 
       - name: Generate release notes
@@ -180,6 +184,42 @@ jobs:
             --runtime "${{ steps.version.outputs.publish_runtime }}" `
             --icon "GameTrainerLauncher.UI/Assets/logo.ico" `
             --outputDir "artifacts/velopack"
+
+      - name: Validate packaged runtime config
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+          $version = "${{ steps.version.outputs.version }}"
+          $packagePath = Join-Path $PWD "artifacts/velopack/GameTrainerLauncher-$version-full.nupkg"
+          if (-not (Test-Path $packagePath)) {
+              throw "Velopack full package not found: $packagePath"
+          }
+
+          $extractDir = Join-Path $env:RUNNER_TEMP "velopack-validate-$version"
+          if (Test-Path $extractDir) {
+              Remove-Item -Recurse -Force $extractDir
+          }
+
+          [System.IO.Compression.ZipFile]::ExtractToDirectory($packagePath, $extractDir)
+
+          $runtimeConfigPath = Join-Path $extractDir "lib/app/GameTrainerLauncher.UI.runtimeconfig.json"
+          $hostFxrPath = Join-Path $extractDir "lib/app/hostfxr.dll"
+          if (-not (Test-Path $runtimeConfigPath)) {
+              throw "Packaged runtime config not found: $runtimeConfigPath"
+          }
+          if (-not (Test-Path $hostFxrPath)) {
+              throw "Packaged hostfxr.dll not found: $hostFxrPath"
+          }
+
+          $runtimeConfig = Get-Content $runtimeConfigPath -Raw | ConvertFrom-Json
+          if (-not $runtimeConfig.runtimeOptions.includedFrameworks) {
+              throw "Packaged runtime config is not self-contained."
+          }
+
+          if ($runtimeConfig.runtimeOptions.frameworks) {
+              throw "Packaged runtime config still contains framework references."
+          }
 
       - name: Upload release assets
         shell: pwsh

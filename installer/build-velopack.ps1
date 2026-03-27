@@ -36,6 +36,44 @@ function Get-ReleaseNotesFile([string]$notesPath, [string]$version) {
     return $generatedPath
 }
 
+function Assert-SelfContainedRuntimeConfig([string]$runtimeConfigPath, [string]$hostFxrPath) {
+    if (-not (Test-Path $runtimeConfigPath)) {
+        throw "Published runtime config not found: $runtimeConfigPath"
+    }
+    if (-not (Test-Path $hostFxrPath)) {
+        throw "Self-contained runtime file not found: $hostFxrPath"
+    }
+
+    $runtimeConfig = Get-Content $runtimeConfigPath -Raw | ConvertFrom-Json
+    if (-not $runtimeConfig.runtimeOptions.includedFrameworks) {
+        throw "Published runtime config is not self-contained."
+    }
+    if ($runtimeConfig.runtimeOptions.frameworks) {
+        throw "Published runtime config still contains framework references."
+    }
+}
+
+function Assert-PackagedRuntimeConfig([string]$packagePath) {
+    if (-not (Test-Path $packagePath)) {
+        throw "Velopack full package not found: $packagePath"
+    }
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $extractDir = Join-Path $env:TEMP ("velopack-validate-" + [Guid]::NewGuid().ToString("N"))
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($packagePath, $extractDir)
+
+    try {
+        $runtimeConfigPath = Join-Path $extractDir "lib/app/GameTrainerLauncher.UI.runtimeconfig.json"
+        $hostFxrPath = Join-Path $extractDir "lib/app/hostfxr.dll"
+        Assert-SelfContainedRuntimeConfig -runtimeConfigPath $runtimeConfigPath -hostFxrPath $hostFxrPath
+    }
+    finally {
+        if (Test-Path $extractDir) {
+            Remove-Item -Recurse -Force $extractDir
+        }
+    }
+}
+
 $buildProps = Get-BuildProps
 if ([string]::IsNullOrWhiteSpace($buildProps.Version)) {
     throw "Version not found in Directory.Build.props"
@@ -66,17 +104,7 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 $runtimeConfigPath = Join-Path $publishDir "GameTrainerLauncher.UI.runtimeconfig.json"
 $hostFxrPath = Join-Path $publishDir "hostfxr.dll"
-if (-not (Test-Path $runtimeConfigPath)) {
-    throw "Published runtime config not found: $runtimeConfigPath"
-}
-if (-not (Test-Path $hostFxrPath)) {
-    throw "Self-contained runtime file not found: $hostFxrPath"
-}
-
-$runtimeConfig = Get-Content $runtimeConfigPath -Raw | ConvertFrom-Json
-if (-not $runtimeConfig.runtimeOptions.includedFrameworks -and -not (Test-Path $hostFxrPath)) {
-    throw "Published package does not look self-contained."
-}
+Assert-SelfContainedRuntimeConfig -runtimeConfigPath $runtimeConfigPath -hostFxrPath $hostFxrPath
 
 if ($DownloadPreviousReleases -and -not [string]::IsNullOrWhiteSpace($RepoUrl)) {
     $token = if ($env:GITHUB_TOKEN) { $env:GITHUB_TOKEN } else { $env:GH_TOKEN }
@@ -108,5 +136,8 @@ dotnet tool run vpk pack `
     --icon "GameTrainerLauncher.UI\Assets\logo.ico" `
     --outputDir $releaseDir
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+$fullPackagePath = Join-Path $releaseDir ("GameTrainerLauncher-" + $buildProps.Version + "-full.nupkg")
+Assert-PackagedRuntimeConfig -packagePath $fullPackagePath
 
 Write-Host "Done. Packages: $releaseDir" -ForegroundColor Green
