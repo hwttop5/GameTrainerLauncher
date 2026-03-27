@@ -66,8 +66,15 @@ internal static class AppUpdateFlow
             {
                 progressWindow.AllowClose();
                 progressWindow.Close();
+                var status = updateService.GetStatusSnapshot();
+                var message = UpdateTextFormatter.GetString("UpdateDownloadFailed");
+                if (!string.IsNullOrWhiteSpace(status.ErrorMessage))
+                {
+                    message = $"{message}{Environment.NewLine}{Environment.NewLine}{status.ErrorMessage}";
+                }
+
                 MessageBox.Show(
-                    UpdateTextFormatter.GetString("UpdateDownloadFailed"),
+                    message,
                     UpdateTextFormatter.GetString("UpdateDialogTitle"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);

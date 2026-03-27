@@ -91,15 +91,23 @@ jobs:
 
       - name: Publish
         shell: pwsh
-        run: dotnet publish $env:PROJECT_PATH -p:PublishProfile=FolderProfile -c Release -r "${{ steps.version.outputs.publish_runtime }}" --no-build -p:ContinuousIntegrationBuild=true
+        run: dotnet publish $env:PROJECT_PATH -p:PublishProfile=FolderProfile -c Release -r "${{ steps.version.outputs.publish_runtime }}" --self-contained true --no-build -p:ContinuousIntegrationBuild=true
 
       - name: Validate published file version
         shell: pwsh
         run: |
           $expectedVersion = "${{ steps.version.outputs.version }}"
           $exePath = Join-Path $PWD "artifacts/publish/GameTrainerLauncher.UI.exe"
+          $runtimeConfigPath = Join-Path $PWD "artifacts/publish/GameTrainerLauncher.UI.runtimeconfig.json"
+          $hostFxrPath = Join-Path $PWD "artifacts/publish/hostfxr.dll"
           if (-not (Test-Path $exePath)) {
               throw "Published executable not found: $exePath"
+          }
+          if (-not (Test-Path $runtimeConfigPath)) {
+              throw "Published runtime config not found: $runtimeConfigPath"
+          }
+          if (-not (Test-Path $hostFxrPath)) {
+              throw "Self-contained runtime file not found: $hostFxrPath"
           }
 
           $versionInfo = (Get-Item $exePath).VersionInfo
@@ -109,6 +117,11 @@ jobs:
 
           if (-not $versionInfo.ProductVersion.StartsWith($expectedVersion)) {
               throw "ProductVersion '$($versionInfo.ProductVersion)' does not start with '$expectedVersion'."
+          }
+
+          $runtimeConfig = Get-Content $runtimeConfigPath -Raw | ConvertFrom-Json
+          if (-not $runtimeConfig.runtimeOptions.includedFrameworks) {
+              throw "Published package is not self-contained. runtimeconfig.json is missing includedFrameworks."
           }
 
       - name: Generate release notes
