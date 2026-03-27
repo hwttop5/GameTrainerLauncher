@@ -1,5 +1,6 @@
 using System.Windows;
 using GameTrainerLauncher.UI.Services;
+using Wpf.Ui.Controls;
 
 namespace GameTrainerLauncher.UI.Views;
 
@@ -10,7 +11,7 @@ public enum UpdatePromptAction
     UpdateNow
 }
 
-public partial class UpdatePromptWindow : Window
+public partial class UpdatePromptWindow : FluentWindow
 {
     public UpdatePromptAction SelectedAction { get; private set; } = UpdatePromptAction.RemindLater;
 

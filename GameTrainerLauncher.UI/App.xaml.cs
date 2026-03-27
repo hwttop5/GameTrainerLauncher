@@ -74,6 +74,12 @@ public partial class App : Application
         config.AddRule(NLog.LogLevel.Debug, NLog.LogLevel.Fatal, logfile);
         NLog.LogManager.Configuration = config;
 
+        var proxyUrl = ProxyEnvironmentBootstrapper.Configure();
+        if (!string.IsNullOrWhiteSpace(proxyUrl))
+        {
+            Logger.Info("Configured local HTTP proxy for outbound requests: {ProxyUrl}", proxyUrl);
+        }
+
         var themeService = Services.GetRequiredService<IThemeService>();
         themeService.Initialize();
 

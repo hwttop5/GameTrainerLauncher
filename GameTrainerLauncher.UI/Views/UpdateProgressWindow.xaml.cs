@@ -1,10 +1,11 @@
 using System.ComponentModel;
 using System.Windows;
 using GameTrainerLauncher.UI.Services;
+using Wpf.Ui.Controls;
 
 namespace GameTrainerLauncher.UI.Views;
 
-public partial class UpdateProgressWindow : Window
+public partial class UpdateProgressWindow : FluentWindow
 {
     private bool _allowClose;
 

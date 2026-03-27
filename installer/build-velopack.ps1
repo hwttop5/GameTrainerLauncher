@@ -57,8 +57,26 @@ dotnet tool restore
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Write-Host "Publishing application..." -ForegroundColor Cyan
-dotnet publish "GameTrainerLauncher.UI\GameTrainerLauncher.UI.csproj" -p:PublishProfile=FolderProfile -c Release
+dotnet publish "GameTrainerLauncher.UI\GameTrainerLauncher.UI.csproj" `
+    -p:PublishProfile=FolderProfile `
+    -c Release `
+    -r $buildProps.PublishRuntime `
+    --self-contained true
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+$runtimeConfigPath = Join-Path $publishDir "GameTrainerLauncher.UI.runtimeconfig.json"
+$hostFxrPath = Join-Path $publishDir "hostfxr.dll"
+if (-not (Test-Path $runtimeConfigPath)) {
+    throw "Published runtime config not found: $runtimeConfigPath"
+}
+if (-not (Test-Path $hostFxrPath)) {
+    throw "Self-contained runtime file not found: $hostFxrPath"
+}
+
+$runtimeConfig = Get-Content $runtimeConfigPath -Raw | ConvertFrom-Json
+if (-not $runtimeConfig.runtimeOptions.includedFrameworks) {
+    throw "Published package is not self-contained. runtimeconfig.json is missing includedFrameworks."
+}
 
 if ($DownloadPreviousReleases -and -not [string]::IsNullOrWhiteSpace($RepoUrl)) {
     $token = if ($env:GITHUB_TOKEN) { $env:GITHUB_TOKEN } else { $env:GH_TOKEN }
