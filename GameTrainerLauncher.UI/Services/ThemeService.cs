@@ -1,9 +1,6 @@
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Windows;
 using System.Windows.Media;
-using GameTrainerLauncher.Infrastructure;
 using Wpf.Ui.Appearance;
 
 namespace GameTrainerLauncher.UI.Services;
@@ -19,60 +16,28 @@ public interface IThemeService
 
 public class ThemeService : IThemeService
 {
-    private class UserSettings
-    {
-        public string Theme { get; set; } = "Dark";
-        public string Language { get; set; } = "en-US";
-    }
+    private readonly IAppSettingsService _settingsService;
 
-    private readonly string? _settingsPath;
-    private UserSettings _currentSettings;
-
-    public ThemeService()
+    public ThemeService(IAppSettingsService settingsService)
     {
-        try
-        {
-            AppPaths.EnsureDataFolderExists();
-            _settingsPath = Path.Combine(AppPaths.DataFolder, "settings.json");
-        }
-        catch (Exception)
-        {
-            _settingsPath = null;
-        }
-        _currentSettings = new UserSettings();
+        _settingsService = settingsService;
     }
 
     public void Initialize()
     {
-        if (_settingsPath != null && File.Exists(_settingsPath))
-        {
-            try
-            {
-                var json = File.ReadAllText(_settingsPath);
-                var loaded = JsonSerializer.Deserialize<UserSettings>(json);
-                if (loaded != null)
-                {
-                    _currentSettings = loaded;
-                }
-            }
-            catch
-            {
-                // Use defaults on load error
-            }
-        }
+        var currentSettings = _settingsService.GetSettings();
 
-        var theme = _currentSettings.Theme == "Light" ? ApplicationTheme.Light : ApplicationTheme.Dark;
+        var theme = currentSettings.Theme == "Light" ? ApplicationTheme.Light : ApplicationTheme.Dark;
         ApplicationThemeManager.Apply(theme);
         ApplyThemeBrushes(theme);
-        SetLanguageInternal(_currentSettings.Language);
+        SetLanguageInternal(currentSettings.Language);
     }
 
     public void SetTheme(ApplicationTheme theme)
     {
         ApplicationThemeManager.Apply(theme);
         ApplyThemeBrushes(theme);
-        _currentSettings.Theme = theme == ApplicationTheme.Light ? "Light" : "Dark";
-        SaveSettings();
+        _settingsService.Update(next => next.Theme = theme == ApplicationTheme.Light ? "Light" : "Dark");
     }
 
     /// <summary>Update sidebar, window and card-related brushes for light/dark theme.</summary>
@@ -107,13 +72,12 @@ public class ThemeService : IThemeService
     public void SetLanguage(string languageCode)
     {
         SetLanguageInternal(languageCode);
-        _currentSettings.Language = languageCode;
-        SaveSettings();
+        _settingsService.Update(next => next.Language = languageCode);
     }
 
-    public string GetCurrentLanguage() => _currentSettings.Language;
+    public string GetCurrentLanguage() => _settingsService.GetSettings().Language;
 
-    public string GetCurrentTheme() => _currentSettings.Theme;
+    public string GetCurrentTheme() => _settingsService.GetSettings().Theme;
 
     private void SetLanguageInternal(string languageCode)
     {
@@ -136,20 +100,5 @@ public class ThemeService : IThemeService
             merged.Remove(langDict);
         }
         merged.Add(dict);
-    }
-
-    private void SaveSettings()
-    {
-        if (_settingsPath == null) return;
-
-        try
-        {
-            var json = JsonSerializer.Serialize(_currentSettings);
-            File.WriteAllText(_settingsPath, json);
-        }
-        catch
-        {
-            // Ignore errors
-        }
     }
 }

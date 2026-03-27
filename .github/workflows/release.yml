@@ -1,0 +1,198 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      PROJECT_PATH: GameTrainerLauncher.UI/GameTrainerLauncher.UI.csproj
+      RELEASE_CHANNEL: win
+      PACK_ID: GameTrainerLauncher
+      PACK_TITLE: Game Trainer Launcher
+      PACK_AUTHORS: hwttop5
+      MAIN_EXE: GameTrainerLauncher.UI.exe
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore local tools
+        shell: pwsh
+        run: dotnet tool restore
+
+      - name: Read version metadata
+        id: version
+        shell: pwsh
+        run: |
+          [xml]$props = Get-Content "Directory.Build.props"
+          $version = [string]$props.Project.PropertyGroup.Version
+          $repoUrl = [string]$props.Project.PropertyGroup.RepositoryUrl
+          $publishRuntime = [string]$props.Project.PropertyGroup.PublishRuntime
+          $tag = "${{ github.ref_name }}"
+
+          if ([string]::IsNullOrWhiteSpace($version)) {
+              throw "Version not found in Directory.Build.props."
+          }
+
+          if ($tag -ne "v$version") {
+              throw "Git tag '$tag' does not match project version 'v$version'."
+          }
+
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          "repo_url=$repoUrl" >> $env:GITHUB_OUTPUT
+          "publish_runtime=$publishRuntime" >> $env:GITHUB_OUTPUT
+
+      - name: Restore project
+        shell: pwsh
+        run: dotnet restore $env:PROJECT_PATH
+
+      - name: Detect test projects
+        id: tests
+        shell: pwsh
+        run: |
+          $tests = Get-ChildItem -Recurse -Include *Tests*.csproj,*Test*.csproj | Select-Object -ExpandProperty FullName
+          if ($tests) {
+              "has_tests=true" >> $env:GITHUB_OUTPUT
+          }
+          else {
+              "has_tests=false" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Build Release
+        shell: pwsh
+        run: dotnet build $env:PROJECT_PATH -c Release --no-restore -p:ContinuousIntegrationBuild=true
+
+      - name: Run tests
+        if: steps.tests.outputs.has_tests == 'true'
+        shell: pwsh
+        run: |
+          $tests = Get-ChildItem -Recurse -Include *Tests*.csproj,*Test*.csproj | Select-Object -ExpandProperty FullName
+          foreach ($testProject in $tests) {
+              dotnet test $testProject -c Release --no-build --verbosity minimal
+              if ($LASTEXITCODE -ne 0) {
+                  exit $LASTEXITCODE
+              }
+          }
+
+      - name: Publish
+        shell: pwsh
+        run: dotnet publish $env:PROJECT_PATH -p:PublishProfile=FolderProfile -c Release --no-build -p:ContinuousIntegrationBuild=true
+
+      - name: Validate published file version
+        shell: pwsh
+        run: |
+          $expectedVersion = "${{ steps.version.outputs.version }}"
+          $exePath = Join-Path $PWD "artifacts/publish/GameTrainerLauncher.UI.exe"
+          if (-not (Test-Path $exePath)) {
+              throw "Published executable not found: $exePath"
+          }
+
+          $versionInfo = (Get-Item $exePath).VersionInfo
+          if ($versionInfo.FileVersion -ne "$expectedVersion.0") {
+              throw "FileVersion '$($versionInfo.FileVersion)' does not match '$expectedVersion.0'."
+          }
+
+          if (-not $versionInfo.ProductVersion.StartsWith($expectedVersion)) {
+              throw "ProductVersion '$($versionInfo.ProductVersion)' does not start with '$expectedVersion'."
+          }
+
+      - name: Generate release notes
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "artifacts" | Out-Null
+          $tag = "${{ steps.version.outputs.tag }}"
+          $version = "${{ steps.version.outputs.version }}"
+          $previousTag = git describe --tags --abbrev=0 "$tag^" 2>$null
+
+          if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($previousTag)) {
+              $commits = git log "$previousTag..$tag" --pretty=format:"- %s" --no-merges
+          }
+          else {
+              $commits = git log -20 --pretty=format:"- %s" --no-merges
+          }
+
+          if ([string]::IsNullOrWhiteSpace($commits)) {
+              $commits = "- Release $version"
+          }
+
+          $notes = @(
+              "# Game Trainer Launcher v$version",
+              "",
+              $commits
+          ) -join [Environment]::NewLine
+
+          Set-Content -Path "artifacts/release-notes.md" -Value $notes -Encoding UTF8
+
+      - name: Download previous Velopack releases
+        shell: pwsh
+        run: |
+          dotnet tool run vpk download github `
+            --repoUrl "${{ steps.version.outputs.repo_url }}" `
+            --channel $env:RELEASE_CHANNEL `
+            --outputDir "artifacts/velopack" `
+            --token "${{ secrets.GITHUB_TOKEN }}"
+
+          if ($LASTEXITCODE -ne 0) {
+              Write-Host "Previous release packages were not downloaded. Continuing without delta baseline."
+              exit 0
+          }
+
+      - name: Pack Velopack release
+        shell: pwsh
+        run: |
+          dotnet tool run vpk pack `
+            --packId $env:PACK_ID `
+            --packVersion "${{ steps.version.outputs.version }}" `
+            --packDir "artifacts/publish" `
+            --mainExe $env:MAIN_EXE `
+            --packTitle $env:PACK_TITLE `
+            --packAuthors $env:PACK_AUTHORS `
+            --releaseNotes "artifacts/release-notes.md" `
+            --channel $env:RELEASE_CHANNEL `
+            --runtime "${{ steps.version.outputs.publish_runtime }}" `
+            --icon "GameTrainerLauncher.UI/Assets/logo.ico" `
+            --outputDir "artifacts/velopack"
+
+      - name: Upload release assets
+        shell: pwsh
+        run: |
+          dotnet tool run vpk upload github `
+            --repoUrl "${{ steps.version.outputs.repo_url }}" `
+            --channel $env:RELEASE_CHANNEL `
+            --outputDir "artifacts/velopack" `
+            --token "${{ secrets.GITHUB_TOKEN }}" `
+            --publish `
+            --merge `
+            --releaseName "$env:PACK_TITLE v${{ steps.version.outputs.version }}" `
+            --tag "${{ steps.version.outputs.tag }}"
+
+      - name: Sync GitHub release body
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release edit "${{ steps.version.outputs.tag }}" `
+            --repo "${{ github.repository }}" `
+            --title "$env:PACK_TITLE v${{ steps.version.outputs.version }}" `
+            --notes-file "artifacts/release-notes.md"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: velopack-${{ steps.version.outputs.version }}
+          path: artifacts/velopack/*

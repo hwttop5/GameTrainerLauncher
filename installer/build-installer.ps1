@@ -1,7 +1,18 @@
-# 一键生成安装包：先 publish，再调用 Inno Setup 编译（若已安装）
+# Legacy Inno Setup packaging helper. Primary release flow now uses Velopack.
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
+
+function Get-ProjectVersion {
+    [xml]$props = Get-Content (Join-Path $root "Directory.Build.props")
+    $version = $props.Project.PropertyGroup.Version
+    if ([string]::IsNullOrWhiteSpace($version)) {
+        throw "Version not found in Directory.Build.props"
+    }
+    return $version
+}
+
+$version = Get-ProjectVersion
 
 Write-Host "Step 1: Publishing app..." -ForegroundColor Cyan
 dotnet publish "GameTrainerLauncher.UI\GameTrainerLauncher.UI.csproj" -p:PublishProfile=FolderProfile -c Release
@@ -15,7 +26,7 @@ if (-not (Test-Path $iscc)) {
 }
 
 Write-Host "Step 2: Compiling installer..." -ForegroundColor Cyan
-& $iscc "Installer\GameTrainerLauncher.iss"
+& $iscc "/DMyAppVersion=$version" "Installer\GameTrainerLauncher.iss"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-Write-Host "Done. Installer: Installer\Output\GameTrainerLauncher_Setup_1.0.1.exe" -ForegroundColor Green
+Write-Host "Done. Installer: Installer\Output\GameTrainerLauncher_Setup_$version.exe" -ForegroundColor Green
