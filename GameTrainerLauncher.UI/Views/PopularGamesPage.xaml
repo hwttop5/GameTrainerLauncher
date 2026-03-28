@@ -5,55 +5,70 @@
       xmlns:controls="clr-namespace:GameTrainerLauncher.UI.Controls"
       Title="{DynamicResource NavPopular}">
     <Grid Margin="10">
-        <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Panel.ZIndex="1000">
-            <Grid.Style>
-                <Style TargetType="Grid">
-                    <Setter Property="Opacity" Value="0"/>
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
-                            <DataTrigger.EnterActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.2"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </DataTrigger.EnterActions>
-                            <DataTrigger.ExitActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.15"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </DataTrigger.ExitActions>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Grid.Style>
-            <ui:ProgressRing IsIndeterminate="True"
-                             Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
-                             Width="60" Height="60"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="72"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <ui:InfoBar Grid.Row="0"
+                    Margin="0,0,0,12"
+                    IsClosable="True"
+                    IsOpen="{Binding PageFeedback.IsOpen, Mode=TwoWay}"
+                    Severity="{Binding PageFeedback.Severity}"
+                    Title="{Binding PageFeedback.Title}"
+                    Message="{Binding PageFeedback.Message}"/>
+
+        <Grid Grid.Row="1">
+            <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Panel.ZIndex="1000">
+                <Grid.Style>
+                    <Style TargetType="Grid">
+                        <Setter Property="Opacity" Value="0"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.EnterActions>
+                                <DataTrigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.ExitActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Style>
+                <ui:ProgressRing IsIndeterminate="True"
+                                 Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                 Width="60" Height="60"/>
+            </Grid>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <ItemsControl ItemsSource="{Binding Trainers}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <controls:TrainerCard/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <ui:Button Content="{DynamicResource BtnLoadMore}"
+                                Command="{Binding LoadMoreCommand}"
+                                Visibility="{Binding IsLoadMoreVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                HorizontalAlignment="Center" Margin="0,20" Appearance="Secondary" Width="200"/>
+                </StackPanel>
+            </ScrollViewer>
         </Grid>
-
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel>
-                <ItemsControl ItemsSource="{Binding Trainers}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <controls:TrainerCard/>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-
-                <ui:Button Content="{DynamicResource BtnLoadMore}"
-                            Command="{Binding LoadMoreCommand}"
-                            Visibility="{Binding IsLoadMoreVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            HorizontalAlignment="Center" Margin="0,20" Appearance="Secondary" Width="200"/>
-            </StackPanel>
-        </ScrollViewer>
     </Grid>
 </Page>

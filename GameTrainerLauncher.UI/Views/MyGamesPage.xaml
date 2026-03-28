@@ -8,7 +8,20 @@
         <converters:LessThanConverter x:Key="LessThanConverter"/>
     </Page.Resources>
     <Grid Margin="10">
-        <ListView x:Name="GamesList" ItemsSource="{Binding Games}" SelectionMode="Single" AllowDrop="True"
+        <Grid.RowDefinitions>
+            <RowDefinition Height="72"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <ui:InfoBar Grid.Row="0"
+                    Margin="0,0,0,12"
+                    IsClosable="True"
+                    IsOpen="{Binding PageFeedback.IsOpen, Mode=TwoWay}"
+                    Severity="{Binding PageFeedback.Severity}"
+                    Title="{Binding PageFeedback.Title}"
+                    Message="{Binding PageFeedback.Message}"/>
+
+        <ListView x:Name="GamesList" Grid.Row="1" ItemsSource="{Binding Games}" SelectionMode="Single" AllowDrop="True"
                   Visibility="{Binding HasGames, Converter={StaticResource BooleanToVisibilityConverter}}">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
@@ -195,7 +208,7 @@
             </ListView.ItemTemplate>
         </ListView>
         <!-- 仅当「我的游戏」加载完成且无数据时显示空状态 -->
-        <Grid Visibility="{Binding ShowNoGamesEmptyState, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <Grid Grid.Row="1" Visibility="{Binding ShowNoGamesEmptyState, Converter={StaticResource BooleanToVisibilityConverter}}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <ui:SymbolIcon Symbol="Games24" FontSize="64" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,16"/>
                 <TextBlock Text="{DynamicResource MsgNoGamesTitle}" FontSize="18" FontWeight="Bold" Margin="0,0,0,8" HorizontalAlignment="Center" Foreground="{DynamicResource EmptyStateTitleBrush}"/>

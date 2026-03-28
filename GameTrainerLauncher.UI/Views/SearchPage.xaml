@@ -5,28 +5,43 @@
       xmlns:controls="clr-namespace:GameTrainerLauncher.UI.Controls"
       Title="{DynamicResource BtnSearch}">
     <Grid Margin="10">
-        <ui:ProgressRing IsIndeterminate="True"
-                         Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
-                         VerticalAlignment="Center" HorizontalAlignment="Center" Width="60" Height="60"
-                         Panel.ZIndex="1000"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="72"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-        <TextBlock Text="{DynamicResource MsgNoResults}"
-                   Visibility="{Binding HasNoResults, Converter={StaticResource BooleanToVisibilityConverter}}"
-                   VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Foreground="Gray"/>
+        <ui:InfoBar Grid.Row="0"
+                    Margin="0,0,0,12"
+                    IsClosable="True"
+                    IsOpen="{Binding PageFeedback.IsOpen, Mode=TwoWay}"
+                    Severity="{Binding PageFeedback.Severity}"
+                    Title="{Binding PageFeedback.Title}"
+                    Message="{Binding PageFeedback.Message}"/>
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding SearchResults}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <controls:TrainerCard/>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+        <Grid Grid.Row="1">
+            <ui:ProgressRing IsIndeterminate="True"
+                             Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                             VerticalAlignment="Center" HorizontalAlignment="Center" Width="60" Height="60"
+                             Panel.ZIndex="1000"/>
+
+            <TextBlock Text="{DynamicResource MsgNoResults}"
+                       Visibility="{Binding HasNoResults, Converter={StaticResource BooleanToVisibilityConverter}}"
+                       VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Foreground="Gray"/>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding SearchResults}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <controls:TrainerCard/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </Page>

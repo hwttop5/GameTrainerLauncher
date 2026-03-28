@@ -10,12 +10,14 @@ public partial class SettingsPage : Page
 {
     private readonly IThemeService _themeService;
     private readonly IAppUpdateService _appUpdateService;
+    private readonly IAppNotificationService _notificationService;
 
-    public SettingsPage(IAppUpdateService appUpdateService)
+    public SettingsPage(IAppUpdateService appUpdateService, IAppNotificationService notificationService)
     {
         InitializeComponent();
         _themeService = ((App)Application.Current).Services.GetRequiredService<IThemeService>();
         _appUpdateService = appUpdateService;
+        _notificationService = notificationService;
         LoadCurrentSettings();
     }
 
@@ -54,7 +56,7 @@ public partial class SettingsPage : Page
         {
             var result = await _appUpdateService.CheckForUpdatesAsync(manual: true);
             RefreshUpdateStatus();
-            await AppUpdateFlow.HandleCheckResultAsync(Window.GetWindow(this), _appUpdateService, result, manual: true);
+            await AppUpdateFlow.HandleCheckResultAsync(Window.GetWindow(this), _appUpdateService, _notificationService, result, manual: true);
             RefreshUpdateStatus();
         }
         finally

@@ -10,16 +10,18 @@ using GameTrainerLauncher.Infrastructure.Data;
 using GameTrainerLauncher.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Wpf.Ui.Controls;
 
 namespace GameTrainerLauncher.UI.ViewModels;
 
-public partial class SearchViewModel : ObservableObject
+public partial class SearchViewModel : PageFeedbackViewModelBase
 {
     private readonly IScraperService _scraperService;
     private readonly AppDbContext _dbContext;
     private readonly ITrainerLibraryService _trainerLibraryService;
     private readonly ITrainerVersionSelectionService _trainerVersionSelectionService;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IAppNotificationService _notificationService;
 
     [ObservableProperty]
     private ObservableCollection<Trainer> _searchResults = new();
@@ -38,13 +40,15 @@ public partial class SearchViewModel : ObservableObject
         AppDbContext dbContext,
         ITrainerLibraryService trainerLibraryService,
         ITrainerVersionSelectionService trainerVersionSelectionService,
-        IServiceScopeFactory scopeFactory)
+        IServiceScopeFactory scopeFactory,
+        IAppNotificationService notificationService)
     {
         _scraperService = scraperService;
         _dbContext = dbContext;
         _trainerLibraryService = trainerLibraryService;
         _trainerVersionSelectionService = trainerVersionSelectionService;
         _scopeFactory = scopeFactory;
+        _notificationService = notificationService;
     }
 
     [RelayCommand]
@@ -81,7 +85,7 @@ public partial class SearchViewModel : ObservableObject
         {
             var msg = (string)Application.Current.FindResource("MsgSearchEmpty") ?? "Please enter a game name before searching.";
             var title = (string)Application.Current.FindResource("MsgSearchTitle") ?? "Search";
-            MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Information);
+            _notificationService.ShowInfo(msg, title);
             return;
         }
 
@@ -93,6 +97,7 @@ public partial class SearchViewModel : ObservableObject
         SearchKeyword = keyword;
         IsLoading = true;
         HasNoResults = false;
+        ClearPageFeedback();
         SearchResults.Clear();
 
         try
@@ -142,8 +147,10 @@ public partial class SearchViewModel : ObservableObject
         catch (Exception ex)
         {
             var msg = ((string)Application.Current.FindResource("MsgSearchFailed") ?? "Search failed.") + " " + ex.Message;
-            var title = (string)Application.Current.FindResource("MsgErrorTitle") ?? "Error";
-            MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Error);
+            ShowPageFeedback(
+                InfoBarSeverity.Error,
+                (string)Application.Current.FindResource("MsgErrorTitle") ?? "Error",
+                msg);
         }
         finally
         {
@@ -159,6 +166,7 @@ public partial class SearchViewModel : ObservableObject
             return;
         }
 
+        ClearPageFeedback();
         trainer.IsAddPending = true;
 
         try
@@ -169,7 +177,7 @@ public partial class SearchViewModel : ObservableObject
                 trainer.IsAddPending = false;
                 var msg = (string)Application.Current.FindResource("MsgAlreadyInLibrary");
                 var title = (string)Application.Current.FindResource("MsgInfoTitle");
-                MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Information);
+                _notificationService.ShowInfo(msg, title);
                 return;
             }
 
@@ -188,8 +196,10 @@ public partial class SearchViewModel : ObservableObject
             trainer.IsAddPending = false;
             trainer.IsAdding = false;
             var msg = (string)Application.Current.FindResource("MsgAddFailed") + " " + ex.Message;
-            var title = (string)Application.Current.FindResource("MsgErrorTitle");
-            MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Error);
+            ShowPageFeedback(
+                InfoBarSeverity.Error,
+                (string)Application.Current.FindResource("MsgErrorTitle"),
+                msg);
         }
     }
 
@@ -219,25 +229,28 @@ public partial class SearchViewModel : ObservableObject
             trainer.IsDownloaded = success;
             ResetDownloadProgress(trainer);
             trainer.IsAdding = false;
-
-            var titleKey = success ? "MsgSuccessTitle" : "MsgErrorTitle";
-            var messageKey = success ? "MsgAddedToMyGames" : "MsgDownloadFailed";
-            MessageBox.Show(
-                (string)Application.Current.FindResource(messageKey),
-                (string)Application.Current.FindResource(titleKey),
-                MessageBoxButton.OK,
-                success ? MessageBoxImage.Information : MessageBoxImage.Error);
+            if (success)
+            {
+                ClearPageFeedback();
+                _notificationService.ShowSuccess((string)Application.Current.FindResource("MsgAddedToMyGames"));
+            }
+            else
+            {
+                ShowPageFeedback(
+                    InfoBarSeverity.Error,
+                    (string)Application.Current.FindResource("MsgErrorTitle"),
+                    (string)Application.Current.FindResource("MsgDownloadFailed"));
+            }
         }
         catch (OperationCanceledException)
         {
             trainer.IsAddPending = false;
             ResetDownloadProgress(trainer);
             trainer.IsAdding = false;
-            MessageBox.Show(
-                (string)Application.Current.FindResource("MsgDownloadTimeout"),
-                (string)Application.Current.FindResource("MsgErrorTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+            ShowPageFeedback(
+                InfoBarSeverity.Warning,
+                (string)Application.Current.FindResource("MsgWarningTitle"),
+                (string)Application.Current.FindResource("MsgDownloadTimeout"));
         }
         catch (Exception ex)
         {
@@ -245,8 +258,10 @@ public partial class SearchViewModel : ObservableObject
             ResetDownloadProgress(trainer);
             trainer.IsAdding = false;
             var msg = (string)Application.Current.FindResource("MsgAddFailed") + " " + ex.Message;
-            var title = (string)Application.Current.FindResource("MsgErrorTitle");
-            MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Error);
+            ShowPageFeedback(
+                InfoBarSeverity.Error,
+                (string)Application.Current.FindResource("MsgErrorTitle"),
+                msg);
         }
     }
 

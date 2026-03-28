@@ -11,16 +11,18 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
+using Wpf.Ui.Controls;
 
 namespace GameTrainerLauncher.UI.ViewModels;
 
-public partial class MyGamesViewModel : ObservableObject
+public partial class MyGamesViewModel : PageFeedbackViewModelBase
 {
     private readonly AppDbContext _dbContext;
     private readonly ITrainerManager _trainerManager;
     private readonly IScraperService _scraperService;
     private readonly INavigationService _navigationService;
     private readonly IGameCoverService _coverService;
+    private readonly IAppNotificationService _notificationService;
 
     [ObservableProperty]
     private ObservableCollection<Game> _games = new();
@@ -54,13 +56,20 @@ public partial class MyGamesViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowNoGamesEmptyState));
     }
 
-    public MyGamesViewModel(AppDbContext dbContext, ITrainerManager trainerManager, IScraperService scraperService, INavigationService navigationService, IGameCoverService coverService)
+    public MyGamesViewModel(
+        AppDbContext dbContext,
+        ITrainerManager trainerManager,
+        IScraperService scraperService,
+        INavigationService navigationService,
+        IGameCoverService coverService,
+        IAppNotificationService notificationService)
     {
         _dbContext = dbContext;
         _trainerManager = trainerManager;
         _scraperService = scraperService;
         _navigationService = navigationService;
         _coverService = coverService;
+        _notificationService = notificationService;
         // 加载与封面拉取由页面 Loaded 时统一触发，保证每次进入「我的游戏」都会检查并补封面
     }
 
@@ -102,6 +111,7 @@ public partial class MyGamesViewModel : ObservableObject
         // Ensure DB created
         try 
         {
+            ClearPageFeedback();
             await _dbContext.Database.EnsureCreatedAsync();
             await _dbContext.MigrateTrainersTableDropIgnoredColumnsAsync();
             await _dbContext.EnsureGamesDisplayOrderColumnAsync();
@@ -227,10 +237,11 @@ public partial class MyGamesViewModel : ObservableObject
             {
                 IsDataLoaded = true;
                 OnPropertyChanged(nameof(ShowNoGamesEmptyState));
+                ShowPageFeedback(
+                    InfoBarSeverity.Error,
+                    GetString("MsgErrorTitle"),
+                    GetString("MsgDatabaseError") + " " + ex.Message);
             });
-            var title = GetString("MsgErrorTitle");
-             var msg = GetString("MsgDatabaseError") + " " + ex.Message;
-             System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
     }
 
@@ -240,11 +251,10 @@ public partial class MyGamesViewModel : ObservableObject
     {
         if (game?.MatchedTrainer == null)
         {
-            var msg = GetString("MsgNoTrainerFound");
-            var title = GetString("MsgErrorTitle");
-            System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            ShowPageFeedback(InfoBarSeverity.Error, GetString("MsgErrorTitle"), GetString("MsgNoTrainerFound"));
             return;
         }
+        ClearPageFeedback();
         CurrentLaunchingGame = game;
         _ = RunLaunchInBackgroundAsync(game);
     }
@@ -264,14 +274,14 @@ public partial class MyGamesViewModel : ObservableObject
         {
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                System.Windows.MessageBox.Show(GetString("MsgLaunchTimeout"), GetString("MsgTimeoutTitle"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                ShowPageFeedback(InfoBarSeverity.Warning, GetString("MsgWarningTitle"), GetString("MsgLaunchTimeout"));
             });
         }
         catch (Exception ex)
         {
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                System.Windows.MessageBox.Show(GetString("MsgLaunchFailed") + " " + ex.Message, GetString("MsgErrorTitle"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                ShowPageFeedback(InfoBarSeverity.Error, GetString("MsgErrorTitle"), GetString("MsgLaunchFailed") + " " + ex.Message);
             });
         }
         finally
@@ -331,9 +341,7 @@ public partial class MyGamesViewModel : ObservableObject
             }
             catch (Exception ex)
             {
-                 var removeMsg = GetString("MsgRemoveFailed") + " " + ex.Message;
-                 var errTitle = GetString("MsgErrorTitle");
-                 System.Windows.MessageBox.Show(removeMsg, errTitle, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                 ShowPageFeedback(InfoBarSeverity.Error, GetString("MsgErrorTitle"), GetString("MsgRemoveFailed") + " " + ex.Message);
             }
         }
     }
@@ -409,6 +417,7 @@ public partial class MyGamesViewModel : ObservableObject
     [RelayCommand]
     public async Task DownloadTrainerAsync(Game game)
     {
+        ClearPageFeedback();
         if (game.MatchedTrainer == null)
         {
              var results = await _scraperService.SearchAsync(game.Name);
@@ -422,9 +431,7 @@ public partial class MyGamesViewModel : ObservableObject
              }
              else
              {
-                 var msg = GetString("MsgTrainerNotFound", game.Name);
-                 var title = GetString("MsgErrorTitle");
-                 System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                 ShowPageFeedback(InfoBarSeverity.Error, GetString("MsgErrorTitle"), GetString("MsgTrainerNotFound", game.Name));
                  return; 
              }
         }
@@ -479,18 +486,16 @@ public partial class MyGamesViewModel : ObservableObject
                     _dbContext.Trainers.Update(trainer);
                     _dbContext.Games.Update(game);
                     await _dbContext.SaveChangesAsync();
+                    _notificationService.ShowSuccess(GetString("MsgDownloadSuccess"));
                 }
                 else
                 {
-                    var msg = GetString("MsgDownloadFailed");
-                    var title = GetString("MsgErrorTitle");
-                    System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    ShowPageFeedback(InfoBarSeverity.Error, GetString("MsgErrorTitle"), GetString("MsgDownloadFailed"));
                 }
             }
             catch (Exception ex)
             {
-                var title = GetString("MsgErrorTitle");
-                System.Windows.MessageBox.Show(GetString("MsgErrorWithDetail", ex.Message), title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                ShowPageFeedback(InfoBarSeverity.Error, GetString("MsgErrorTitle"), GetString("MsgErrorWithDetail", ex.Message));
             }
             finally
             {

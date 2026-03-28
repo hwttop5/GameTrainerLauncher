@@ -12,6 +12,7 @@ public partial class MainViewModel : ObservableObject
     private readonly IScraperService _scraperService;
     private readonly INavigationService _navigationService;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IAppNotificationService _notificationService;
 
     [ObservableProperty]
     private string _searchText = string.Empty;
@@ -32,11 +33,16 @@ public partial class MainViewModel : ObservableObject
     public bool IsSearchSelected => CurrentPageKey == "Search";
     public bool IsSettingsSelected => CurrentPageKey == "Settings";
 
-    public MainViewModel(IScraperService scraperService, INavigationService navigationService, IServiceProvider serviceProvider)
+    public MainViewModel(
+        IScraperService scraperService,
+        INavigationService navigationService,
+        IServiceProvider serviceProvider,
+        IAppNotificationService notificationService)
     {
         _scraperService = scraperService;
         _navigationService = navigationService;
         _serviceProvider = serviceProvider;
+        _notificationService = notificationService;
         _navigationService.Navigated += (_, key) => CurrentPageKey = key;
     }
 
@@ -48,7 +54,7 @@ public partial class MainViewModel : ObservableObject
         {
             var msg = (string)System.Windows.Application.Current.FindResource("MsgSearchEmpty") ?? "Please enter a game name before searching.";
             var title = (string)System.Windows.Application.Current.FindResource("MsgSearchTitle") ?? "Search";
-            System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            _notificationService.ShowInfo(msg, title);
             return;
         }
 
@@ -80,7 +86,7 @@ public partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             var msg = string.Format((string)System.Windows.Application.Current.FindResource("MsgNavigationError") ?? "Navigation error: {0}", ex.Message);
-            System.Windows.MessageBox.Show(msg);
+            _notificationService.ShowError(msg);
         }
     }
 }

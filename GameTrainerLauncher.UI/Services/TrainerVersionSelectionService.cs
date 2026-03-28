@@ -9,10 +9,12 @@ namespace GameTrainerLauncher.UI.Services;
 public class TrainerVersionSelectionService : ITrainerVersionSelectionService
 {
     private readonly IScraperService _scraperService;
+    private readonly IAppNotificationService _notificationService;
 
-    public TrainerVersionSelectionService(IScraperService scraperService)
+    public TrainerVersionSelectionService(IScraperService scraperService, IAppNotificationService notificationService)
     {
         _scraperService = scraperService;
+        _notificationService = notificationService;
     }
 
     public async Task<bool> EnsureSelectionAsync(Trainer trainer, CancellationToken cancellationToken = default)
@@ -33,11 +35,9 @@ public class TrainerVersionSelectionService : ITrainerVersionSelectionService
 
         if (trainer.DownloadOptions.Count == 0)
         {
-            MessageBox.Show(
+            _notificationService.ShowInfo(
                 GetString("MsgNoTrainerVersions"),
-                GetString("MsgInfoTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                GetString("MsgInfoTitle"));
             return false;
         }
 
