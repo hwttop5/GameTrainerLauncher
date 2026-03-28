@@ -1,9 +1,0 @@
----
-description: 改完代码后先关窗口再构建并启动项目
-alwaysApply: true
----
-
-# 修改后：关窗口 → 构建 → 启动
-
-- 每次改完代码后，**必须先关闭现有运行中的「游戏修改器管理」窗口**（结束已运行的 `GameTrainerLauncher.UI` 进程），再执行构建，然后执行 `dotnet run --project GameTrainerLauncher.UI` 重新启动应用，让用户看到最新效果。
-- 流程：1）结束已有进程（若存在）；2）`dotnet build GameTrainerLauncher.UI\GameTrainerLauncher.UI.csproj`；3）`dotnet run --project GameTrainerLauncher.UI --no-build`（或带 build 的 run）。若构建仍因 exe 被占用失败，再提示用户先手动关闭窗口。
