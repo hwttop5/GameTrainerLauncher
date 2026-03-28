@@ -94,6 +94,10 @@ Write-Host "Restoring local tools..." -ForegroundColor Cyan
 dotnet tool restore
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+Write-Host "Validating update dialog UI regression guard..." -ForegroundColor Cyan
+powershell -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "validate-update-dialog-ui.ps1")
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
 Write-Host "Publishing application..." -ForegroundColor Cyan
 dotnet publish "GameTrainerLauncher.UI\GameTrainerLauncher.UI.csproj" `
     -p:PublishProfile=FolderProfile `
