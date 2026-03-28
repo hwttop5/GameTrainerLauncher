@@ -34,6 +34,10 @@ jobs:
         shell: pwsh
         run: dotnet tool restore
 
+      - name: Validate update dialog UI
+        shell: pwsh
+        run: powershell -ExecutionPolicy Bypass -File "installer/validate-update-dialog-ui.ps1"
+
       - name: Read version metadata
         id: version
         shell: pwsh
