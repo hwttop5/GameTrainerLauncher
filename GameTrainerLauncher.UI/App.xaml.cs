@@ -42,6 +42,7 @@ public partial class App : Application
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<IAppUpdateService, AppUpdateService>();
+        services.AddSingleton<IShortcutRepairService, ShortcutRepairService>();
         services.AddSingleton<IMyGamesRefreshService, MyGamesRefreshService>();
 
         // ViewModels
@@ -82,6 +83,9 @@ public partial class App : Application
 
         var themeService = Services.GetRequiredService<IThemeService>();
         themeService.Initialize();
+
+        var shortcutRepairService = Services.GetRequiredService<IShortcutRepairService>();
+        shortcutRepairService.RepairInstalledShortcuts();
 
         var mainWindow = Services.GetRequiredService<MainWindow>();
         mainWindow.Show();
