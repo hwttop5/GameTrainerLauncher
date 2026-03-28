@@ -6,17 +6,22 @@ using Wpf.Ui.Controls;
 using System.IO;
 using System.Text.Json;
 using System.Windows.Media;
+using System.Windows;
+using GameTrainerLauncher.UI.Models;
 
 namespace GameTrainerLauncher.UI.Views;
 
 public partial class MainWindow : FluentWindow
 {
+    private readonly IAppNotificationService _notificationService;
+
     public MainWindow(MainViewModel viewModel, INavigationService navigationService, IAppNotificationService notificationService)
     {
         InitializeComponent();
+        _notificationService = notificationService;
         DataContext = viewModel;
         ((NavigationService)navigationService).Initialize(MainFrame);
-        notificationService.AttachPresenter(GlobalSnackbarPresenter);
+        NotificationsItemsControl.ItemsSource = notificationService.Notifications;
         viewModel.NavigateTo("Popular");
 
         TrySetIconFromExecutable();
@@ -88,6 +93,14 @@ public partial class MainWindow : FluentWindow
         catch
         {
             // 忽略：图标非关键，XAML 中已有 Icon="/Assets/logo.ico" 兜底
+        }
+    }
+
+    private void NotificationClose_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.DataContext is AppNotificationItem item)
+        {
+            _notificationService.Dismiss(item.Id);
         }
     }
 

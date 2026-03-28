@@ -42,8 +42,8 @@ public partial class App : Application
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<IAppUpdateService, AppUpdateService>();
-        services.AddSingleton<Wpf.Ui.ISnackbarService, Wpf.Ui.SnackbarService>();
         services.AddSingleton<IAppNotificationService, AppNotificationService>();
+        services.AddSingleton<IAppDialogService, AppDialogService>();
         services.AddSingleton<IShortcutRepairService, ShortcutRepairService>();
         services.AddSingleton<IMyGamesRefreshService, MyGamesRefreshService>();
         services.AddSingleton<ITrainerLibraryService, TrainerLibraryService>();
@@ -61,6 +61,7 @@ public partial class App : Application
         services.AddTransient<MyGamesPage>();
         services.AddTransient<SearchPage>();
         services.AddTransient<SettingsPage>();
+        services.AddTransient<AppMessageDialogWindow>();
 
         return services.BuildServiceProvider();
     }
@@ -198,12 +199,28 @@ public partial class App : Application
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
-        MessageBox.Show(e.Exception.ToString(), "Unhandled UI Exception");
+        try
+        {
+            Services.GetRequiredService<IAppDialogService>()
+                .ShowMessage("Unhandled UI Exception", e.Exception.ToString(), AppDialogSeverity.Error);
+        }
+        catch
+        {
+            MessageBox.Show(e.Exception.ToString(), "Unhandled UI Exception");
+        }
         e.Handled = true;
     }
 
     private void OnDomainUnhandledException(object? sender, UnhandledExceptionEventArgs e)
     {
-        MessageBox.Show(e.ExceptionObject?.ToString() ?? "Unknown error", "Unhandled Domain Exception");
+        try
+        {
+            Services.GetRequiredService<IAppDialogService>()
+                .ShowMessage("Unhandled Domain Exception", e.ExceptionObject?.ToString() ?? "Unknown error", AppDialogSeverity.Error);
+        }
+        catch
+        {
+            MessageBox.Show(e.ExceptionObject?.ToString() ?? "Unknown error", "Unhandled Domain Exception");
+        }
     }
 }

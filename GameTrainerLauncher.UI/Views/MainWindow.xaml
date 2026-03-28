@@ -2,71 +2,108 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:models="clr-namespace:GameTrainerLauncher.UI.Models"
         Title="{DynamicResource AppTitle}" Height="768" Width="1024" MinWidth="920"
         WindowStartupLocation="CenterScreen"
         Icon="/Assets/logo.ico"
         WindowBackdropType="None"
         Background="{DynamicResource ApplicationBackgroundBrush}"
         ExtendsContentIntoTitleBar="True">
-    
+    <ui:FluentWindow.Resources>
+        <Style x:Key="NotificationCloseButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="0.8" />
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Opacity" Value="0.65" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </ui:FluentWindow.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" MinHeight="36"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" MinHeight="36" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Title bar: icon 16x16 to fit without clipping -->
         <ui:TitleBar Title="{DynamicResource AppTitle}" Grid.Row="0">
-             <ui:TitleBar.Icon>
-                 <ui:ImageIcon Source="/Assets/logo.ico" Width="16" Height="16"/>
-             </ui:TitleBar.Icon>
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="/Assets/logo.ico" Width="16" Height="16" />
+            </ui:TitleBar.Icon>
         </ui:TitleBar>
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="200"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- Side navigation (current page highlighted) -->
             <StackPanel Grid.Column="0" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
-                <ui:Button Margin="10,8" HorizontalAlignment="Stretch"
-                        Content="{DynamicResource NavPopular}"
-                        Command="{Binding NavigateToCommand}"
-                        CommandParameter="Popular"
-                        Appearance="{Binding IsPopularSelected, Converter={StaticResource BoolToAppearanceConverter}}"/>
-                <ui:Button Margin="10,8" HorizontalAlignment="Stretch"
-                        Content="{DynamicResource NavMyGames}"
-                        Command="{Binding NavigateToCommand}"
-                        CommandParameter="MyGames"
-                        Appearance="{Binding IsMyGamesSelected, Converter={StaticResource BoolToAppearanceConverter}}"/>
-                <ui:Button x:Name="NavSettingsButton" Margin="10,8" HorizontalAlignment="Stretch"
-                        Content="{DynamicResource NavSettings}"
-                        Command="{Binding NavigateToCommand}"
-                        CommandParameter="Settings"
-                        Appearance="{Binding IsSettingsSelected, Converter={StaticResource BoolToAppearanceConverter}}"/>
+                <ui:Button Margin="10,8"
+                           HorizontalAlignment="Stretch"
+                           Content="{DynamicResource NavPopular}"
+                           Command="{Binding NavigateToCommand}"
+                           CommandParameter="Popular"
+                           Appearance="{Binding IsPopularSelected, Converter={StaticResource BoolToAppearanceConverter}}" />
+                <ui:Button Margin="10,8"
+                           HorizontalAlignment="Stretch"
+                           Content="{DynamicResource NavMyGames}"
+                           Command="{Binding NavigateToCommand}"
+                           CommandParameter="MyGames"
+                           Appearance="{Binding IsMyGamesSelected, Converter={StaticResource BoolToAppearanceConverter}}" />
+                <ui:Button x:Name="NavSettingsButton"
+                           Margin="10,8"
+                           HorizontalAlignment="Stretch"
+                           Content="{DynamicResource NavSettings}"
+                           Command="{Binding NavigateToCommand}"
+                           CommandParameter="Settings"
+                           Appearance="{Binding IsSettingsSelected, Converter={StaticResource BoolToAppearanceConverter}}" />
             </StackPanel>
 
-            <!-- Content Area: search bar centered in this column, then frame -->
             <Grid Grid.Column="1" Margin="10">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <Grid Grid.Row="0" Margin="0,0,0,8" HorizontalAlignment="Center" IsHitTestVisible="True" Panel.ZIndex="1">
+
+                <Grid Grid.Row="0"
+                      Margin="0,0,0,8"
+                      HorizontalAlignment="Center"
+                      IsHitTestVisible="True"
+                      Panel.ZIndex="1">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="320"/>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="320" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <ui:TextBox Grid.Column="0" Focusable="True"
+
+                    <ui:TextBox Grid.Column="0"
+                                Focusable="True"
                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                                 PlaceholderText="{DynamicResource SearchPlaceholder}"
-                                Width="320" VerticalAlignment="Center" Margin="0,0,8,0">
+                                Width="320"
+                                VerticalAlignment="Center"
+                                Margin="0,0,8,0">
                         <ui:TextBox.InputBindings>
-                            <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
+                            <KeyBinding Key="Enter" Command="{Binding SearchCommand}" />
                         </ui:TextBox.InputBindings>
                     </ui:TextBox>
-                    <!-- 搜索按钮：与左侧菜单选中态一致（蓝底白字） -->
+
                     <Border x:Name="SearchButtonBorder"
                             Grid.Column="1"
                             BorderThickness="1"
@@ -80,18 +117,93 @@
                                    Foreground="{Binding RelativeSource={RelativeSource Self}, Path=IsEnabled, Converter={StaticResource EnabledToPrimaryForegroundBrushConverter}}"
                                    BorderThickness="0"
                                    Padding="16,6"
-                                   VerticalAlignment="Center"/>
+                                   VerticalAlignment="Center" />
                     </Border>
                 </Grid>
-                <Frame x:Name="MainFrame" Grid.Row="1" NavigationUIVisibility="Hidden" Background="{DynamicResource ApplicationBackgroundBrush}"/>
+
+                <Frame x:Name="MainFrame"
+                       Grid.Row="1"
+                       NavigationUIVisibility="Hidden"
+                       Background="{DynamicResource ApplicationBackgroundBrush}" />
             </Grid>
         </Grid>
 
-        <ui:SnackbarPresenter x:Name="GlobalSnackbarPresenter"
-                              Grid.RowSpan="2"
-                              Margin="0,0,24,24"
-                              HorizontalAlignment="Right"
-                              VerticalAlignment="Bottom"
-                              Panel.ZIndex="5000"/>
+        <ItemsControl x:Name="NotificationsItemsControl"
+                      Grid.RowSpan="2"
+                      Margin="0,0,24,24"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Bottom"
+                      Panel.ZIndex="5000">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type models:AppNotificationItem}">
+                    <Border Width="360"
+                            Margin="0,0,0,12"
+                            Padding="14"
+                            Background="{DynamicResource NotificationSurfaceBrush}"
+                            BorderBrush="{DynamicResource NotificationSurfaceBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="12">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="18"
+                                              ShadowDepth="3"
+                                              Opacity="1"
+                                              Color="{DynamicResource NotificationShadowColor}" />
+                        </Border.Effect>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Width="24"
+                                    Height="24"
+                                    CornerRadius="12"
+                                    Background="{Binding AccentBrush}"
+                                    VerticalAlignment="Top"
+                                    Margin="0,0,12,0">
+                                <TextBlock Text="{Binding IconGlyph}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Foreground="White"
+                                           FontSize="14"
+                                           FontWeight="Bold" />
+                            </Border>
+
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="{Binding Title}"
+                                           FontSize="15"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource NotificationTitleBrush}" />
+                                <TextBlock Text="{Binding Message}"
+                                           Margin="0,8,0,0"
+                                           FontSize="14"
+                                           TextWrapping="Wrap"
+                                           Foreground="{DynamicResource NotificationMessageBrush}" />
+                            </StackPanel>
+
+                            <Button Grid.Column="2"
+                                    Width="24"
+                                    Height="24"
+                                    Padding="0"
+                                    Margin="12,0,0,0"
+                                    Click="NotificationClose_Click"
+                                    Style="{StaticResource NotificationCloseButtonStyle}">
+                                <TextBlock Text="×"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontSize="16"
+                                           Foreground="{DynamicResource NotificationCloseBrush}" />
+                            </Button>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
     </Grid>
 </ui:FluentWindow>
