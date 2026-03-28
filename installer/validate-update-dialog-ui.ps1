@@ -1,5 +1,7 @@
 param(
-    [string]$XamlPath = "GameTrainerLauncher.UI\Views\UpdatePromptWindow.xaml"
+    [string]$XamlPath = "GameTrainerLauncher.UI\Views\UpdatePromptWindow.xaml",
+    [string]$AppStartupPath = "GameTrainerLauncher.UI\App.xaml.cs",
+    [string]$ShortcutServicePath = "GameTrainerLauncher.UI\Services\ShortcutRepairService.cs"
 )
 
 $ErrorActionPreference = "Stop"
@@ -27,3 +29,21 @@ if ($null -eq $scrollViewer) {
 }
 
 Write-Host "Update dialog UI regression check passed." -ForegroundColor Green
+
+$appStartupFullPath = Resolve-Path $AppStartupPath
+$shortcutServiceFullPath = Resolve-Path $ShortcutServicePath
+
+$appStartupContent = Get-Content $appStartupFullPath -Raw
+if ($appStartupContent -notmatch "AddSingleton<IShortcutRepairService,\s*ShortcutRepairService>\(\)") {
+    throw "Shortcut self-repair regression detected: service registration is missing in App.xaml.cs."
+}
+if ($appStartupContent -notmatch "shortcutRepairService\.RepairInstalledShortcuts\(\)") {
+    throw "Shortcut self-repair regression detected: startup invocation is missing in App.xaml.cs."
+}
+
+$shortcutServiceContent = Get-Content $shortcutServiceFullPath -Raw
+if ($shortcutServiceContent -notmatch "class\s+ShortcutRepairService") {
+    throw "Shortcut self-repair regression detected: ShortcutRepairService implementation file is invalid."
+}
+
+Write-Host "Shortcut self-repair wiring check passed." -ForegroundColor Green
