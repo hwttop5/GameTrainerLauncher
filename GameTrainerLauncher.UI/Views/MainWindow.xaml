@@ -86,5 +86,12 @@
                 <Frame x:Name="MainFrame" Grid.Row="1" NavigationUIVisibility="Hidden" Background="{DynamicResource ApplicationBackgroundBrush}"/>
             </Grid>
         </Grid>
+
+        <ui:SnackbarPresenter x:Name="GlobalSnackbarPresenter"
+                              Grid.RowSpan="2"
+                              Margin="0,0,24,24"
+                              HorizontalAlignment="Right"
+                              VerticalAlignment="Bottom"
+                              Panel.ZIndex="5000"/>
     </Grid>
 </ui:FluentWindow>

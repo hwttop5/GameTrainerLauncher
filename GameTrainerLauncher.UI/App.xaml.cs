@@ -42,6 +42,8 @@ public partial class App : Application
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<IAppUpdateService, AppUpdateService>();
+        services.AddSingleton<Wpf.Ui.ISnackbarService, Wpf.Ui.SnackbarService>();
+        services.AddSingleton<IAppNotificationService, AppNotificationService>();
         services.AddSingleton<IShortcutRepairService, ShortcutRepairService>();
         services.AddSingleton<IMyGamesRefreshService, MyGamesRefreshService>();
         services.AddSingleton<ITrainerLibraryService, TrainerLibraryService>();
@@ -103,8 +105,9 @@ public partial class App : Application
         try
         {
             var updateService = Services.GetRequiredService<IAppUpdateService>();
+            var notificationService = Services.GetRequiredService<IAppNotificationService>();
             var result = await updateService.CheckForUpdatesAsync(manual: false);
-            await AppUpdateFlow.HandleCheckResultAsync(owner, updateService, result, manual: false);
+            await AppUpdateFlow.HandleCheckResultAsync(owner, updateService, notificationService, result, manual: false);
         }
         catch (Exception ex)
         {

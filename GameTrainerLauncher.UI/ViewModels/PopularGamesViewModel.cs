@@ -9,16 +9,18 @@ using GameTrainerLauncher.Infrastructure.Data;
 using GameTrainerLauncher.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Wpf.Ui.Controls;
 
 namespace GameTrainerLauncher.UI.ViewModels;
 
-public partial class PopularGamesViewModel : ObservableObject
+public partial class PopularGamesViewModel : PageFeedbackViewModelBase
 {
     private readonly IScraperService _scraperService;
     private readonly AppDbContext _dbContext;
     private readonly ITrainerLibraryService _trainerLibraryService;
     private readonly ITrainerVersionSelectionService _trainerVersionSelectionService;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IAppNotificationService _notificationService;
     private int _currentPage = 1;
 
     [ObservableProperty]
@@ -39,13 +41,15 @@ public partial class PopularGamesViewModel : ObservableObject
         AppDbContext dbContext,
         ITrainerLibraryService trainerLibraryService,
         ITrainerVersionSelectionService trainerVersionSelectionService,
-        IServiceScopeFactory scopeFactory)
+        IServiceScopeFactory scopeFactory,
+        IAppNotificationService notificationService)
     {
         _scraperService = scraperService;
         _dbContext = dbContext;
         _trainerLibraryService = trainerLibraryService;
         _trainerVersionSelectionService = trainerVersionSelectionService;
         _scopeFactory = scopeFactory;
+        _notificationService = notificationService;
         LoadDataCommand.ExecuteAsync(null);
     }
 
@@ -87,6 +91,7 @@ public partial class PopularGamesViewModel : ObservableObject
         IsLoading = true;
         try
         {
+            ClearPageFeedback();
             _currentPage = 1;
             var data = await _scraperService.GetPopularTrainersAsync(_currentPage);
             Trainers.Clear();
@@ -108,6 +113,13 @@ public partial class PopularGamesViewModel : ObservableObject
 
             CanLoadMore = data.Count > 0;
         }
+        catch (Exception ex)
+        {
+            ShowPageFeedback(
+                InfoBarSeverity.Error,
+                (string)Application.Current.FindResource("MsgErrorTitle"),
+                $"{(string)Application.Current.FindResource("MsgPopularLoadFailed")} {ex.Message}");
+        }
         finally
         {
             IsLoading = false;
@@ -125,6 +137,7 @@ public partial class PopularGamesViewModel : ObservableObject
         IsLoading = true;
         try
         {
+            ClearPageFeedback();
             _currentPage++;
             var data = await _scraperService.GetPopularTrainersAsync(_currentPage);
 
@@ -148,6 +161,14 @@ public partial class PopularGamesViewModel : ObservableObject
                 Trainers.Add(trainer);
             }
         }
+        catch (Exception ex)
+        {
+            ShowPageFeedback(
+                InfoBarSeverity.Error,
+                (string)Application.Current.FindResource("MsgErrorTitle"),
+                $"{(string)Application.Current.FindResource("MsgPopularLoadFailed")} {ex.Message}");
+            _currentPage = Math.Max(1, _currentPage - 1);
+        }
         finally
         {
             IsLoading = false;
@@ -162,6 +183,7 @@ public partial class PopularGamesViewModel : ObservableObject
             return;
         }
 
+        ClearPageFeedback();
         trainer.IsAddPending = true;
 
         try
@@ -172,7 +194,7 @@ public partial class PopularGamesViewModel : ObservableObject
                 trainer.IsAddPending = false;
                 var msg = (string)Application.Current.FindResource("MsgAlreadyInLibrary");
                 var title = (string)Application.Current.FindResource("MsgInfoTitle");
-                MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Information);
+                _notificationService.ShowInfo(msg, title);
                 return;
             }
 
@@ -191,8 +213,10 @@ public partial class PopularGamesViewModel : ObservableObject
             trainer.IsAddPending = false;
             trainer.IsAdding = false;
             var msg = (string)Application.Current.FindResource("MsgAddFailed") + " " + ex.Message;
-            var title = (string)Application.Current.FindResource("MsgErrorTitle");
-            MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Error);
+            ShowPageFeedback(
+                InfoBarSeverity.Error,
+                (string)Application.Current.FindResource("MsgErrorTitle"),
+                msg);
         }
     }
 
@@ -222,25 +246,28 @@ public partial class PopularGamesViewModel : ObservableObject
             trainer.IsDownloaded = success;
             ResetDownloadProgress(trainer);
             trainer.IsAdding = false;
-
-            var titleKey = success ? "MsgSuccessTitle" : "MsgErrorTitle";
-            var messageKey = success ? "MsgAddedToMyGames" : "MsgDownloadFailed";
-            MessageBox.Show(
-                (string)Application.Current.FindResource(messageKey),
-                (string)Application.Current.FindResource(titleKey),
-                MessageBoxButton.OK,
-                success ? MessageBoxImage.Information : MessageBoxImage.Error);
+            if (success)
+            {
+                ClearPageFeedback();
+                _notificationService.ShowSuccess((string)Application.Current.FindResource("MsgAddedToMyGames"));
+            }
+            else
+            {
+                ShowPageFeedback(
+                    InfoBarSeverity.Error,
+                    (string)Application.Current.FindResource("MsgErrorTitle"),
+                    (string)Application.Current.FindResource("MsgDownloadFailed"));
+            }
         }
         catch (OperationCanceledException)
         {
             trainer.IsAddPending = false;
             ResetDownloadProgress(trainer);
             trainer.IsAdding = false;
-            MessageBox.Show(
-                (string)Application.Current.FindResource("MsgDownloadTimeout"),
-                (string)Application.Current.FindResource("MsgErrorTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+            ShowPageFeedback(
+                InfoBarSeverity.Warning,
+                (string)Application.Current.FindResource("MsgWarningTitle"),
+                (string)Application.Current.FindResource("MsgDownloadTimeout"));
         }
         catch (Exception ex)
         {
@@ -248,8 +275,10 @@ public partial class PopularGamesViewModel : ObservableObject
             ResetDownloadProgress(trainer);
             trainer.IsAdding = false;
             var msg = (string)Application.Current.FindResource("MsgAddFailed") + " " + ex.Message;
-            var title = (string)Application.Current.FindResource("MsgErrorTitle");
-            MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Error);
+            ShowPageFeedback(
+                InfoBarSeverity.Error,
+                (string)Application.Current.FindResource("MsgErrorTitle"),
+                msg);
         }
     }
 

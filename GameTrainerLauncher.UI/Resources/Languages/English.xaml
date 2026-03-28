@@ -19,6 +19,7 @@
     <system:String x:Key="ThemeLight">Light</system:String>
     <system:String x:Key="ThemeDark">Dark</system:String>
     <system:String x:Key="MsgErrorTitle">Error</system:String>
+    <system:String x:Key="MsgWarningTitle">Warning</system:String>
     <system:String x:Key="MsgDownloadFailed">Download failed. Check logs.</system:String>
     <system:String x:Key="MsgDownloadTimeout">Network issue, download timed out (1 minute).</system:String>
     <system:String x:Key="MsgTrainerNotFound">Trainer not found for {0}</system:String>
@@ -44,6 +45,7 @@
     <system:String x:Key="MsgRemoveFailed">Failed to remove game.</system:String>
     <system:String x:Key="MsgAddFailed">Failed to add game.</system:String>
     <system:String x:Key="MsgSearchFailed">Search failed.</system:String>
+    <system:String x:Key="MsgPopularLoadFailed">Failed to load popular games.</system:String>
     <system:String x:Key="MsgScanReportTitle">Scan Report</system:String>
     <system:String x:Key="MsgDatabaseError">Database Error</system:String>
     <system:String x:Key="MsgTimeoutTitle">Timeout</system:String>

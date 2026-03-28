@@ -5,27 +5,45 @@ namespace GameTrainerLauncher.UI.Services;
 
 internal static class AppUpdateFlow
 {
-    public static async Task HandleCheckResultAsync(Window? owner, IAppUpdateService updateService, UpdateCheckResult result, bool manual, CancellationToken cancellationToken = default)
+    public static async Task HandleCheckResultAsync(
+        Window? owner,
+        IAppUpdateService updateService,
+        IAppNotificationService notificationService,
+        UpdateCheckResult result,
+        bool manual,
+        CancellationToken cancellationToken = default)
     {
         switch (result.State)
         {
             case AppUpdateState.UpdateAvailable:
-                await PromptAndApplyUpdateAsync(owner, updateService, result, cancellationToken);
+                await PromptAndApplyUpdateAsync(owner, updateService, notificationService, result, cancellationToken);
                 break;
             case AppUpdateState.UpToDate when manual:
             case AppUpdateState.PendingRestart when manual:
             case AppUpdateState.NotInstalled when manual:
             case AppUpdateState.Error when manual:
-                MessageBox.Show(
-                    UpdateTextFormatter.GetManualCheckMessage(result),
-                    UpdateTextFormatter.GetString("UpdateDialogTitle"),
-                    MessageBoxButton.OK,
-                    result.State == AppUpdateState.Error ? MessageBoxImage.Error : MessageBoxImage.Information);
+                if (result.State == AppUpdateState.Error)
+                {
+                    notificationService.ShowError(
+                        UpdateTextFormatter.GetManualCheckMessage(result),
+                        UpdateTextFormatter.GetString("UpdateDialogTitle"));
+                }
+                else
+                {
+                    notificationService.ShowInfo(
+                        UpdateTextFormatter.GetManualCheckMessage(result),
+                        UpdateTextFormatter.GetString("UpdateDialogTitle"));
+                }
                 break;
         }
     }
 
-    private static async Task PromptAndApplyUpdateAsync(Window? owner, IAppUpdateService updateService, UpdateCheckResult result, CancellationToken cancellationToken)
+    private static async Task PromptAndApplyUpdateAsync(
+        Window? owner,
+        IAppUpdateService updateService,
+        IAppNotificationService notificationService,
+        UpdateCheckResult result,
+        CancellationToken cancellationToken)
     {
         var promptWindow = new UpdatePromptWindow(result);
         if (owner != null)
@@ -40,12 +58,17 @@ internal static class AppUpdateFlow
                 updateService.SkipVersion(result.AvailableVersion);
                 break;
             case UpdatePromptAction.UpdateNow:
-                await DownloadAndRestartAsync(owner, updateService, result, cancellationToken);
+                await DownloadAndRestartAsync(owner, updateService, notificationService, result, cancellationToken);
                 break;
         }
     }
 
-    private static async Task DownloadAndRestartAsync(Window? owner, IAppUpdateService updateService, UpdateCheckResult result, CancellationToken cancellationToken)
+    private static async Task DownloadAndRestartAsync(
+        Window? owner,
+        IAppUpdateService updateService,
+        IAppNotificationService notificationService,
+        UpdateCheckResult result,
+        CancellationToken cancellationToken)
     {
         var progressWindow = new UpdateProgressWindow();
         if (owner != null)
@@ -73,11 +96,7 @@ internal static class AppUpdateFlow
                     message = $"{message}{Environment.NewLine}{Environment.NewLine}{status.ErrorMessage}";
                 }
 
-                MessageBox.Show(
-                    message,
-                    UpdateTextFormatter.GetString("UpdateDialogTitle"),
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                notificationService.ShowError(message, UpdateTextFormatter.GetString("UpdateDialogTitle"));
                 return;
             }
 

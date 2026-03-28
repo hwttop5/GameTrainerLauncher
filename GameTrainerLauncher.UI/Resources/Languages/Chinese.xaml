@@ -96,4 +96,6 @@
     <system:String x:Key="TrainerVersionColumnSize">大小</system:String>
     <system:String x:Key="TrainerVersionConfirm">下载所选版本</system:String>
     <system:String x:Key="TrainerVersionCancel">取消</system:String>
+    <system:String x:Key="MsgWarningTitle">警告</system:String>
+    <system:String x:Key="MsgPopularLoadFailed">加载热门游戏失败。</system:String>
 </ResourceDictionary>

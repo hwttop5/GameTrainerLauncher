@@ -11,11 +11,12 @@ namespace GameTrainerLauncher.UI.Views;
 
 public partial class MainWindow : FluentWindow
 {
-    public MainWindow(MainViewModel viewModel, INavigationService navigationService)
+    public MainWindow(MainViewModel viewModel, INavigationService navigationService, IAppNotificationService notificationService)
     {
         InitializeComponent();
         DataContext = viewModel;
         ((NavigationService)navigationService).Initialize(MainFrame);
+        notificationService.AttachPresenter(GlobalSnackbarPresenter);
         viewModel.NavigateTo("Popular");
 
         TrySetIconFromExecutable();
