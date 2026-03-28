@@ -103,6 +103,24 @@
                                     </Style>
                                 </ProgressBar.Style>
                             </ProgressBar>
+                            <TextBlock Text="{Binding MatchedTrainer.DownloadStatusText}" FontSize="11" Margin="0,4,0,0" Foreground="{DynamicResource SecondaryTextBrush}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Value="True">
+                                                <DataTrigger.Binding>
+                                                    <MultiBinding Converter="{StaticResource IsCurrentDownloadingConverter}">
+                                                        <Binding/>
+                                                        <Binding Path="DataContext.CurrentDownloadingGame" RelativeSource="{RelativeSource AncestorType=Page}"/>
+                                                    </MultiBinding>
+                                                </DataTrigger.Binding>
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </StackPanel>
                         
                         <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">

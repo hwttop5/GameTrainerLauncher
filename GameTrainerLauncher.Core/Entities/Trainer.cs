@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using GameTrainerLauncher.Core.Models;
 
 namespace GameTrainerLauncher.Core.Entities;
 
@@ -28,6 +29,18 @@ public partial class Trainer : ObservableObject
     [System.ComponentModel.DataAnnotations.Schema.NotMapped]
     [ObservableProperty]
     private bool _isDownloading;
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    [ObservableProperty]
+    private string? _downloadStatusText;
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    [ObservableProperty]
+    private bool _isDownloadProgressEstimated;
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    [ObservableProperty]
+    private TrainerDownloadStage _downloadStage;
 
     [System.ComponentModel.DataAnnotations.Schema.NotMapped]
     [ObservableProperty]

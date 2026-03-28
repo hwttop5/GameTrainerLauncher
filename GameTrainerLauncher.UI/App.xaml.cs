@@ -44,6 +44,7 @@ public partial class App : Application
         services.AddSingleton<IAppUpdateService, AppUpdateService>();
         services.AddSingleton<IShortcutRepairService, ShortcutRepairService>();
         services.AddSingleton<IMyGamesRefreshService, MyGamesRefreshService>();
+        services.AddSingleton<ITrainerLibraryService, TrainerLibraryService>();
 
         // ViewModels
         services.AddTransient<MainViewModel>();

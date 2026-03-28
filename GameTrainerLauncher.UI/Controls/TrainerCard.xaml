@@ -103,6 +103,11 @@
                 </Border>
                 <ProgressBar Value="{Binding DownloadProgress}" Maximum="100" Height="6" Margin="0,6,0,0"
                              Visibility="{Binding IsAdding, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                <TextBlock Text="{Binding DownloadStatusText}"
+                           Margin="0,4,0,0"
+                           FontSize="11"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           Visibility="{Binding IsAdding, Converter={StaticResource BooleanToVisibilityConverter}}"/>
             </StackPanel>
         </Grid>
     </ui:Card>
