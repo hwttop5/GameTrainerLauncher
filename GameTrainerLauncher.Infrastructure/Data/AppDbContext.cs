@@ -20,10 +20,12 @@ public class AppDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<Trainer>()
+            .Ignore(t => t.DownloadOptions)
             .Ignore(t => t.IsLoading)
             .Ignore(t => t.IsDownloading)
             .Ignore(t => t.DownloadProgress)
             .Ignore(t => t.IsAdding)
+            .Ignore(t => t.IsAddPending)
             .Ignore(t => t.DownloadStatusText)
             .Ignore(t => t.IsDownloadProgressEstimated)
             .Ignore(t => t.DownloadStage);
@@ -40,6 +42,8 @@ public class AppDbContext : DbContext
             "DownloadProgress",
             "IsDownloading",
             "IsLoading",
+            "IsAdding",
+            "IsAddPending",
             "DownloadStatusText",
             "IsDownloadProgressEstimated",
             "DownloadStage"

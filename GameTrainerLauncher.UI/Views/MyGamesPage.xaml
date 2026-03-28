@@ -79,6 +79,14 @@
                         
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
                             <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Margin="0,4,0,0"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                       Visibility="{Binding MatchedTrainer.Version, Converter={StaticResource NullOrEmptyToVisibilityConverter}}">
+                                <Run Text="{DynamicResource LabelTrainerVersion}" />
+                                <Run Text=" " />
+                                <Run Text="{Binding MatchedTrainer.Version}" />
+                            </TextBlock>
                             <TextBlock Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11" Margin="0,6,0,4">
                                 <TextBlock.Text>
                                     <Binding Path="MatchedTrainer.LastUpdated" StringFormat="{}{0:yyyy.MM.dd}" TargetNullValue="—"/>

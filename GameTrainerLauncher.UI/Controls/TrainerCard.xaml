@@ -92,6 +92,10 @@
                                         <Setter Property="IsEnabled" Value="False"/>
                                         <Setter Property="Content" Value="{DynamicResource StatusAdded}"/>
                                     </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsAddPending}" Value="True">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                        <Setter Property="Content" Value="{DynamicResource StatusPreparingAdd}"/>
+                                    </DataTrigger>
                                     <DataTrigger Binding="{Binding IsAdding}" Value="True">
                                         <Setter Property="IsEnabled" Value="False"/>
                                         <Setter Property="Content" Value="{DynamicResource StatusAdding}"/>

@@ -24,6 +24,7 @@
     <system:String x:Key="MsgTrainerNotFound">Trainer not found for {0}</system:String>
     <system:String x:Key="MsgDownloadSuccess">Download complete!</system:String>
     <system:String x:Key="StatusAdded">Added</system:String>
+    <system:String x:Key="StatusPreparingAdd">Preparing...</system:String>
     <system:String x:Key="StatusAdding">Downloading and adding...</system:String>
     <system:String x:Key="BtnLoadMore">Load More</system:String>
     <system:String x:Key="StatusNoTrainer">No Trainer</system:String>
@@ -84,4 +85,15 @@
     <system:String x:Key="UpdateManualPendingRestart">A downloaded update is ready and will be installed after restart.</system:String>
     <system:String x:Key="UpdateManualNotInstalled">Automatic updates work only in the installed Velopack release build.</system:String>
     <system:String x:Key="UpdateManualError">Could not check for updates: {0}</system:String>
+    <system:String x:Key="MsgNoTrainerVersions">No downloadable trainer versions were found for this game.</system:String>
+    <system:String x:Key="LabelTrainerVersion">Trainer Version:</system:String>
+    <system:String x:Key="TrainerVersionDialogTitle">Select Trainer Version</system:String>
+    <system:String x:Key="TrainerVersionDialogSummary">Choose a trainer version for {0}</system:String>
+    <system:String x:Key="TrainerVersionDialogHint">If the game build you use is older, pick the matching trainer version before downloading.</system:String>
+    <system:String x:Key="TrainerVersionDialogFooter">FLiNG standalone versions</system:String>
+    <system:String x:Key="TrainerVersionColumnVersion">Version</system:String>
+    <system:String x:Key="TrainerVersionColumnDate">Published</system:String>
+    <system:String x:Key="TrainerVersionColumnSize">Size</system:String>
+    <system:String x:Key="TrainerVersionConfirm">Download Selected</system:String>
+    <system:String x:Key="TrainerVersionCancel">Cancel</system:String>
 </ResourceDictionary>

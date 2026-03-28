@@ -45,6 +45,7 @@ public partial class App : Application
         services.AddSingleton<IShortcutRepairService, ShortcutRepairService>();
         services.AddSingleton<IMyGamesRefreshService, MyGamesRefreshService>();
         services.AddSingleton<ITrainerLibraryService, TrainerLibraryService>();
+        services.AddSingleton<ITrainerVersionSelectionService, TrainerVersionSelectionService>();
 
         // ViewModels
         services.AddTransient<MainViewModel>();
@@ -138,6 +139,7 @@ public partial class App : Application
                             Title = details.Title,
                             PageUrl = details.PageUrl,
                             DownloadUrl = details.DownloadUrl,
+                            Version = details.Version,
                             ImageUrl = details.ImageUrl,
                             LastUpdated = details.LastUpdated,
                             IsDownloaded = false
@@ -153,6 +155,8 @@ public partial class App : Application
                     {
                         if (string.IsNullOrWhiteSpace(game.MatchedTrainer.DownloadUrl) && !string.IsNullOrWhiteSpace(details.DownloadUrl))
                             game.MatchedTrainer.DownloadUrl = details.DownloadUrl;
+                        if (string.IsNullOrWhiteSpace(game.MatchedTrainer.Version) && !string.IsNullOrWhiteSpace(details.Version))
+                            game.MatchedTrainer.Version = details.Version;
                         if (string.IsNullOrWhiteSpace(game.MatchedTrainer.ImageUrl) && !string.IsNullOrWhiteSpace(details.ImageUrl))
                         {
                             game.MatchedTrainer.ImageUrl = details.ImageUrl;
