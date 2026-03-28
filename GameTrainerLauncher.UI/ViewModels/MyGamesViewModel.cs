@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GameTrainerLauncher.Core.Entities;
+using GameTrainerLauncher.Core.Models;
 using GameTrainerLauncher.UI;
 using GameTrainerLauncher.UI.Services;
 using GameTrainerLauncher.Core.Interfaces;
@@ -342,6 +343,22 @@ public partial class MyGamesViewModel : ObservableObject
         return args.Length > 0 ? string.Format(resource, args) : resource;
     }
 
+    private static void ApplyDownloadProgress(Trainer trainer, TrainerDownloadProgress update)
+    {
+        trainer.DownloadProgress = update.Percent;
+        trainer.DownloadStatusText = update.StatusText;
+        trainer.IsDownloadProgressEstimated = update.IsEstimated;
+        trainer.DownloadStage = update.Stage;
+    }
+
+    private static void ResetDownloadProgress(Trainer trainer)
+    {
+        trainer.DownloadProgress = 0;
+        trainer.DownloadStatusText = null;
+        trainer.IsDownloadProgressEstimated = false;
+        trainer.DownloadStage = TrainerDownloadStage.Preparing;
+    }
+
     /// <summary>
     /// 点击「下载」后的完整流程：
     /// 1) 若当前游戏没有 MatchedTrainer：用游戏名 SearchAsync，取第一个结果 GetTrainerDetailsAsync，写入 DB 并赋给 game.MatchedTrainer。
@@ -387,11 +404,13 @@ public partial class MyGamesViewModel : ObservableObject
             var trainer = game.MatchedTrainer;
             CurrentDownloadingGame = game;
             trainer.IsDownloading = true;
-            trainer.DownloadProgress = 0;
+            ResetDownloadProgress(trainer);
+            trainer.DownloadStatusText = "Preparing download...";
+            trainer.IsDownloadProgressEstimated = true;
 
-            var progress = new Progress<double>(p => 
+            var progress = new Progress<TrainerDownloadProgress>(update => 
             {
-                trainer.DownloadProgress = p;
+                ApplyDownloadProgress(trainer, update);
             });
             
             try
@@ -416,6 +435,11 @@ public partial class MyGamesViewModel : ObservableObject
                 }
                 if (success)
                 {
+                    trainer.DownloadProgress = 100;
+                    trainer.DownloadStatusText = "Completed.";
+                    trainer.IsDownloadProgressEstimated = false;
+                    trainer.DownloadStage = TrainerDownloadStage.Finalizing;
+                    await Task.Delay(250);
                     trainer.IsDownloaded = true;
                     _dbContext.Trainers.Update(trainer);
                     _dbContext.Games.Update(game);
@@ -435,6 +459,7 @@ public partial class MyGamesViewModel : ObservableObject
             }
             finally
             {
+                ResetDownloadProgress(trainer);
                 trainer.IsDownloading = false;
                 _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(() => CurrentDownloadingGame = null);
             }

@@ -23,7 +23,10 @@ public class AppDbContext : DbContext
             .Ignore(t => t.IsLoading)
             .Ignore(t => t.IsDownloading)
             .Ignore(t => t.DownloadProgress)
-            .Ignore(t => t.IsAdding);
+            .Ignore(t => t.IsAdding)
+            .Ignore(t => t.DownloadStatusText)
+            .Ignore(t => t.IsDownloadProgressEstimated)
+            .Ignore(t => t.DownloadStage);
     }
 
     /// <summary>
@@ -32,7 +35,15 @@ public class AppDbContext : DbContext
     /// </summary>
     public async Task MigrateTrainersTableDropIgnoredColumnsAsync(CancellationToken cancellationToken = default)
     {
-        var columnsToDrop = new[] { "DownloadProgress", "IsDownloading", "IsLoading" };
+        var columnsToDrop = new[]
+        {
+            "DownloadProgress",
+            "IsDownloading",
+            "IsLoading",
+            "DownloadStatusText",
+            "IsDownloadProgressEstimated",
+            "DownloadStage"
+        };
         foreach (var col in columnsToDrop)
         {
             try

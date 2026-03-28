@@ -1,14 +1,15 @@
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GameTrainerLauncher.Core.Entities;
 using GameTrainerLauncher.Core.Interfaces;
+using GameTrainerLauncher.Core.Models;
 using GameTrainerLauncher.Infrastructure.Data;
 using GameTrainerLauncher.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Windows;
 
 namespace GameTrainerLauncher.UI.ViewModels;
 
@@ -16,9 +17,7 @@ public partial class SearchViewModel : ObservableObject
 {
     private readonly IScraperService _scraperService;
     private readonly AppDbContext _dbContext;
-    private readonly ITrainerManager _trainerManager;
-    private readonly IGameCoverService _coverService;
-    private readonly IMyGamesRefreshService _myGamesRefreshService;
+    private readonly ITrainerLibraryService _trainerLibraryService;
     private readonly IServiceScopeFactory _scopeFactory;
 
     [ObservableProperty]
@@ -30,50 +29,59 @@ public partial class SearchViewModel : ObservableObject
     [ObservableProperty]
     private string _searchKeyword = string.Empty;
 
-    public SearchViewModel(IScraperService scraperService, AppDbContext dbContext, ITrainerManager trainerManager, IGameCoverService coverService, IMyGamesRefreshService myGamesRefreshService, IServiceScopeFactory scopeFactory)
-    {
-        _scraperService = scraperService;
-        _dbContext = dbContext;
-        _trainerManager = trainerManager;
-        _coverService = coverService;
-        _myGamesRefreshService = myGamesRefreshService;
-        _scopeFactory = scopeFactory;
-    }
-
     [ObservableProperty]
     private bool _hasNoResults;
 
-    /// <summary>根据库中最新数据刷新搜索结果中每项的「已添加」状态。</summary>
+    public SearchViewModel(
+        IScraperService scraperService,
+        AppDbContext dbContext,
+        ITrainerLibraryService trainerLibraryService,
+        IServiceScopeFactory scopeFactory)
+    {
+        _scraperService = scraperService;
+        _dbContext = dbContext;
+        _trainerLibraryService = trainerLibraryService;
+        _scopeFactory = scopeFactory;
+    }
+
     [RelayCommand]
     public async Task RefreshAlreadyInLibraryAsync()
     {
-        if (SearchResults.Count == 0) return;
+        if (SearchResults.Count == 0)
+        {
+            return;
+        }
+
         try
         {
             await using var scope = _scopeFactory.CreateAsyncScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var existingNames = (await db.Games.Select(g => g.Name).ToListAsync()).ToHashSet();
+            var existingNames = (await db.Games.Select(game => game.Name).ToListAsync()).ToHashSet();
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                foreach (var t in SearchResults)
-                    t.IsDownloaded = existingNames.Contains(t.Title);
+                foreach (var trainer in SearchResults)
+                {
+                    trainer.IsDownloaded = existingNames.Contains(trainer.Title);
+                }
             });
         }
-        catch { /* ignore */ }
+        catch
+        {
+        }
     }
 
-    /// <summary>Run search using current SearchKeyword (for in-page search box).</summary>
     [RelayCommand]
     public async Task RunSearchAsync()
     {
         var keyword = (SearchKeyword ?? string.Empty).Trim();
         if (string.IsNullOrEmpty(keyword))
         {
-            var msg = (string)System.Windows.Application.Current.FindResource("MsgSearchEmpty") ?? "Please enter a game name before searching.";
-            var title = (string)System.Windows.Application.Current.FindResource("MsgSearchTitle") ?? "Search";
-            System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            var msg = (string)Application.Current.FindResource("MsgSearchEmpty") ?? "Please enter a game name before searching.";
+            var title = (string)Application.Current.FindResource("MsgSearchTitle") ?? "Search";
+            MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
+
         await SearchAsync(keyword);
     }
 
@@ -83,36 +91,42 @@ public partial class SearchViewModel : ObservableObject
         IsLoading = true;
         HasNoResults = false;
         SearchResults.Clear();
-        
+
         try
         {
             var data = await _scraperService.SearchAsync(keyword);
-            
-            await _dbContext.Database.EnsureCreatedAsync();
-            var existingNames = _dbContext.Games.Select(g => g.Name).ToHashSet();
 
-            foreach (var t in data) 
+            await _dbContext.Database.EnsureCreatedAsync();
+            var existingNames = _dbContext.Games.Select(game => game.Name).ToHashSet();
+
+            foreach (var trainer in data)
             {
-                if (existingNames.Contains(t.Title))
+                if (existingNames.Contains(trainer.Title))
                 {
-                    t.IsDownloaded = true;
+                    trainer.IsDownloaded = true;
                 }
-                SearchResults.Add(t);
+
+                SearchResults.Add(trainer);
             }
 
-            // Enrich with details so cards show LastUpdated (and have DownloadUrl when adding to my games)
             for (var i = 0; i < SearchResults.Count; i++)
             {
-                var t = SearchResults[i];
-                if (string.IsNullOrEmpty(t.PageUrl)) continue;
+                var trainer = SearchResults[i];
+                if (string.IsNullOrEmpty(trainer.PageUrl))
+                {
+                    continue;
+                }
+
                 try
                 {
-                    var details = await _scraperService.GetTrainerDetailsAsync(t.PageUrl);
-                    t.LastUpdated = details.LastUpdated;
-                    t.DownloadUrl = details.DownloadUrl;
-                    t.ImageUrl = string.IsNullOrEmpty(details.ImageUrl) ? t.ImageUrl : details.ImageUrl;
+                    var details = await _scraperService.GetTrainerDetailsAsync(trainer.PageUrl);
+                    trainer.LastUpdated = details.LastUpdated;
+                    trainer.DownloadUrl = details.DownloadUrl;
+                    trainer.ImageUrl = string.IsNullOrEmpty(details.ImageUrl) ? trainer.ImageUrl : details.ImageUrl;
                 }
-                catch { /* keep existing values */ }
+                catch
+                {
+                }
             }
 
             if (SearchResults.Count == 0)
@@ -122,9 +136,9 @@ public partial class SearchViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            var msg = ((string)System.Windows.Application.Current.FindResource("MsgSearchFailed") ?? "Search failed.") + " " + ex.Message;
-            var title = (string)System.Windows.Application.Current.FindResource("MsgErrorTitle") ?? "Error";
-            System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            var msg = ((string)Application.Current.FindResource("MsgSearchFailed") ?? "Search failed.") + " " + ex.Message;
+            var title = (string)Application.Current.FindResource("MsgErrorTitle") ?? "Error";
+            MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Error);
         }
         finally
         {
@@ -138,161 +152,93 @@ public partial class SearchViewModel : ObservableObject
         try
         {
             await _dbContext.Database.EnsureCreatedAsync();
-            if (_dbContext.Games.Any(g => g.Name == trainer.Title))
+            if (_dbContext.Games.Any(game => game.Name == trainer.Title))
             {
-                var msg = (string)System.Windows.Application.Current.FindResource("MsgAlreadyInLibrary");
-                var title = (string)System.Windows.Application.Current.FindResource("MsgInfoTitle");
-                System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                var msg = (string)Application.Current.FindResource("MsgAlreadyInLibrary");
+                var title = (string)Application.Current.FindResource("MsgInfoTitle");
+                MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
+
             trainer.IsAdding = true;
             _ = RunDownloadThenAddAsync(trainer);
         }
         catch (Exception ex)
         {
             trainer.IsAdding = false;
-            var msg = (string)System.Windows.Application.Current.FindResource("MsgAddFailed") + " " + ex.Message;
-            var title = (string)System.Windows.Application.Current.FindResource("MsgErrorTitle");
-            System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-        }
-    }
-
-    /// <summary>模拟进度：每秒约 +5%，上限 90%，用于无 Content-Length 的下载。</summary>
-    private async Task RunSimulatedProgressAsync(Trainer trainer, CancellationToken ct)
-    {
-        while (!ct.IsCancellationRequested && trainer.DownloadProgress < 90)
-        {
-            await Task.Delay(1000, ct);
-            await Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                trainer.DownloadProgress = Math.Min(90, trainer.DownloadProgress + 5);
-            });
+            var msg = (string)Application.Current.FindResource("MsgAddFailed") + " " + ex.Message;
+            var title = (string)Application.Current.FindResource("MsgErrorTitle");
+            MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
     private async Task RunDownloadThenAddAsync(Trainer trainer)
     {
-        CancellationTokenSource? progressCts = null;
         try
         {
-            var newTrainer = new Trainer
-            {
-                Title = trainer.Title,
-                PageUrl = trainer.PageUrl,
-                DownloadUrl = trainer.DownloadUrl,
-                ImageUrl = trainer.ImageUrl,
-                LastUpdated = trainer.LastUpdated,
-                IsDownloaded = false
-            };
-            if (!string.IsNullOrWhiteSpace(newTrainer.PageUrl) &&
-                (string.IsNullOrWhiteSpace(newTrainer.DownloadUrl) || string.IsNullOrWhiteSpace(newTrainer.ImageUrl)))
-            {
-                var details = await _scraperService.GetTrainerDetailsAsync(newTrainer.PageUrl);
-                if (string.IsNullOrWhiteSpace(newTrainer.DownloadUrl)) newTrainer.DownloadUrl = details.DownloadUrl;
-                if (details.LastUpdated != null) newTrainer.LastUpdated = details.LastUpdated;
-                if (!string.IsNullOrEmpty(details.ImageUrl)) newTrainer.ImageUrl = details.ImageUrl;
-            }
-            if (string.IsNullOrWhiteSpace(newTrainer.DownloadUrl))
-            {
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    trainer.IsAdding = false;
-                    System.Windows.MessageBox.Show(
-                        (string)System.Windows.Application.Current.FindResource("MsgDownloadFailed"),
-                        (string)System.Windows.Application.Current.FindResource("MsgErrorTitle"),
-                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-                });
-                return;
-            }
+            ResetDownloadProgress(trainer);
+            trainer.DownloadStatusText = "Preparing download...";
+            trainer.IsDownloadProgressEstimated = true;
+            trainer.DownloadStage = TrainerDownloadStage.Preparing;
 
-            // 模拟进度 + 1 分钟下载超时
-            trainer.DownloadProgress = 0;
-            progressCts = new CancellationTokenSource();
-            var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
-            var progressTask = RunSimulatedProgressAsync(trainer, progressCts.Token);
-
-            var progress = new Progress<double>(p =>
-            {
-                Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    if (p > trainer.DownloadProgress) trainer.DownloadProgress = Math.Min(99, p);
-                });
-            });
-
-            bool success;
-            try
-            {
-                success = await _trainerManager.DownloadTrainerAsync(newTrainer, progress, timeoutCts.Token);
-            }
-            catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
-            {
-                progressCts.Cancel();
-                try { await progressTask; } catch (OperationCanceledException) { }
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    trainer.IsAdding = false;
-                    trainer.DownloadProgress = 0;
-                    System.Windows.MessageBox.Show(
-                        (string)System.Windows.Application.Current.FindResource("MsgDownloadTimeout"),
-                        (string)System.Windows.Application.Current.FindResource("MsgErrorTitle"),
-                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
-                });
-                return;
-            }
-
-            progressCts.Cancel();
-            try { await progressTask; } catch (OperationCanceledException) { }
-
-            await Application.Current.Dispatcher.InvokeAsync(() => trainer.DownloadProgress = 100);
-            await Task.Delay(400);
+            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+            var progress = new Progress<TrainerDownloadProgress>(update => ApplyDownloadProgress(trainer, update));
+            var success = await _trainerLibraryService.DownloadAndAddToLibraryAsync(trainer, progress, timeoutCts.Token);
 
             if (success)
             {
-                newTrainer.IsDownloaded = true;
-                var game = new Game
-                {
-                    Name = trainer.Title,
-                    MatchedTrainer = newTrainer,
-                    AddedDate = DateTime.Now,
-                    CoverUrl = newTrainer.ImageUrl ?? trainer.ImageUrl
-                };
-                _dbContext.Trainers.Add(newTrainer);
-                _dbContext.Games.Add(game);
-                await _dbContext.SaveChangesAsync();
-
-                // 添加成功：封面也落地到本地（失败不影响添加）
-                try
-                {
-                    var url = newTrainer.ImageUrl ?? trainer.ImageUrl ?? game.CoverUrl;
-                    _ = _coverService.EnsureCoverAsync(game.Id, url);
-                }
-                catch { /* ignore */ }
+                trainer.DownloadProgress = 100;
+                trainer.DownloadStatusText = "Completed.";
+                trainer.IsDownloadProgressEstimated = false;
+                trainer.DownloadStage = TrainerDownloadStage.Finalizing;
+                await Task.Delay(250);
             }
 
-            await Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                trainer.IsDownloaded = success;
-                trainer.DownloadProgress = 0;
-                trainer.IsAdding = false;
-                var successTitle = (string)System.Windows.Application.Current.FindResource("MsgSuccessTitle");
-                var successMsg = success
-                    ? (string)System.Windows.Application.Current.FindResource("MsgAddedToMyGames")
-                    : (string)System.Windows.Application.Current.FindResource("MsgDownloadFailed");
-                System.Windows.MessageBox.Show(successMsg, successTitle, System.Windows.MessageBoxButton.OK, success ? System.Windows.MessageBoxImage.Information : System.Windows.MessageBoxImage.Error);
-                if (success) _myGamesRefreshService.RequestRefresh();
-            });
+            trainer.IsDownloaded = success;
+            ResetDownloadProgress(trainer);
+            trainer.IsAdding = false;
+
+            var titleKey = success ? "MsgSuccessTitle" : "MsgErrorTitle";
+            var messageKey = success ? "MsgAddedToMyGames" : "MsgDownloadFailed";
+            MessageBox.Show(
+                (string)Application.Current.FindResource(messageKey),
+                (string)Application.Current.FindResource(titleKey),
+                MessageBoxButton.OK,
+                success ? MessageBoxImage.Information : MessageBoxImage.Error);
+        }
+        catch (OperationCanceledException)
+        {
+            ResetDownloadProgress(trainer);
+            trainer.IsAdding = false;
+            MessageBox.Show(
+                (string)Application.Current.FindResource("MsgDownloadTimeout"),
+                (string)Application.Current.FindResource("MsgErrorTitle"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
         }
         catch (Exception ex)
         {
-            progressCts?.Cancel();
-            await Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                trainer.DownloadProgress = 0;
-                trainer.IsAdding = false;
-                var msg = (string)System.Windows.Application.Current.FindResource("MsgAddFailed") + " " + ex.Message;
-                var title = (string)System.Windows.Application.Current.FindResource("MsgErrorTitle");
-                System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-            });
+            ResetDownloadProgress(trainer);
+            trainer.IsAdding = false;
+            var msg = (string)Application.Current.FindResource("MsgAddFailed") + " " + ex.Message;
+            var title = (string)Application.Current.FindResource("MsgErrorTitle");
+            MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    private static void ApplyDownloadProgress(Trainer trainer, TrainerDownloadProgress update)
+    {
+        trainer.DownloadProgress = update.Percent;
+        trainer.DownloadStatusText = update.StatusText;
+        trainer.IsDownloadProgressEstimated = update.IsEstimated;
+        trainer.DownloadStage = update.Stage;
+    }
+
+    private static void ResetDownloadProgress(Trainer trainer)
+    {
+        trainer.DownloadProgress = 0;
+        trainer.DownloadStatusText = null;
+        trainer.IsDownloadProgressEstimated = false;
+        trainer.DownloadStage = TrainerDownloadStage.Preparing;
     }
 }
