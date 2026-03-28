@@ -81,6 +81,10 @@ Packages are generated under `artifacts/velopack`.
 - Version is defined in `Directory.Build.props`
 - Push a matching tag in the form `vX.Y.Z`
 - GitHub Actions builds, validates versions, packs Velopack releases, and uploads assets to GitHub Releases automatically
+- Release guard runs before publish:
+  - `installer/validate-update-dialog-ui.ps1`
+  - Fails the release if update dialog release-notes panel regresses to `TextBox`
+  - Fails the release if shortcut self-repair wiring is missing in startup
 
 **Legacy Inno Setup**:
 ```powershell
