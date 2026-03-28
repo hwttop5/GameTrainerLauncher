@@ -296,7 +296,11 @@ public partial class MyGamesViewModel : PageFeedbackViewModelBase
     {
         var msg = GetString("MsgConfirmRemoveBody", game.Name);
         var title = GetString("MsgConfirmRemoveTitle");
-        var result = System.Windows.MessageBox.Show(msg, title, System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
+        var result = System.Windows.MessageBox.Show(
+            msg,
+            title,
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Warning);
         if (result == System.Windows.MessageBoxResult.Yes)
         {
             try

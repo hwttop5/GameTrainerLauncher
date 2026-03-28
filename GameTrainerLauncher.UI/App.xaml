@@ -37,14 +37,24 @@
             <SolidColorBrush x:Key="CardBackgroundBrush" Color="#252525" />
             <SolidColorBrush x:Key="CardBorderBrush" Color="#3a3a3a" />
             <SolidColorBrush x:Key="ListItemHoverBrush" Color="#2d2d2d" />
-            <SolidColorBrush x:Key="DialogCardBrush" Color="#252729" />
-            <SolidColorBrush x:Key="DialogHeaderBrush" Color="#2B2E31" />
-            <SolidColorBrush x:Key="DialogBorderBrush" Color="#3C4045" />
-            <SolidColorBrush x:Key="DialogMutedBrush" Color="#B8BEC7" />
-            <SolidColorBrush x:Key="DialogTextBrush" Color="#F5F7FA" />
-            <SolidColorBrush x:Key="DialogAccentBrush" Color="#4CC2FF" />
-            <SolidColorBrush x:Key="DialogBadgeBackgroundBrush" Color="#173E52" />
-            <SolidColorBrush x:Key="DialogBadgeBorderBrush" Color="#2D6C87" />
+            <SolidColorBrush x:Key="DialogCardBrush" Color="#232323" />
+            <SolidColorBrush x:Key="DialogHeaderBrush" Color="#292929" />
+            <SolidColorBrush x:Key="DialogBorderBrush" Color="#343434" />
+            <SolidColorBrush x:Key="DialogMutedBrush" Color="#C8C8C8" />
+            <SolidColorBrush x:Key="DialogTextBrush" Color="#F2F2F2" />
+            <SolidColorBrush x:Key="DialogAccentBrush" Color="#0078D4" />
+            <SolidColorBrush x:Key="DialogBadgeBackgroundBrush" Color="#1E2E45" />
+            <SolidColorBrush x:Key="DialogBadgeBorderBrush" Color="#2D4F78" />
+            <SolidColorBrush x:Key="NotificationSurfaceBrush" Color="#232323" />
+            <SolidColorBrush x:Key="NotificationSurfaceBorderBrush" Color="#343434" />
+            <SolidColorBrush x:Key="NotificationTitleBrush" Color="#F2F2F2" />
+            <SolidColorBrush x:Key="NotificationMessageBrush" Color="#D2D2D2" />
+            <SolidColorBrush x:Key="NotificationCloseBrush" Color="#8A8A8A" />
+            <Color x:Key="NotificationShadowColor">#55000000</Color>
+            <SolidColorBrush x:Key="StatusInfoBrush" Color="#0078D4" />
+            <SolidColorBrush x:Key="StatusSuccessBrush" Color="#59C15E" />
+            <SolidColorBrush x:Key="StatusWarningBrush" Color="#F0B431" />
+            <SolidColorBrush x:Key="StatusErrorBrush" Color="#EA5B5B" />
             <!-- 空状态标题（暂无游戏/No Games）：暗色主题白字，亮色主题深色字 -->
             <SolidColorBrush x:Key="EmptyStateTitleBrush" Color="White" />
             <!-- 顶部搜索按钮：亮/暗主题下均固定为蓝底白字，避免白色模式下样式被主题覆盖 -->

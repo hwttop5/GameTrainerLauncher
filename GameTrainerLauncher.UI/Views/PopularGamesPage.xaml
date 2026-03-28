@@ -6,17 +6,19 @@
       Title="{DynamicResource NavPopular}">
     <Grid Margin="10">
         <Grid.RowDefinitions>
-            <RowDefinition Height="72"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <ui:InfoBar Grid.Row="0"
-                    Margin="0,0,0,12"
-                    IsClosable="True"
-                    IsOpen="{Binding PageFeedback.IsOpen, Mode=TwoWay}"
-                    Severity="{Binding PageFeedback.Severity}"
-                    Title="{Binding PageFeedback.Title}"
-                    Message="{Binding PageFeedback.Message}"/>
+        <Border Grid.Row="0"
+                Margin="0,0,0,8"
+                Visibility="{Binding PageFeedback.IsOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <ui:InfoBar IsClosable="True"
+                        IsOpen="{Binding PageFeedback.IsOpen, Mode=TwoWay}"
+                        Severity="{Binding PageFeedback.Severity}"
+                        Title="{Binding PageFeedback.Title}"
+                        Message="{Binding PageFeedback.Message}"/>
+        </Border>
 
         <Grid Grid.Row="1">
             <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Panel.ZIndex="1000">

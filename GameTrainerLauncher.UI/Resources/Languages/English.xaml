@@ -98,4 +98,7 @@
     <system:String x:Key="TrainerVersionColumnSize">Size</system:String>
     <system:String x:Key="TrainerVersionConfirm">Download Selected</system:String>
     <system:String x:Key="TrainerVersionCancel">Cancel</system:String>
+    <system:String x:Key="DialogButtonOk">OK</system:String>
+    <system:String x:Key="DialogButtonYes">Yes</system:String>
+    <system:String x:Key="DialogButtonNo">No</system:String>
 </ResourceDictionary>
