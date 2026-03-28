@@ -1,6 +1,7 @@
 using GameTrainerLauncher.Core.Entities;
 using GameTrainerLauncher.Core.Interfaces;
 using GameTrainerLauncher.Core.Models;
+using GameTrainerLauncher.Core.Utilities;
 using GameTrainerLauncher.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,6 +43,7 @@ public class TrainerLibraryService : ITrainerLibraryService
             Title = sourceTrainer.Title,
             PageUrl = sourceTrainer.PageUrl,
             DownloadUrl = sourceTrainer.DownloadUrl,
+            Version = sourceTrainer.Version,
             ImageUrl = sourceTrainer.ImageUrl,
             LastUpdated = sourceTrainer.LastUpdated,
             IsDownloaded = false
@@ -51,9 +53,9 @@ public class TrainerLibraryService : ITrainerLibraryService
             (string.IsNullOrWhiteSpace(newTrainer.DownloadUrl) || string.IsNullOrWhiteSpace(newTrainer.ImageUrl)))
         {
             var details = await _scraperService.GetTrainerDetailsAsync(newTrainer.PageUrl);
-            if (string.IsNullOrWhiteSpace(newTrainer.DownloadUrl))
+            if (!string.IsNullOrEmpty(details.ImageUrl))
             {
-                newTrainer.DownloadUrl = details.DownloadUrl;
+                newTrainer.ImageUrl = details.ImageUrl;
             }
 
             if (details.LastUpdated != null)
@@ -61,9 +63,17 @@ public class TrainerLibraryService : ITrainerLibraryService
                 newTrainer.LastUpdated = details.LastUpdated;
             }
 
-            if (!string.IsNullOrEmpty(details.ImageUrl))
+            if (string.IsNullOrWhiteSpace(newTrainer.DownloadUrl))
             {
-                newTrainer.ImageUrl = details.ImageUrl;
+                var matchedOption = TrainerSelectionHelpers.FindMatchingOption(details.DownloadOptions, newTrainer.Version);
+                if (matchedOption != null)
+                {
+                    TrainerSelectionHelpers.ApplyDownloadOption(newTrainer, matchedOption);
+                }
+                else if (details.DownloadOptions.Count == 1)
+                {
+                    TrainerSelectionHelpers.ApplyDownloadOption(newTrainer, details.DownloadOptions[0]);
+                }
             }
         }
 

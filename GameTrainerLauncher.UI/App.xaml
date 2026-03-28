@@ -37,6 +37,14 @@
             <SolidColorBrush x:Key="CardBackgroundBrush" Color="#252525" />
             <SolidColorBrush x:Key="CardBorderBrush" Color="#3a3a3a" />
             <SolidColorBrush x:Key="ListItemHoverBrush" Color="#2d2d2d" />
+            <SolidColorBrush x:Key="DialogCardBrush" Color="#252729" />
+            <SolidColorBrush x:Key="DialogHeaderBrush" Color="#2B2E31" />
+            <SolidColorBrush x:Key="DialogBorderBrush" Color="#3C4045" />
+            <SolidColorBrush x:Key="DialogMutedBrush" Color="#B8BEC7" />
+            <SolidColorBrush x:Key="DialogTextBrush" Color="#F5F7FA" />
+            <SolidColorBrush x:Key="DialogAccentBrush" Color="#4CC2FF" />
+            <SolidColorBrush x:Key="DialogBadgeBackgroundBrush" Color="#173E52" />
+            <SolidColorBrush x:Key="DialogBadgeBorderBrush" Color="#2D6C87" />
             <!-- 空状态标题（暂无游戏/No Games）：暗色主题白字，亮色主题深色字 -->
             <SolidColorBrush x:Key="EmptyStateTitleBrush" Color="White" />
             <!-- 顶部搜索按钮：亮/暗主题下均固定为蓝底白字，避免白色模式下样式被主题覆盖 -->

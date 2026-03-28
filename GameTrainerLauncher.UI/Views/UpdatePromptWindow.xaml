@@ -13,14 +13,8 @@
                  WindowBackdropType="None"
                  ExtendsContentIntoTitleBar="True"
                  Background="{DynamicResource ApplicationBackgroundBrush}"
-                 Foreground="#F5F7FA">
+                 Foreground="{DynamicResource DialogTextBrush}">
     <Window.Resources>
-        <SolidColorBrush x:Key="UpdateDialogCardBrush" Color="#252729" />
-        <SolidColorBrush x:Key="UpdateDialogHeaderBrush" Color="#2B2E31" />
-        <SolidColorBrush x:Key="UpdateDialogBorderBrush" Color="#3C4045" />
-        <SolidColorBrush x:Key="UpdateDialogMutedBrush" Color="#B8BEC7" />
-        <SolidColorBrush x:Key="UpdateDialogAccentBrush" Color="#4CC2FF" />
-
         <Style x:Key="UpdateActionButtonStyle" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
             <Setter Property="MinWidth" Value="118" />
             <Setter Property="Padding" Value="18,8" />
@@ -49,8 +43,8 @@
             </Grid.RowDefinitions>
 
             <Border Padding="18"
-                    Background="{StaticResource UpdateDialogHeaderBrush}"
-                    BorderBrush="{StaticResource UpdateDialogBorderBrush}"
+                    Background="{DynamicResource DialogHeaderBrush}"
+                    BorderBrush="{DynamicResource DialogBorderBrush}"
                     BorderThickness="1"
                     CornerRadius="12">
                 <Grid>
@@ -63,7 +57,7 @@
                         <TextBlock Text="{DynamicResource UpdateDialogTitle}"
                                    FontSize="22"
                                    FontWeight="SemiBold"
-                                   Foreground="{StaticResource UpdateDialogAccentBrush}" />
+                                   Foreground="{DynamicResource DialogAccentBrush}" />
                         <TextBlock x:Name="SummaryText"
                                    Margin="0,10,0,0"
                                    FontSize="15"
@@ -75,14 +69,14 @@
                             Padding="12,6"
                             Margin="16,0,0,0"
                             VerticalAlignment="Top"
-                            Background="#173E52"
-                            BorderBrush="#2D6C87"
+                            Background="{DynamicResource DialogBadgeBackgroundBrush}"
+                            BorderBrush="{DynamicResource DialogBadgeBorderBrush}"
                             BorderThickness="1"
                             CornerRadius="999">
                         <TextBlock Text="{DynamicResource UpdateReleaseNotes}"
                                    FontSize="12"
                                    FontWeight="SemiBold"
-                                   Foreground="{StaticResource UpdateDialogAccentBrush}" />
+                                   Foreground="{DynamicResource DialogAccentBrush}" />
                     </Border>
                 </Grid>
             </Border>
@@ -92,22 +86,22 @@
                        Text="{DynamicResource UpdateReleaseNotes}"
                        FontSize="13"
                        FontWeight="SemiBold"
-                       Foreground="{StaticResource UpdateDialogMutedBrush}" />
+                       Foreground="{DynamicResource DialogMutedBrush}" />
 
             <Border Grid.Row="2"
-                    Background="{StaticResource UpdateDialogCardBrush}"
-                    BorderBrush="{StaticResource UpdateDialogBorderBrush}"
+                    Background="{DynamicResource DialogCardBrush}"
+                    BorderBrush="{DynamicResource DialogBorderBrush}"
                     BorderThickness="1"
                     CornerRadius="12">
                 <ScrollViewer Margin="1"
-                              Background="{StaticResource UpdateDialogCardBrush}"
+                              Background="{DynamicResource DialogCardBrush}"
                               VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled"
                               Focusable="False">
                     <TextBlock x:Name="ReleaseNotesTextBlock"
                                Margin="18"
                                FontSize="14"
-                               Foreground="#F5F7FA"
+                               Foreground="{DynamicResource DialogTextBrush}"
                                TextWrapping="Wrap" />
                 </ScrollViewer>
             </Border>
@@ -115,7 +109,7 @@
             <DockPanel Grid.Row="3" Margin="0,18,0,0" LastChildFill="False">
                 <TextBlock DockPanel.Dock="Left"
                            VerticalAlignment="Center"
-                           Foreground="{StaticResource UpdateDialogMutedBrush}"
+                           Foreground="{DynamicResource DialogMutedBrush}"
                            Text="Velopack · GitHub Releases"
                            Opacity="0.85" />
 

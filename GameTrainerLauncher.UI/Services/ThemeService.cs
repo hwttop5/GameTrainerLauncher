@@ -52,6 +52,14 @@ public class ThemeService : IThemeService
         var cardBorderColor = isLight ? Color.FromRgb(0xe0, 0xe0, 0xe0) : Color.FromRgb(0x3a, 0x3a, 0x3a);
         var listItemHoverColor = isLight ? Color.FromRgb(0xe8, 0xe8, 0xe8) : Color.FromRgb(0x2d, 0x2d, 0x2d);
         var emptyStateTitleColor = isLight ? Color.FromRgb(0x1e, 0x1e, 0x1e) : Colors.White;
+        var dialogCardColor = isLight ? Colors.White : Color.FromRgb(0x25, 0x27, 0x29);
+        var dialogHeaderColor = isLight ? Color.FromRgb(0xF4, 0xF7, 0xFB) : Color.FromRgb(0x2B, 0x2E, 0x31);
+        var dialogBorderColor = isLight ? Color.FromRgb(0xD7, 0xE1, 0xEC) : Color.FromRgb(0x3C, 0x40, 0x45);
+        var dialogMutedColor = isLight ? Color.FromRgb(0x66, 0x74, 0x83) : Color.FromRgb(0xB8, 0xBE, 0xC7);
+        var dialogTextColor = isLight ? Color.FromRgb(0x1F, 0x29, 0x37) : Color.FromRgb(0xF5, 0xF7, 0xFA);
+        var dialogAccentColor = isLight ? Color.FromRgb(0x00, 0x78, 0xD4) : Color.FromRgb(0x4C, 0xC2, 0xFF);
+        var dialogBadgeBackgroundColor = isLight ? Color.FromRgb(0xEA, 0xF4, 0xFF) : Color.FromRgb(0x17, 0x3E, 0x52);
+        var dialogBadgeBorderColor = isLight ? Color.FromRgb(0xB6, 0xD7, 0xFB) : Color.FromRgb(0x2D, 0x6C, 0x87);
         var app = Application.Current;
         if (app?.Resources == null) return;
         app.Resources["EmptyStateTitleBrush"] = new SolidColorBrush(emptyStateTitleColor);
@@ -64,6 +72,14 @@ public class ThemeService : IThemeService
         app.Resources["CardBackgroundBrush"] = new SolidColorBrush(cardBgColor);
         app.Resources["CardBorderBrush"] = new SolidColorBrush(cardBorderColor);
         app.Resources["ListItemHoverBrush"] = new SolidColorBrush(listItemHoverColor);
+        app.Resources["DialogCardBrush"] = new SolidColorBrush(dialogCardColor);
+        app.Resources["DialogHeaderBrush"] = new SolidColorBrush(dialogHeaderColor);
+        app.Resources["DialogBorderBrush"] = new SolidColorBrush(dialogBorderColor);
+        app.Resources["DialogMutedBrush"] = new SolidColorBrush(dialogMutedColor);
+        app.Resources["DialogTextBrush"] = new SolidColorBrush(dialogTextColor);
+        app.Resources["DialogAccentBrush"] = new SolidColorBrush(dialogAccentColor);
+        app.Resources["DialogBadgeBackgroundBrush"] = new SolidColorBrush(dialogBadgeBackgroundColor);
+        app.Resources["DialogBadgeBorderBrush"] = new SolidColorBrush(dialogBadgeBorderColor);
         // 搜索按钮固定蓝底白字，不随主题变
         app.Resources["SearchButtonBackgroundBrush"] = new SolidColorBrush(Color.FromRgb(0x00, 0x78, 0xD4));
         app.Resources["SearchButtonForegroundBrush"] = new SolidColorBrush(Colors.White);

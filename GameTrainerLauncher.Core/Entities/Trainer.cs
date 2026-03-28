@@ -13,6 +13,10 @@ public partial class Trainer : ObservableObject
     public string? LocalExePath { get; set; }
     public string? Version { get; set; }
 
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    [ObservableProperty]
+    private List<TrainerDownloadOption> _downloadOptions = [];
+
     [ObservableProperty]
     private string? _imageUrl;
 
@@ -50,4 +54,9 @@ public partial class Trainer : ObservableObject
     [System.ComponentModel.DataAnnotations.Schema.NotMapped]
     [ObservableProperty]
     private bool _isAdding;
+
+    /// <summary>True while add flow is resolving version/details before the actual download begins.</summary>
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    [ObservableProperty]
+    private bool _isAddPending;
 }

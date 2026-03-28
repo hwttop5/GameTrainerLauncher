@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GameTrainerLauncher.Core.Entities;
 using GameTrainerLauncher.Core.Models;
+using GameTrainerLauncher.Core.Utilities;
 using GameTrainerLauncher.UI;
 using GameTrainerLauncher.UI.Services;
 using GameTrainerLauncher.Core.Interfaces;
@@ -167,6 +168,7 @@ public partial class MyGamesViewModel : ObservableObject
                                 Title = details.Title,
                                 PageUrl = details.PageUrl,
                                 DownloadUrl = details.DownloadUrl,
+                                Version = details.Version,
                                 ImageUrl = details.ImageUrl,
                                 LastUpdated = details.LastUpdated,
                                 IsDownloaded = false
@@ -181,8 +183,8 @@ public partial class MyGamesViewModel : ObservableObject
                         }
                         else
                         {
-                            if (string.IsNullOrWhiteSpace(game.MatchedTrainer.DownloadUrl) && !string.IsNullOrWhiteSpace(details.DownloadUrl))
-                                game.MatchedTrainer.DownloadUrl = details.DownloadUrl;
+                            if (string.IsNullOrWhiteSpace(game.MatchedTrainer.DownloadUrl) || string.IsNullOrWhiteSpace(game.MatchedTrainer.Version))
+                                ApplyResolvedTrainerDetails(game.MatchedTrainer, details, preferExistingVersion: true);
                             if (string.IsNullOrWhiteSpace(game.MatchedTrainer.ImageUrl) && !string.IsNullOrWhiteSpace(details.ImageUrl))
                             {
                                 game.MatchedTrainer.ImageUrl = details.ImageUrl;
@@ -359,6 +361,43 @@ public partial class MyGamesViewModel : ObservableObject
         trainer.DownloadStage = TrainerDownloadStage.Preparing;
     }
 
+    private static void ApplyResolvedTrainerDetails(Trainer trainer, Trainer details, bool preferExistingVersion)
+    {
+        trainer.DownloadOptions = details.DownloadOptions
+            .OrderBy(option => option.SortOrder)
+            .ToList();
+
+        if (!string.IsNullOrEmpty(details.ImageUrl))
+        {
+            trainer.ImageUrl = details.ImageUrl;
+        }
+
+        var matchedOption = preferExistingVersion
+            ? TrainerSelectionHelpers.FindMatchingOption(trainer.DownloadOptions, trainer.Version)
+            : null;
+
+        if (matchedOption != null)
+        {
+            TrainerSelectionHelpers.ApplyDownloadOption(trainer, matchedOption);
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(details.DownloadUrl))
+        {
+            trainer.DownloadUrl = details.DownloadUrl;
+        }
+
+        if (!string.IsNullOrWhiteSpace(details.Version))
+        {
+            trainer.Version = details.Version;
+        }
+
+        if (details.LastUpdated != null)
+        {
+            trainer.LastUpdated = details.LastUpdated;
+        }
+    }
+
     /// <summary>
     /// 点击「下载」后的完整流程：
     /// 1) 若当前游戏没有 MatchedTrainer：用游戏名 SearchAsync，取第一个结果 GetTrainerDetailsAsync，写入 DB 并赋给 game.MatchedTrainer。
@@ -392,9 +431,7 @@ public partial class MyGamesViewModel : ObservableObject
         else if (game.MatchedTrainer != null && string.IsNullOrWhiteSpace(game.MatchedTrainer.DownloadUrl) && !string.IsNullOrWhiteSpace(game.MatchedTrainer.PageUrl))
         {
              var details = await _scraperService.GetTrainerDetailsAsync(game.MatchedTrainer.PageUrl);
-             game.MatchedTrainer.DownloadUrl = details.DownloadUrl;
-             game.MatchedTrainer.LastUpdated = details.LastUpdated;
-             if (!string.IsNullOrEmpty(details.ImageUrl)) game.MatchedTrainer.ImageUrl = details.ImageUrl;
+             ApplyResolvedTrainerDetails(game.MatchedTrainer, details, preferExistingVersion: true);
              _dbContext.Trainers.Update(game.MatchedTrainer);
              await _dbContext.SaveChangesAsync();
         }
@@ -423,9 +460,7 @@ public partial class MyGamesViewModel : ObservableObject
                         var details = await _scraperService.GetTrainerDetailsAsync(trainer.PageUrl);
                         if (!string.IsNullOrWhiteSpace(details.DownloadUrl))
                         {
-                            trainer.DownloadUrl = details.DownloadUrl;
-                            trainer.LastUpdated = details.LastUpdated;
-                            if (!string.IsNullOrEmpty(details.ImageUrl)) trainer.ImageUrl = details.ImageUrl;
+                            ApplyResolvedTrainerDetails(trainer, details, preferExistingVersion: true);
                             _dbContext.Trainers.Update(trainer);
                             await _dbContext.SaveChangesAsync();
                             success = await _trainerManager.DownloadTrainerAsync(trainer, progress);

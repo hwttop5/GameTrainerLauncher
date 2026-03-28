@@ -18,6 +18,7 @@ public partial class SearchViewModel : ObservableObject
     private readonly IScraperService _scraperService;
     private readonly AppDbContext _dbContext;
     private readonly ITrainerLibraryService _trainerLibraryService;
+    private readonly ITrainerVersionSelectionService _trainerVersionSelectionService;
     private readonly IServiceScopeFactory _scopeFactory;
 
     [ObservableProperty]
@@ -36,11 +37,13 @@ public partial class SearchViewModel : ObservableObject
         IScraperService scraperService,
         AppDbContext dbContext,
         ITrainerLibraryService trainerLibraryService,
+        ITrainerVersionSelectionService trainerVersionSelectionService,
         IServiceScopeFactory scopeFactory)
     {
         _scraperService = scraperService;
         _dbContext = dbContext;
         _trainerLibraryService = trainerLibraryService;
+        _trainerVersionSelectionService = trainerVersionSelectionService;
         _scopeFactory = scopeFactory;
     }
 
@@ -122,6 +125,8 @@ public partial class SearchViewModel : ObservableObject
                     var details = await _scraperService.GetTrainerDetailsAsync(trainer.PageUrl);
                     trainer.LastUpdated = details.LastUpdated;
                     trainer.DownloadUrl = details.DownloadUrl;
+                    trainer.Version = details.Version;
+                    trainer.DownloadOptions = details.DownloadOptions;
                     trainer.ImageUrl = string.IsNullOrEmpty(details.ImageUrl) ? trainer.ImageUrl : details.ImageUrl;
                 }
                 catch
@@ -146,25 +151,41 @@ public partial class SearchViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(AllowConcurrentExecutions = true)]
     public async Task AddToMyGamesAsync(Trainer trainer)
     {
+        if (trainer.IsDownloaded || trainer.IsAddPending || trainer.IsAdding)
+        {
+            return;
+        }
+
+        trainer.IsAddPending = true;
+
         try
         {
             await _dbContext.Database.EnsureCreatedAsync();
             if (_dbContext.Games.Any(game => game.Name == trainer.Title))
             {
+                trainer.IsAddPending = false;
                 var msg = (string)Application.Current.FindResource("MsgAlreadyInLibrary");
                 var title = (string)Application.Current.FindResource("MsgInfoTitle");
                 MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
+            if (!await _trainerVersionSelectionService.EnsureSelectionAsync(trainer))
+            {
+                trainer.IsAddPending = false;
+                return;
+            }
+
+            trainer.IsAddPending = false;
             trainer.IsAdding = true;
             _ = RunDownloadThenAddAsync(trainer);
         }
         catch (Exception ex)
         {
+            trainer.IsAddPending = false;
             trainer.IsAdding = false;
             var msg = (string)Application.Current.FindResource("MsgAddFailed") + " " + ex.Message;
             var title = (string)Application.Current.FindResource("MsgErrorTitle");
@@ -176,6 +197,7 @@ public partial class SearchViewModel : ObservableObject
     {
         try
         {
+            trainer.IsAddPending = false;
             ResetDownloadProgress(trainer);
             trainer.DownloadStatusText = "Preparing download...";
             trainer.IsDownloadProgressEstimated = true;
@@ -208,6 +230,7 @@ public partial class SearchViewModel : ObservableObject
         }
         catch (OperationCanceledException)
         {
+            trainer.IsAddPending = false;
             ResetDownloadProgress(trainer);
             trainer.IsAdding = false;
             MessageBox.Show(
@@ -218,6 +241,7 @@ public partial class SearchViewModel : ObservableObject
         }
         catch (Exception ex)
         {
+            trainer.IsAddPending = false;
             ResetDownloadProgress(trainer);
             trainer.IsAdding = false;
             var msg = (string)Application.Current.FindResource("MsgAddFailed") + " " + ex.Message;

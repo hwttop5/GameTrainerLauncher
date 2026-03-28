@@ -1,7 +1,9 @@
 using GameTrainerLauncher.Core.Entities;
 using GameTrainerLauncher.Core.Interfaces;
+using GameTrainerLauncher.Core.Models;
 using HtmlAgilityPack;
 using NLog;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace GameTrainerLauncher.Infrastructure.Services;
@@ -96,9 +98,213 @@ public class FlingScraperService : IScraperService
         if (string.IsNullOrWhiteSpace(text)) return null;
         var match = Regex.Match(text, @"Last Updated:\s*(\d{4}\.\d{2}\.\d{2})", RegexOptions.IgnoreCase);
         if (!match.Success) return null;
-        if (DateTime.TryParseExact(match.Groups[1].Value, "yyyy.MM.dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dt))
+        if (DateTime.TryParseExact(match.Groups[1].Value, "yyyy.MM.dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt))
             return dt;
         return null;
+    }
+
+    private static bool IsDownloadTable(HtmlNode table)
+    {
+        var headerText = table.InnerText ?? string.Empty;
+        return headerText.Contains("Date added", StringComparison.OrdinalIgnoreCase)
+            || headerText.Contains("File", StringComparison.OrdinalIgnoreCase)
+            || headerText.Contains("Version", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static DateTime? TryParsePublishedAt(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var trimmed = HtmlEntity.DeEntitize(value).Trim();
+        var formats = new[]
+        {
+            "yyyy-MM-dd HH:mm",
+            "yyyy-MM-dd H:mm",
+            "yyyy.MM.dd",
+            "yyyy-MM-dd"
+        };
+
+        if (DateTime.TryParseExact(trimmed, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out var exact))
+        {
+            return exact;
+        }
+
+        if (DateTime.TryParse(trimmed, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
+        {
+            return parsed;
+        }
+
+        return null;
+    }
+
+    private static string? NormalizeDownloadUrl(string? href)
+    {
+        if (string.IsNullOrWhiteSpace(href))
+        {
+            return null;
+        }
+
+        var normalized = href.Trim().TrimEnd(';', ' ');
+        if (!normalized.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = new Uri(new Uri(BaseUrl), normalized).ToString();
+        }
+
+        return normalized;
+    }
+
+    private static bool IsSectionLabelRow(HtmlNode row, out string sectionLabel)
+    {
+        sectionLabel = string.Empty;
+
+        var cells = row.SelectNodes(".//td|.//th");
+        if (cells == null || cells.Count != 1)
+        {
+            return false;
+        }
+
+        if (row.SelectSingleNode(".//a[@href]") != null)
+        {
+            return false;
+        }
+
+        sectionLabel = HtmlEntity.DeEntitize(cells[0].InnerText).Trim();
+        return !string.IsNullOrWhiteSpace(sectionLabel);
+    }
+
+    private static TrainerDownloadOption? ParseDownloadOptionFromRow(HtmlNode row, string fallbackLabel, int sortOrder)
+    {
+        var linkNode = row.SelectSingleNode("./td[1]//a[@href]")
+            ?? row.SelectSingleNode(".//a[@href]");
+        if (linkNode == null)
+        {
+            return null;
+        }
+
+        var downloadUrl = NormalizeDownloadUrl(linkNode.GetAttributeValue("href", string.Empty));
+        if (string.IsNullOrWhiteSpace(downloadUrl))
+        {
+            return null;
+        }
+
+        var cells = row.SelectNodes(".//td");
+        var label = HtmlEntity.DeEntitize(linkNode.InnerText).Trim();
+        if (string.IsNullOrWhiteSpace(label) && cells is { Count: > 0 })
+        {
+            label = HtmlEntity.DeEntitize(cells[0].InnerText).Trim();
+        }
+
+        if (string.IsNullOrWhiteSpace(label))
+        {
+            label = fallbackLabel;
+        }
+
+        return new TrainerDownloadOption
+        {
+            Label = label,
+            DownloadUrl = downloadUrl,
+            PublishedAt = cells is { Count: > 1 } ? TryParsePublishedAt(cells[1].InnerText) : null,
+            FileSizeText = cells is { Count: > 2 } ? HtmlEntity.DeEntitize(cells[2].InnerText).Trim() : null,
+            SortOrder = sortOrder
+        };
+    }
+
+    private static List<TrainerDownloadOption> ExtractDownloadOptions(HtmlDocument doc, string fallbackLabel)
+    {
+        var tables = doc.DocumentNode.SelectNodes("//table");
+        if (tables == null)
+        {
+            return [];
+        }
+
+        foreach (var table in tables)
+        {
+            if (!IsDownloadTable(table))
+            {
+                continue;
+            }
+
+            var rows = table.SelectNodes("./tbody/tr") ?? table.SelectNodes(".//tr");
+            if (rows == null || rows.Count == 0)
+            {
+                continue;
+            }
+
+            var standaloneOptions = new List<TrainerDownloadOption>();
+            var fallbackOptions = new List<TrainerDownloadOption>();
+            var currentSectionLabel = string.Empty;
+
+            for (var rowIndex = 0; rowIndex < rows.Count; rowIndex++)
+            {
+                var row = rows[rowIndex];
+
+                if (IsSectionLabelRow(row, out var sectionLabel))
+                {
+                    currentSectionLabel = sectionLabel;
+                    continue;
+                }
+
+                var option = ParseDownloadOptionFromRow(row, fallbackLabel, fallbackOptions.Count);
+                if (option != null)
+                {
+                    fallbackOptions.Add(option);
+
+                    if (currentSectionLabel.Contains("Standalone", StringComparison.OrdinalIgnoreCase))
+                    {
+                        standaloneOptions.Add(new TrainerDownloadOption
+                        {
+                            Label = option.Label,
+                            DownloadUrl = option.DownloadUrl,
+                            PublishedAt = option.PublishedAt,
+                            FileSizeText = option.FileSizeText,
+                            SortOrder = standaloneOptions.Count
+                        });
+                    }
+                }
+            }
+
+            if (standaloneOptions.Count > 0)
+            {
+                return standaloneOptions;
+            }
+
+            if (fallbackOptions.Count > 0)
+            {
+                return fallbackOptions;
+            }
+        }
+
+        return [];
+    }
+
+    private static string? ExtractFallbackDownloadUrl(HtmlDocument doc)
+    {
+        var attachmentLinks = doc.DocumentNode.SelectNodes("//a[contains(@href, 'attachment_id')]");
+        if (attachmentLinks != null && attachmentLinks.Count > 0)
+        {
+            return NormalizeDownloadUrl(attachmentLinks[0].GetAttributeValue("href", string.Empty));
+        }
+
+        var zipLink = doc.DocumentNode.SelectSingleNode("//a[contains(@href, '.zip')]");
+        if (zipLink != null)
+        {
+            return NormalizeDownloadUrl(zipLink.GetAttributeValue("href", string.Empty));
+        }
+
+        var downloadLinks = doc.DocumentNode.SelectNodes("//article//a[contains(@href, 'download')]");
+        if (downloadLinks != null && downloadLinks.Count > 0)
+        {
+            return NormalizeDownloadUrl(downloadLinks[0].GetAttributeValue("href", string.Empty));
+        }
+
+        var anyDownload = doc.DocumentNode.SelectSingleNode("//a[contains(@href,'/downloads/')]")
+            ?? doc.DocumentNode.SelectSingleNode("//a[contains(@href,'/file/')]");
+        return anyDownload == null
+            ? null
+            : NormalizeDownloadUrl(anyDownload.GetAttributeValue("href", string.Empty));
     }
 
     public async Task<List<Trainer>> SearchAsync(string keyword)
@@ -165,98 +371,27 @@ public class FlingScraperService : IScraperService
                 ?? doc.DocumentNode.SelectSingleNode("//article//img")?.GetAttributeValue("src", "")
                 ?? "";
 
-            string? downloadUrl = null;
-            DateTime? lastUpdated = null;
-
-            // "Standalone Versions" / Download table: first row's link is the latest trainer
-            var tables = doc.DocumentNode.SelectNodes("//table");
-            if (tables != null)
+            var downloadOptions = ExtractDownloadOptions(doc, title);
+            if (downloadOptions.Count == 0)
             {
-                foreach (var table in tables)
+                var fallbackDownloadUrl = ExtractFallbackDownloadUrl(doc);
+                if (!string.IsNullOrWhiteSpace(fallbackDownloadUrl))
                 {
-                    var rows = table.SelectNodes(".//tr");
-                    if (rows == null || rows.Count < 2) continue;
-                    var headerText = rows[0].InnerText ?? "";
-                    bool isDownloadTable = headerText.Contains("Date added", StringComparison.OrdinalIgnoreCase)
-                        || headerText.Contains("File", StringComparison.OrdinalIgnoreCase)
-                        || headerText.Contains("Version", StringComparison.OrdinalIgnoreCase);
-                    if (!isDownloadTable)
-                        continue;
-                    var firstDataRow = rows[1];
-                    var linkNode = firstDataRow.SelectSingleNode(".//a[contains(@href,'downloads')]")
-                        ?? firstDataRow.SelectSingleNode(".//a[contains(@href,'download')]")
-                        ?? firstDataRow.SelectSingleNode(".//a[contains(@href,'.zip')]")
-                        ?? firstDataRow.SelectSingleNode(".//a[contains(@href,'/file')]");
-                    if (linkNode != null)
+                    downloadOptions.Add(new TrainerDownloadOption
                     {
-                        downloadUrl = linkNode.GetAttributeValue("href", "");
-                        if (!string.IsNullOrEmpty(downloadUrl) && !downloadUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-                            downloadUrl = new Uri(new Uri(BaseUrl), downloadUrl).ToString();
-                    }
-                    var cells = firstDataRow.SelectNodes(".//td");
-                    if (cells != null && cells.Count >= 2)
-                    {
-                        var dateStr = cells[1].InnerText?.Trim();
-                        if (!string.IsNullOrEmpty(dateStr) && DateTime.TryParse(dateStr, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dt))
-                            lastUpdated = dt;
-                    }
-                    if (!string.IsNullOrEmpty(downloadUrl)) break;
+                        Label = title,
+                        DownloadUrl = fallbackDownloadUrl,
+                        PublishedAt = null,
+                        FileSizeText = null,
+                        SortOrder = 0
+                    });
                 }
             }
 
-            // Fallbacks: any table row with a download-like link, then page-wide links
-            if (string.IsNullOrEmpty(downloadUrl) && tables != null)
-            {
-                foreach (var table in tables)
-                {
-                    var allLinks = table.SelectNodes(".//a[@href]");
-                    if (allLinks == null) continue;
-                    foreach (HtmlNode a in allLinks)
-                    {
-                        var href = a.GetAttributeValue("href", "");
-                        if (string.IsNullOrEmpty(href)) continue;
-                        if (href.Contains("download", StringComparison.OrdinalIgnoreCase) || href.Contains(".zip", StringComparison.OrdinalIgnoreCase) || href.Contains("/file", StringComparison.OrdinalIgnoreCase))
-                        {
-                            if (!href.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-                                href = new Uri(new Uri(BaseUrl), href).ToString();
-                            downloadUrl = href;
-                            break;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(downloadUrl)) break;
-                }
-            }
-
-            if (string.IsNullOrEmpty(downloadUrl))
-            {
-                var attachmentLinks = doc.DocumentNode.SelectNodes("//a[contains(@href, 'attachment_id')]");
-                if (attachmentLinks != null && attachmentLinks.Count > 0)
-                    downloadUrl = attachmentLinks[0].GetAttributeValue("href", "");
-                if (string.IsNullOrEmpty(downloadUrl))
-                {
-                    var zipLink = doc.DocumentNode.SelectSingleNode("//a[contains(@href, '.zip')]");
-                    if (zipLink != null)
-                        downloadUrl = zipLink.GetAttributeValue("href", "");
-                if (string.IsNullOrEmpty(downloadUrl))
-                {
-                    var downloadLinks = doc.DocumentNode.SelectNodes("//article//a[contains(@href, 'download')]");
-                    if (downloadLinks != null && downloadLinks.Count > 0)
-                        downloadUrl = downloadLinks[0].GetAttributeValue("href", "");
-                }
-                if (string.IsNullOrEmpty(downloadUrl))
-                {
-                    var anyDownload = doc.DocumentNode.SelectSingleNode("//a[contains(@href,'/downloads/')]")
-                        ?? doc.DocumentNode.SelectSingleNode("//a[contains(@href,'/file/')]");
-                    if (anyDownload != null)
-                        downloadUrl = anyDownload.GetAttributeValue("href", "");
-                }
-                if (!string.IsNullOrEmpty(downloadUrl) && !downloadUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-                    downloadUrl = new Uri(new Uri(BaseUrl), downloadUrl).ToString();
-                }
-            }
-
-            if (!string.IsNullOrEmpty(downloadUrl))
-                downloadUrl = downloadUrl.Trim().TrimEnd(';', ' ');
+            var selectedOption = downloadOptions.OrderBy(option => option.SortOrder).FirstOrDefault();
+            var downloadUrl = selectedOption?.DownloadUrl;
+            var version = selectedOption?.Label;
+            DateTime? lastUpdated = selectedOption?.PublishedAt;
 
             if (lastUpdated == null)
             {
@@ -269,9 +404,11 @@ public class FlingScraperService : IScraperService
                 Title = title,
                 PageUrl = url,
                 DownloadUrl = downloadUrl,
+                Version = version,
                 IsDownloaded = false,
                 ImageUrl = imageUrl,
-                LastUpdated = lastUpdated
+                LastUpdated = lastUpdated,
+                DownloadOptions = downloadOptions
             };
         }, $"get details for {url}");
     }
