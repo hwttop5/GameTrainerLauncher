@@ -19,7 +19,7 @@ public partial class UpdatePromptWindow : FluentWindow
     {
         InitializeComponent();
         SummaryText.Text = UpdateTextFormatter.Format("UpdateDialogSummary", result.CurrentVersion, result.AvailableVersion ?? "?");
-        ReleaseNotesTextBox.Text = string.IsNullOrWhiteSpace(result.ReleaseNotesMarkdown)
+        ReleaseNotesTextBlock.Text = string.IsNullOrWhiteSpace(result.ReleaseNotesMarkdown)
             ? UpdateTextFormatter.GetString("UpdateNoReleaseNotes")
             : result.ReleaseNotesMarkdown;
     }
