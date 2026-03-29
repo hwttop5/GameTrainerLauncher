@@ -1,5 +1,6 @@
 using GameTrainerLauncher.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using Wpf.Ui.Appearance;
@@ -8,6 +9,7 @@ namespace GameTrainerLauncher.UI.Views;
 
 public partial class SettingsPage : Page
 {
+    private const string RepositoryUrl = "https://github.com/hwttop5/GameTrainerLauncher";
     private readonly IThemeService _themeService;
     private readonly IAppUpdateService _appUpdateService;
     private readonly IAppNotificationService _notificationService;
@@ -71,5 +73,22 @@ public partial class SettingsPage : Page
         CurrentVersionText.Text = snapshot.CurrentVersion;
         UpdateStatusText.Text = UpdateTextFormatter.GetStatusText(snapshot);
         UpdateLastCheckedText.Text = UpdateTextFormatter.FormatLastChecked(snapshot.LastCheckedAtUtc);
+    }
+
+    private void OpenRepo_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = RepositoryUrl,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            var message = UpdateTextFormatter.Format("MsgNavigationError", ex.Message);
+            _notificationService.ShowError(message);
+        }
     }
 }

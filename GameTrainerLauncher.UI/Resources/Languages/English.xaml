@@ -2,8 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
     <system:String x:Key="AppTitle">Game Trainer Launcher</system:String>
-    <system:String x:Key="SearchPlaceholder">Search by game English name only</system:String>
-    <system:String x:Key="MsgSearchEmpty">Please enter a game name (in English) before searching.</system:String>
+    <system:String x:Key="SearchPlaceholder">Search by game name (Chinese or English)</system:String>
+    <system:String x:Key="MsgSearchEmpty">Please enter a game name (Chinese or English) before searching.</system:String>
     <system:String x:Key="NavPopular">Popular Games</system:String>
     <system:String x:Key="NavMyGames">My Library</system:String>
     <system:String x:Key="NavSettings">Settings</system:String>
@@ -61,6 +61,9 @@
     <system:String x:Key="UpdateStatusLabel">Status</system:String>
     <system:String x:Key="UpdateLastCheckedLabel">Last Checked</system:String>
     <system:String x:Key="UpdateCheckNow">Check for Updates</system:String>
+    <system:String x:Key="RepoSectionTitle">Project Repository</system:String>
+    <system:String x:Key="RepoDescription">View source code, file issues, and contribute.</system:String>
+    <system:String x:Key="RepoOpenButton">Open GitHub Repository</system:String>
     <system:String x:Key="UpdateNeverChecked">Never checked</system:String>
     <system:String x:Key="UpdateChecking">Checking for updates...</system:String>
     <system:String x:Key="UpdateStatusNotChecked">Not checked yet.</system:String>

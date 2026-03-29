@@ -10,10 +10,12 @@
 
 ## 功能概览
 
-- **搜索**：按游戏英文名检索 FlingTrainer，结果可「下载并添加」到我的游戏；支持多任务同时添加、每张卡片独立状态。
+- **搜索**：支持中文或英文游戏名检索；优先走本地标题索引秒回结果，并在后台做增量同步与补齐；结果可「下载并添加」到我的游戏，支持每张卡片独立状态。
 - **热门游戏**：拉取 FlingTrainer 热门修改器列表，一键「下载并添加」到我的游戏，带进度条与超时提示。
 - **我的游戏**：已添加的修改器列表，默认按添加时间倒序（最新在前），支持拖拽排序；支持启动、移除；封面会在「添加」时下载到本地，进入页面时会检查是否每个游戏都有本地封面，缺失则自动抓取并补全；可在此页对未下载项单独下载；当游戏库为空时显示友好的无数据提示。
-- **设置**：语言（中文/英文）、主题（亮色/暗色）。
+- **修改器版本选择**：下载前可弹窗选择对应版本，适配不同游戏版本，避免版本不匹配导致无法使用。
+- **软件更新**：支持手动检查更新、查看版本状态与发布说明，发现新版本后可下载并重启安装。
+- **设置**：语言（中文/英文）、主题（亮色/暗色）、检查更新，以及项目 GitHub 仓库入口。
 
 ---
 
@@ -27,6 +29,10 @@
 |----------|------|
 | ![我的游戏](Docs/Images/MyLibrary.png) | ![设置](Docs/Images/Settings.png) |
 
+| 版本选择（待补图） | 软件更新（待补图） |
+|-------------------|-------------------|
+| ![版本选择-待补](Docs/Images/TrainerVersion-TODO.png) | ![软件更新-待补](Docs/Images/Update-TODO.png) |
+
 ---
 
 ## 技术栈
@@ -34,7 +40,7 @@
 - **运行时**：.NET 8，仅支持 Windows（WPF）
 - **UI**：WPF + [WPF-UI](https://github.com/lepo-co/wpf-ui)（Fluent 风格）+ [CommunityToolkit.Mvvm](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm/)
 - **数据**：SQLite + Entity Framework Core 8
-- **爬虫**：HtmlAgilityPack，请求 FlingTrainer 列表/详情/下载
+- **爬虫**：HtmlAgilityPack，请求 FlingTrainer/Gamersky/Steam 元数据（按策略后台同步）
 - **日志**：NLog（写入程序目录 `Data/Logs/log.txt`）
 
 ### 项目结构
@@ -63,6 +69,7 @@
 
 > 注：为避免安装到 Program Files 时无写权限，应用数据实际存放在 `%LocalAppData%\GameTrainerLauncher\Data`。
 > 其中封面缓存目录为 `%LocalAppData%\GameTrainerLauncher\Data\Covers`（文件名形如 `game_{id}.png/jpg/...`）。
+> 标题索引快照位于 `%LocalAppData%\GameTrainerLauncher\Data\title-index.snapshot.json`，首装会使用内置种子 `GameTrainerLauncher.UI/Assets/title-index.seed.snapshot.json` 初始化后再做增量更新。
 
 ---
 
