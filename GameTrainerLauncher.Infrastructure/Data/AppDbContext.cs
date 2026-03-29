@@ -7,6 +7,7 @@ public class AppDbContext : DbContext
 {
     public DbSet<Game> Games { get; set; } = null!;
     public DbSet<Trainer> Trainers { get; set; } = null!;
+    public DbSet<TrainerTitleIndexEntry> TrainerTitleIndexEntries { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -28,7 +29,15 @@ public class AppDbContext : DbContext
             .Ignore(t => t.IsAddPending)
             .Ignore(t => t.DownloadStatusText)
             .Ignore(t => t.IsDownloadProgressEstimated)
-            .Ignore(t => t.DownloadStage);
+            .Ignore(t => t.DownloadStage)
+            .Ignore(t => t.PrimaryDisplayTitle)
+            .Ignore(t => t.SecondaryDisplayTitle)
+            .Ignore(t => t.MatchedChineseName)
+            .Ignore(t => t.MatchedEnglishName);
+
+        modelBuilder.Entity<TrainerTitleIndexEntry>()
+            .HasIndex(entry => entry.TrainerPageUrl)
+            .IsUnique();
     }
 
     /// <summary>
@@ -70,6 +79,68 @@ public class AppDbContext : DbContext
         {
             await Database.ExecuteSqlRawAsync(
                 "ALTER TABLE Games ADD COLUMN DisplayOrder INTEGER NULL;",
+                cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            // Column already exists; ignore.
+        }
+    }
+
+    public async Task EnsureTrainerTitleIndexSchemaAsync(CancellationToken cancellationToken = default)
+    {
+        await Database.ExecuteSqlRawAsync(
+            """
+            CREATE TABLE IF NOT EXISTS TrainerTitleIndexEntries (
+                Id INTEGER NOT NULL CONSTRAINT PK_TrainerTitleIndexEntries PRIMARY KEY AUTOINCREMENT,
+                FlingTitle TEXT NOT NULL,
+                TrainerPageUrl TEXT NOT NULL,
+                SteamAppId TEXT NULL,
+                MetadataSource TEXT NULL,
+                MetadataSourceUrl TEXT NULL,
+                EnglishName TEXT NULL,
+                ChineseName TEXT NULL,
+                NormalizedFlingTitle TEXT NOT NULL,
+                NormalizedEnglishName TEXT NULL,
+                NormalizedChineseName TEXT NULL,
+                MatchStatus TEXT NOT NULL DEFAULT 'Unmatched',
+                MatchConfidence REAL NULL,
+                IsActive INTEGER NOT NULL DEFAULT 1,
+                LastSyncedUtc TEXT NULL,
+                LastSeenUtc TEXT NULL,
+                LastValidatedUtc TEXT NULL
+            );
+            """,
+            cancellationToken).ConfigureAwait(false);
+
+        await TryAddTrainerTitleIndexColumnAsync("MetadataSource", "TEXT NULL", cancellationToken).ConfigureAwait(false);
+        await TryAddTrainerTitleIndexColumnAsync("MetadataSourceUrl", "TEXT NULL", cancellationToken).ConfigureAwait(false);
+        await TryAddTrainerTitleIndexColumnAsync("MatchConfidence", "REAL NULL", cancellationToken).ConfigureAwait(false);
+        await TryAddTrainerTitleIndexColumnAsync("LastValidatedUtc", "TEXT NULL", cancellationToken).ConfigureAwait(false);
+
+        await Database.ExecuteSqlRawAsync(
+            "CREATE UNIQUE INDEX IF NOT EXISTS IX_TrainerTitleIndexEntries_TrainerPageUrl ON TrainerTitleIndexEntries(TrainerPageUrl);",
+            cancellationToken).ConfigureAwait(false);
+
+        await Database.ExecuteSqlRawAsync(
+            "CREATE INDEX IF NOT EXISTS IX_TrainerTitleIndexEntries_NormalizedChineseName ON TrainerTitleIndexEntries(NormalizedChineseName);",
+            cancellationToken).ConfigureAwait(false);
+
+        await Database.ExecuteSqlRawAsync(
+            "CREATE INDEX IF NOT EXISTS IX_TrainerTitleIndexEntries_NormalizedEnglishName ON TrainerTitleIndexEntries(NormalizedEnglishName);",
+            cancellationToken).ConfigureAwait(false);
+
+        await Database.ExecuteSqlRawAsync(
+            "CREATE INDEX IF NOT EXISTS IX_TrainerTitleIndexEntries_NormalizedFlingTitle ON TrainerTitleIndexEntries(NormalizedFlingTitle);",
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task TryAddTrainerTitleIndexColumnAsync(string columnName, string definition, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Database.ExecuteSqlRawAsync(
+                $"ALTER TABLE TrainerTitleIndexEntries ADD COLUMN {columnName} {definition};",
                 cancellationToken).ConfigureAwait(false);
         }
         catch

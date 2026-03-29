@@ -59,4 +59,28 @@ public partial class Trainer : ObservableObject
     [System.ComponentModel.DataAnnotations.Schema.NotMapped]
     [ObservableProperty]
     private bool _isAddPending;
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    [ObservableProperty]
+    private string? _primaryDisplayTitle;
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    [ObservableProperty]
+    private string? _secondaryDisplayTitle;
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    [ObservableProperty]
+    private string? _matchedChineseName;
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    [ObservableProperty]
+    private string? _matchedEnglishName;
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public string DisplayTitle => string.IsNullOrWhiteSpace(PrimaryDisplayTitle) ? Title : PrimaryDisplayTitle;
+
+    partial void OnPrimaryDisplayTitleChanged(string? value)
+    {
+        OnPropertyChanged(nameof(DisplayTitle));
+    }
 }

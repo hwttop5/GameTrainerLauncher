@@ -8,24 +8,28 @@
     <UseWPF>true</UseWPF>
     <StartupObject>GameTrainerLauncher.UI.Program</StartupObject>
     <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
+    <AssemblyName>GameTrainerLauncher.UI.LocalBuild</AssemblyName>
+    <RootNamespace>GameTrainerLauncher.UI</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GameTrainerLauncher.Core\GameTrainerLauncher.Core.csproj" />
-    <ProjectReference Include="..\GameTrainerLauncher.Infrastructure\GameTrainerLauncher.Infrastructure.csproj" />
+    <Reference Include="GameTrainerLauncher.Core">
+      <HintPath>..\GameTrainerLauncher.Core\bin\Debug\net8.0\GameTrainerLauncher.Core.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="GameTrainerLauncher.Infrastructure">
+      <HintPath>..\GameTrainerLauncher.Infrastructure\bin\Debug\net8.0\GameTrainerLauncher.Infrastructure.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
     <Resource Include="Assets\logo.png" />
     <Resource Include="Assets\logo.ico" />
-    <Content Include="Assets\title-index.seed.snapshot.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

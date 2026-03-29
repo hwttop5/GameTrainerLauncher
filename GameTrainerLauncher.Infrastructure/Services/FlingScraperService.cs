@@ -1,6 +1,7 @@
 using GameTrainerLauncher.Core.Entities;
 using GameTrainerLauncher.Core.Interfaces;
 using GameTrainerLauncher.Core.Models;
+using GameTrainerLauncher.Core.Utilities;
 using HtmlAgilityPack;
 using NLog;
 using System.Globalization;
@@ -13,6 +14,16 @@ public class FlingScraperService : IScraperService
     private readonly HttpClient _httpClient;
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     private const string BaseUrl = "https://flingtrainer.com";
+    private static readonly string[] AllTrainerCatalogUrls =
+    [
+        $"{BaseUrl}/all-trainers-a-z/",
+        $"{BaseUrl}/all-trainers/"
+    ];
+    private static readonly string[] TrainerArchiveUrls =
+    [
+        $"{BaseUrl}/uncategorized/my-trainers-archive/",
+        $"{BaseUrl}/trainer/my-trainers-archive/"
+    ];
 
     public FlingScraperService()
     {
@@ -54,6 +65,7 @@ public class FlingScraperService : IScraperService
                     trainers.Add(new Trainer
                     {
                         Title = title,
+                        PrimaryDisplayTitle = title,
                         PageUrl = link,
                         IsDownloaded = false,
                         ImageUrl = coverUrl,
@@ -63,6 +75,144 @@ public class FlingScraperService : IScraperService
             }
             return trainers;
         }, "get popular trainers");
+    }
+
+    public async Task<List<TrainerCatalogEntry>> GetTrainerCatalogEntriesAsync()
+    {
+        var directEntries = await TryFetchCatalogEntriesAsync(
+            AllTrainerCatalogUrls,
+            ParseDirectCatalogEntries,
+            "trainer catalog links");
+        Logger.Info("Resolved {Count} direct trainer catalog entries.", directEntries.Count);
+
+        var archiveEntries = await TryFetchCatalogEntriesAsync(
+            TrainerArchiveUrls,
+            html => ParseArchiveCatalogEntries(html, directEntries),
+            "trainer archive catalog");
+        Logger.Info("Resolved {Count} archive trainer catalog entries.", archiveEntries.Count);
+
+        foreach (var entry in archiveEntries)
+        {
+            directEntries.TryAdd(entry.Key, entry.Value);
+        }
+
+        return directEntries.Values
+            .OrderBy(entry => entry.Title, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private async Task<Dictionary<string, TrainerCatalogEntry>> TryFetchCatalogEntriesAsync(
+        IEnumerable<string> candidateUrls,
+        Func<string, Dictionary<string, TrainerCatalogEntry>> parser,
+        string operationName)
+    {
+        foreach (var candidateUrl in candidateUrls)
+        {
+            var entries = await ExecuteWithRetryAsync(async () =>
+            {
+                var html = await _httpClient.GetStringAsync(candidateUrl);
+                return parser(html);
+            }, $"get {operationName} from {candidateUrl}");
+
+            if (entries.Count > 0)
+            {
+                Logger.Info("Resolved {Count} entries for {Operation} from {Url}.", entries.Count, operationName, candidateUrl);
+                return entries;
+            }
+
+            Logger.Warn("Fetched {Url} for {Operation}, but no valid entries were parsed.", candidateUrl, operationName);
+        }
+
+        return new Dictionary<string, TrainerCatalogEntry>(StringComparer.Ordinal);
+    }
+
+    private static Dictionary<string, TrainerCatalogEntry> ParseDirectCatalogEntries(string html)
+    {
+        var doc = new HtmlDocument();
+        doc.LoadHtml(html);
+
+        var links = doc.DocumentNode.SelectNodes("//div[contains(@class, 'entry-content')]//a[@href]")
+            ?? doc.DocumentNode.SelectNodes("//main//a[@href]")
+            ?? doc.DocumentNode.SelectNodes("//a[@href]");
+        var entriesByKey = new Dictionary<string, TrainerCatalogEntry>(StringComparer.Ordinal);
+        if (links == null)
+        {
+            return entriesByKey;
+        }
+
+        foreach (var linkNode in links)
+        {
+            var href = NormalizeSiteUrl(linkNode.GetAttributeValue("href", string.Empty));
+            var title = NormalizeCatalogTitle(linkNode.InnerText);
+            if (string.IsNullOrWhiteSpace(href) || string.IsNullOrWhiteSpace(title))
+            {
+                continue;
+            }
+
+            if (!Uri.TryCreate(href, UriKind.Absolute, out var uri) ||
+                !uri.Host.Contains("flingtrainer.com", StringComparison.OrdinalIgnoreCase) ||
+                !uri.AbsolutePath.Contains("/trainer/", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var normalizedTitle = TitleSearchNormalizer.NormalizeFlingTitle(title);
+            if (string.IsNullOrWhiteSpace(normalizedTitle))
+            {
+                continue;
+            }
+
+            entriesByKey[normalizedTitle] = new TrainerCatalogEntry
+            {
+                Title = title,
+                TrainerPageUrl = href
+            };
+        }
+
+        return entriesByKey;
+    }
+
+    private static Dictionary<string, TrainerCatalogEntry> ParseArchiveCatalogEntries(
+        string html,
+        IReadOnlyDictionary<string, TrainerCatalogEntry> directEntries)
+    {
+        var doc = new HtmlDocument();
+        doc.LoadHtml(html);
+
+        var contentNode = doc.DocumentNode.SelectSingleNode("//div[contains(@class, 'entry-content')]")
+            ?? doc.DocumentNode.SelectSingleNode("//main")
+            ?? doc.DocumentNode;
+        if (contentNode == null)
+        {
+            return new Dictionary<string, TrainerCatalogEntry>(StringComparer.Ordinal);
+        }
+
+        var lines = HtmlEntity.DeEntitize(contentNode.InnerText)
+            .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var entriesByKey = new Dictionary<string, TrainerCatalogEntry>(StringComparer.Ordinal);
+
+        foreach (var rawLine in lines)
+        {
+            var title = NormalizeCatalogTitle(rawLine);
+            var normalizedTitle = TitleSearchNormalizer.NormalizeFlingTitle(title);
+            if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(normalizedTitle))
+            {
+                continue;
+            }
+
+            if (directEntries.ContainsKey(normalizedTitle))
+            {
+                continue;
+            }
+
+            entriesByKey[normalizedTitle] = new TrainerCatalogEntry
+            {
+                Title = title,
+                TrainerPageUrl = BuildSearchUrl(title)
+            };
+        }
+
+        return entriesByKey;
     }
 
     private async Task<T> ExecuteWithRetryAsync<T>(Func<Task<T>> action, string operationName, int maxRetries = 3)
@@ -154,6 +304,94 @@ public class FlingScraperService : IScraperService
         }
 
         return normalized;
+    }
+
+    private static string? NormalizeSiteUrl(string? href)
+    {
+        return NormalizeDownloadUrl(href);
+    }
+
+    private static string BuildSearchUrl(string title)
+    {
+        return $"{BaseUrl}/?s={Uri.EscapeDataString(title)}";
+    }
+
+    private static string NormalizeCatalogTitle(string? rawTitle)
+    {
+        if (string.IsNullOrWhiteSpace(rawTitle))
+        {
+            return string.Empty;
+        }
+
+        var decoded = HtmlEntity.DeEntitize(rawTitle).Trim();
+        var match = Regex.Match(decoded, @"^(.*?\bTrainer)\b.*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        var canonical = match.Success ? match.Groups[1].Value : decoded;
+        canonical = TitleSearchNormalizer.CollapseWhitespace(canonical);
+        return canonical.Contains("trainer", StringComparison.OrdinalIgnoreCase) ? canonical : string.Empty;
+    }
+
+    private static bool IsSearchUrl(string url)
+    {
+        return Uri.TryCreate(url, UriKind.Absolute, out var uri)
+            && uri.Host.Contains("flingtrainer.com", StringComparison.OrdinalIgnoreCase)
+            && uri.Query.Contains("s=", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string? TryGetSearchKeyword(string url)
+    {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+        {
+            return null;
+        }
+
+        var query = uri.Query.TrimStart('?');
+        foreach (var pair in query.Split('&', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var parts = pair.Split('=', 2);
+            if (parts.Length == 2 && parts[0].Equals("s", StringComparison.OrdinalIgnoreCase))
+            {
+                return Uri.UnescapeDataString(parts[1]);
+            }
+        }
+
+        return null;
+    }
+
+    private static string? ResolveSearchResultLink(HtmlDocument doc, string? expectedKeyword)
+    {
+        var nodes = doc.DocumentNode.SelectNodes("//article[contains(@class, 'post')]");
+        if (nodes == null || nodes.Count == 0)
+        {
+            return null;
+        }
+
+        var normalizedKeyword = TitleSearchNormalizer.NormalizeFlingTitle(expectedKeyword);
+        string? firstLink = null;
+
+        foreach (var node in nodes)
+        {
+            var titleNode = node.SelectSingleNode(".//h2/a");
+            if (titleNode == null)
+            {
+                continue;
+            }
+
+            var href = NormalizeSiteUrl(titleNode.GetAttributeValue("href", string.Empty));
+            if (string.IsNullOrWhiteSpace(href))
+            {
+                continue;
+            }
+
+            firstLink ??= href;
+            var title = HtmlEntity.DeEntitize(titleNode.InnerText).Trim();
+            if (!string.IsNullOrWhiteSpace(normalizedKeyword) &&
+                TitleSearchNormalizer.NormalizeFlingTitle(title) == normalizedKeyword)
+            {
+                return href;
+            }
+        }
+
+        return firstLink;
     }
 
     private static bool IsSectionLabelRow(HtmlNode row, out string sectionLabel)
@@ -340,6 +578,7 @@ public class FlingScraperService : IScraperService
                     trainers.Add(new Trainer
                     {
                         Title = title,
+                        PrimaryDisplayTitle = title,
                         PageUrl = link,
                         IsDownloaded = false,
                         ImageUrl = coverUrl,
@@ -355,7 +594,17 @@ public class FlingScraperService : IScraperService
     {
         return await ExecuteWithRetryAsync(async () =>
         {
-            var html = await _httpClient.GetStringAsync(url);
+            var finalUrl = url;
+            if (IsSearchUrl(url))
+            {
+                var searchHtml = await _httpClient.GetStringAsync(url);
+                var searchDoc = new HtmlDocument();
+                searchDoc.LoadHtml(searchHtml);
+                finalUrl = ResolveSearchResultLink(searchDoc, TryGetSearchKeyword(url))
+                    ?? throw new InvalidOperationException($"Unable to resolve trainer details from search URL: {url}");
+            }
+
+            var html = await _httpClient.GetStringAsync(finalUrl);
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
 
@@ -402,7 +651,8 @@ public class FlingScraperService : IScraperService
             return new Trainer
             {
                 Title = title,
-                PageUrl = url,
+                PrimaryDisplayTitle = title,
+                PageUrl = finalUrl,
                 DownloadUrl = downloadUrl,
                 Version = version,
                 IsDownloaded = false,

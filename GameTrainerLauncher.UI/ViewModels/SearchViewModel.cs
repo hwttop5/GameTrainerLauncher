@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -17,11 +18,13 @@ namespace GameTrainerLauncher.UI.ViewModels;
 public partial class SearchViewModel : PageFeedbackViewModelBase
 {
     private readonly IScraperService _scraperService;
+    private readonly ITrainerSearchService _trainerSearchService;
     private readonly AppDbContext _dbContext;
     private readonly ITrainerLibraryService _trainerLibraryService;
     private readonly ITrainerVersionSelectionService _trainerVersionSelectionService;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IAppNotificationService _notificationService;
+    private int _searchVersion;
 
     [ObservableProperty]
     private ObservableCollection<Trainer> _searchResults = new();
@@ -37,6 +40,7 @@ public partial class SearchViewModel : PageFeedbackViewModelBase
 
     public SearchViewModel(
         IScraperService scraperService,
+        ITrainerSearchService trainerSearchService,
         AppDbContext dbContext,
         ITrainerLibraryService trainerLibraryService,
         ITrainerVersionSelectionService trainerVersionSelectionService,
@@ -44,6 +48,7 @@ public partial class SearchViewModel : PageFeedbackViewModelBase
         IAppNotificationService notificationService)
     {
         _scraperService = scraperService;
+        _trainerSearchService = trainerSearchService;
         _dbContext = dbContext;
         _trainerLibraryService = trainerLibraryService;
         _trainerVersionSelectionService = trainerVersionSelectionService;
@@ -102,12 +107,13 @@ public partial class SearchViewModel : PageFeedbackViewModelBase
 
         try
         {
-            var data = await _scraperService.SearchAsync(keyword);
+            var currentSearchVersion = Interlocked.Increment(ref _searchVersion);
+            var searchResult = await _trainerSearchService.SearchAsync(keyword);
 
             await _dbContext.Database.EnsureCreatedAsync();
             var existingNames = _dbContext.Games.Select(game => game.Name).ToHashSet();
 
-            foreach (var trainer in data)
+            foreach (var trainer in searchResult.Trainers)
             {
                 if (existingNames.Contains(trainer.Title))
                 {
@@ -117,26 +123,22 @@ public partial class SearchViewModel : PageFeedbackViewModelBase
                 SearchResults.Add(trainer);
             }
 
-            for (var i = 0; i < SearchResults.Count; i++)
+            if (searchResult.IndexMayBeIncomplete)
             {
-                var trainer = SearchResults[i];
-                if (string.IsNullOrEmpty(trainer.PageUrl))
-                {
-                    continue;
-                }
+                var title = (string)Application.Current.FindResource("MsgSearchTitle") ?? "Search";
+                var message = searchResult.IsIndexUpdating
+                    ? "\u4e2d\u6587\u7d22\u5f15\u6b63\u5728\u540e\u53f0\u66f4\u65b0\uff0c\u5f53\u524d\u7ed3\u679c\u53ef\u80fd\u4e0d\u5b8c\u6574\u3002"
+                    : "\u5f53\u524d\u4e2d\u6587\u7d22\u5f15\u53ef\u80fd\u5c1a\u672a\u5b8c\u6574\u66f4\u65b0\u3002";
+                ShowPageFeedback(InfoBarSeverity.Informational, title, message);
+            }
+            else
+            {
+                ClearPageFeedback();
+            }
 
-                try
-                {
-                    var details = await _scraperService.GetTrainerDetailsAsync(trainer.PageUrl);
-                    trainer.LastUpdated = details.LastUpdated;
-                    trainer.DownloadUrl = details.DownloadUrl;
-                    trainer.Version = details.Version;
-                    trainer.DownloadOptions = details.DownloadOptions;
-                    trainer.ImageUrl = string.IsNullOrEmpty(details.ImageUrl) ? trainer.ImageUrl : details.ImageUrl;
-                }
-                catch
-                {
-                }
+            if (SearchResults.Count > 0)
+            {
+                _ = HydrateSearchResultsAsync(currentSearchVersion, SearchResults.ToList());
             }
 
             if (SearchResults.Count == 0)
@@ -155,6 +157,50 @@ public partial class SearchViewModel : PageFeedbackViewModelBase
         finally
         {
             IsLoading = false;
+        }
+    }
+
+    private async Task HydrateSearchResultsAsync(int searchVersion, IReadOnlyList<Trainer> trainers)
+    {
+        foreach (var trainer in trainers)
+        {
+            if (searchVersion != Volatile.Read(ref _searchVersion))
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(trainer.PageUrl))
+            {
+                continue;
+            }
+
+            try
+            {
+                var details = await _scraperService.GetTrainerDetailsAsync(trainer.PageUrl);
+                if (searchVersion != Volatile.Read(ref _searchVersion))
+                {
+                    return;
+                }
+
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    if (searchVersion != Volatile.Read(ref _searchVersion))
+                    {
+                        return;
+                    }
+
+                    trainer.Title = details.Title;
+                    trainer.PageUrl = details.PageUrl;
+                    trainer.LastUpdated = details.LastUpdated;
+                    trainer.DownloadUrl = details.DownloadUrl;
+                    trainer.Version = details.Version;
+                    trainer.DownloadOptions = details.DownloadOptions;
+                    trainer.ImageUrl = string.IsNullOrEmpty(details.ImageUrl) ? trainer.ImageUrl : details.ImageUrl;
+                });
+            }
+            catch
+            {
+            }
         }
     }
 

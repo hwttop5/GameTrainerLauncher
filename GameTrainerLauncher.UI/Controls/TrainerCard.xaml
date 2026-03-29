@@ -65,7 +65,14 @@
 
             <!-- Title + Date: 日期上收下放，视觉上平衡（上面显宽时加大日期下边距） -->
             <StackPanel Grid.Row="1" Margin="10,2,10,0" VerticalAlignment="Top">
-                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" Height="40" LineHeight="18" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis"/>
+                <TextBlock Text="{Binding DisplayTitle}" FontWeight="SemiBold" TextWrapping="Wrap" MinHeight="36" MaxHeight="40" LineHeight="18" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis"/>
+                <TextBlock Text="{Binding SecondaryDisplayTitle}"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           FontSize="11"
+                           Margin="0,3,0,0"
+                           TextWrapping="NoWrap"
+                           TextTrimming="CharacterEllipsis"
+                           Visibility="{Binding SecondaryDisplayTitle, Converter={StaticResource NullOrEmptyToVisibilityConverter}}"/>
                 <TextBlock Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11" LineHeight="18" Margin="0,6,0,11">
                     <TextBlock.Text>
                         <Binding Path="LastUpdated" StringFormat="{}{0:yyyy.MM.dd}" TargetNullValue="—"/>

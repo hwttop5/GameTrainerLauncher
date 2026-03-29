@@ -10,6 +10,7 @@ public sealed class AppSettings
     public string Language { get; set; } = "en-US";
     public DateTimeOffset? LastUpdateCheckUtc { get; set; }
     public string? SkippedVersion { get; set; }
+    public DateTimeOffset? LastTrainerTitleSyncUtc { get; set; }
 
     public AppSettings Clone()
     {
@@ -18,7 +19,8 @@ public sealed class AppSettings
             Theme = Theme,
             Language = Language,
             LastUpdateCheckUtc = LastUpdateCheckUtc,
-            SkippedVersion = SkippedVersion
+            SkippedVersion = SkippedVersion,
+            LastTrainerTitleSyncUtc = LastTrainerTitleSyncUtc
         };
     }
 }
