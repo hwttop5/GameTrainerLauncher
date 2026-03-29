@@ -33,10 +33,10 @@
                 </Style.Triggers>
             </Style>
         </ui:Card.Style>
-        <Grid>
+        <Grid MinHeight="280">
             <Grid.RowDefinitions>
                 <RowDefinition Height="140"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
@@ -81,7 +81,7 @@
             </StackPanel>
 
             <!-- Add button：添加中显示 loading + 进度条，下载完成后弹添加成功 -->
-            <StackPanel Grid.Row="2" Margin="10,0,10,10">
+            <StackPanel Grid.Row="2" Margin="10,0,10,10" VerticalAlignment="Bottom">
                 <Border BorderThickness="1"
                         BorderBrush="{Binding ElementName=AddButton, Path=Foreground, Converter={StaticResource BrushOpacityConverter}, ConverterParameter=0.25}"
                         CornerRadius="4">

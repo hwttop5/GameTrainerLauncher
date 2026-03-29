@@ -10,10 +10,12 @@ Tired of manually downloading and managing lots of game trainer .exe files, and 
 
 ## Features
 
-- **Search**: Search FlingTrainer by game name (English); add results to library; multiple simultaneous adds with per-card state.
+- **Search**: Search by game name in Chinese or English; local title index returns results immediately, then background incremental sync/backfill improves coverage; add results to library with per-card state.
 - **Popular Games**: Fetches popular trainers from FlingTrainer; add to library with one click (download + add), progress bar and timeout (1 min).
 - **My Library**: List of added trainers; default order is newest first, drag to reorder; launch or remove; covers are downloaded locally when adding; when entering this page it checks whether each game has a local cover and backfills missing ones automatically; download missing trainers from this page; displays a friendly no-data prompt when the library is empty.
-- **Settings**: Language (Chinese/English), theme (light/dark).
+- **Trainer Version Selection**: Choose the trainer version before downloading to match your game build and reduce version mismatch issues.
+- **App Update**: Check for updates, review current update status/release notes, then download and restart to install newer versions.
+- **Settings**: Language (Chinese/English), theme (light/dark), update checks, and a GitHub repository shortcut.
 
 ---
 
@@ -27,6 +29,10 @@ Tired of manually downloading and managing lots of game trainer .exe files, and 
 |------------|----------|
 | ![My Library](Docs/Images/MyLibrary.png) | ![Settings](Docs/Images/Settings.png) |
 
+| Trainer Version (TODO) | App Update (TODO) |
+|------------------------|-------------------|
+| ![Trainer Version TODO](Docs/Images/TrainerVersion-TODO.png) | ![App Update TODO](Docs/Images/Update-TODO.png) |
+
 ---
 
 ## Tech Stack
@@ -34,7 +40,7 @@ Tired of manually downloading and managing lots of game trainer .exe files, and 
 - **Runtime**: .NET 8, Windows only (WPF)
 - **UI**: WPF + [WPF-UI](https://github.com/lepo-co/wpf-ui) (Fluent-style) + [CommunityToolkit.Mvvm](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm/)
 - **Data**: SQLite + Entity Framework Core 8
-- **Scraping**: HtmlAgilityPack for FlingTrainer list/detail/download
+- **Scraping**: HtmlAgilityPack for FlingTrainer/Gamersky/Steam metadata (policy-driven background sync)
 - **Logging**: NLog (writes to `Data/Logs/log.txt` under the app directory)
 
 ### Project structure
@@ -63,6 +69,7 @@ Trainers and data live under `Data` next to the executable (e.g. `Data/Trainers`
 
 > Note: To avoid write-permission issues under Program Files, app data is stored at `%LocalAppData%\GameTrainerLauncher\Data`.
 > Local cover cache: `%LocalAppData%\GameTrainerLauncher\Data\Covers` (files like `game_{id}.png/jpg/...`).
+> Title-index snapshot lives at `%LocalAppData%\GameTrainerLauncher\Data\title-index.snapshot.json`; first install initializes from bundled seed `GameTrainerLauncher.UI/Assets/title-index.seed.snapshot.json` and then continues incremental updates.
 
 ---
 
