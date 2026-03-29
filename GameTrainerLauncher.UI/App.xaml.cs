@@ -34,11 +34,16 @@ public partial class App : Application
         // Core Services
         services.AddDbContext<AppDbContext>();
         services.AddSingleton<IScraperService, FlingScraperService>();
+        services.AddSingleton<IGameTitleMetadataService, GamerskyMetadataService>();
+        services.AddSingleton<ISteamStoreMetadataService, SteamStoreMetadataService>();
         services.AddSingleton<ITrainerManager, TrainerManager>();
         services.AddSingleton<IGameCoverService, GameCoverService>();
 
         // UI Services
         services.AddSingleton<IAppSettingsService, AppSettingsService>();
+        services.AddSingleton<ITrainerTitleSnapshotService, TrainerTitleSnapshotService>();
+        services.AddSingleton<ITrainerTitleSyncService, TrainerTitleSyncService>();
+        services.AddSingleton<ITrainerSearchService, TrainerSearchService>();
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<IAppUpdateService, AppUpdateService>();
@@ -96,6 +101,7 @@ public partial class App : Application
         mainWindow.Show();
 
         _ = RunStartupUpdateCheckAsync(mainWindow);
+        _ = RunStartupTrainerTitleSyncAsync();
 
         // 启动时后台拉取「我的游戏」中缺失的封面，避免之前添加的游戏不显示封面
         _ = RunStartupCoverFetchAsync();
@@ -195,6 +201,60 @@ public partial class App : Application
             catch { /* ignore */ }
         }
         catch { /* ignore startup fetch */ }
+    }
+
+    private async Task RunStartupTrainerTitleSyncAsync()
+    {
+        try
+        {
+            await EnsureTitleSnapshotSeededAsync();
+            var syncService = Services.GetRequiredService<ITrainerTitleSyncService>();
+            await syncService.EnsureSynchronizedAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.Warn(ex, "Startup trainer title sync failed.");
+        }
+    }
+
+    private async Task EnsureTitleSnapshotSeededAsync()
+    {
+        try
+        {
+            using var scope = Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var snapshotService = scope.ServiceProvider.GetRequiredService<ITrainerTitleSnapshotService>();
+            await db.Database.EnsureCreatedAsync();
+            await db.EnsureTrainerTitleIndexSchemaAsync();
+
+            var seedImported = await snapshotService.ImportSeedSnapshotIfNeededAsync(db);
+            if (seedImported > 0)
+            {
+                Logger.Info("Trainer title snapshot imported from embedded seed on startup. Rows changed: {Count}.", seedImported);
+                return;
+            }
+
+            var activeCount = await db.TrainerTitleIndexEntries.CountAsync(row => row.IsActive);
+            var chineseCount = await db.TrainerTitleIndexEntries.CountAsync(row =>
+                row.IsActive &&
+                !string.IsNullOrWhiteSpace(row.NormalizedChineseName));
+
+            var shouldImportLocal = activeCount == 0 || (activeCount >= 200 && chineseCount * 1.0 / activeCount < 0.3);
+            if (!shouldImportLocal)
+            {
+                return;
+            }
+
+            var imported = await snapshotService.ImportSnapshotAsync(db, overwriteExisting: false);
+            if (imported > 0)
+            {
+                Logger.Info("Trainer title snapshot imported from local app data on startup. Rows changed: {Count}.", imported);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Warn(ex, "Startup title snapshot import failed.");
+        }
     }
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
