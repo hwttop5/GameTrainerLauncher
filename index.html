@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Game Trainer Launcher</title>
+  <meta name="description" content="基于 FlingTrainer 的 Windows 游戏修改器启动器，支持中英文搜索、一键下载与本地管理。">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="./">Game Trainer Launcher</a>
+      <div class="nav-actions">
+        <button id="langToggle" class="btn ghost" type="button">EN</button>
+        <button id="themeToggle" class="btn ghost" type="button">Light</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero container">
+      <p class="badge" data-i18n="hero.badge">Windows 桌面应用</p>
+      <h1 data-i18n="hero.title">更轻松地管理游戏修改器</h1>
+      <p class="hero-desc" data-i18n="hero.desc">
+        浏览、搜索、下载并启动修改器。支持中英文搜索与本地索引，启动快、管理稳。
+      </p>
+      <div class="hero-actions">
+        <a class="btn primary" href="https://github.com/hwttop5/GameTrainerLauncher/releases" target="_blank" rel="noreferrer" data-i18n="hero.download">下载最新版</a>
+        <a class="btn" href="https://github.com/hwttop5/GameTrainerLauncher" target="_blank" rel="noreferrer" data-i18n="hero.github">查看 GitHub</a>
+      </div>
+    </section>
+
+    <section class="demo container">
+      <h2 data-i18n="demo.title">功能演示</h2>
+      <p class="demo-desc" data-i18n="demo.desc">下面是应用实际使用演示。</p>
+      <div class="demo-media">
+        <img src="/Docs/Images/demo.gif" alt="Game Trainer Launcher Demo">
+      </div>
+    </section>
+
+    <section class="features container">
+      <h2 data-i18n="features.title">核心功能</h2>
+      <div class="feature-grid">
+        <article class="card">
+          <h3 data-i18n="features.search.title">中英文搜索</h3>
+          <p data-i18n="features.search.desc">优先本地索引秒回，后台增量同步，减少等待。</p>
+        </article>
+        <article class="card">
+          <h3 data-i18n="features.download.title">一键下载添加</h3>
+          <p data-i18n="features.download.desc">在热门或搜索页直接下载并添加到我的游戏。</p>
+        </article>
+        <article class="card">
+          <h3 data-i18n="features.library.title">我的游戏管理</h3>
+          <p data-i18n="features.library.desc">支持启动、移除、拖拽排序，新添加项目默认置顶。</p>
+        </article>
+        <article class="card">
+          <h3 data-i18n="features.update.title">自动更新</h3>
+          <p data-i18n="features.update.desc">基于 Velopack 和 GitHub Releases，支持检查更新与升级。</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-row">
+      <span data-i18n="footer.copy">Game Trainer Launcher · GPL-3.0</span>
+      <a href="https://github.com/hwttop5/GameTrainerLauncher" target="_blank" rel="noreferrer" data-i18n="footer.repo">项目仓库</a>
+    </div>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>
