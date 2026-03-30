@@ -13,25 +13,15 @@ Tired of manually downloading and managing lots of game trainer .exe files, and 
 - **Search**: Search by game name in Chinese or English; local title index returns results immediately, then background incremental sync/backfill improves coverage; add results to library with per-card state.
 - **Popular Games**: Fetches popular trainers from FlingTrainer; add to library with one click (download + add), progress bar and timeout (1 min).
 - **Version Selection**: Choose the trainer version before downloading to match your game build and reduce version mismatch issues.
-- **My Library**: List of added trainers; default order is newest first, drag to reorder; launch or remove; covers are downloaded locally when adding; when entering this page it checks whether each game has a local cover and backfills missing ones automatically; download missing trainers from this page; displays a friendly no-data prompt when the library is empty.
+- **My Library**: List of added trainers; newly added items are pinned to the top by default, with compatibility for historical sort data and stable ordering; drag to reorder; launch or remove; covers are downloaded locally when adding; when entering this page it checks whether each game has a local cover and backfills missing ones automatically; download missing trainers from this page; displays a friendly no-data prompt when the library is empty.
 - **Settings**: Language (Chinese/English), theme (light/dark), update checks, and a GitHub repository shortcut.
 - **App Update**: Check for updates, review current update status/release notes, then download and restart to install newer versions.
 
 ---
 
-## Screenshots
+## Demo
 
-| Search | Popular Games |
-|--------|---------------|
-| ![Search](Docs/Images/Search.png) | ![Popular Games](Docs/Images/PopularGames.png) |
-
-| My Library | Settings |
-|------------|----------|
-| ![My Library](Docs/Images/MyLibrary.png) | ![Settings](Docs/Images/Settings.png) |
-
-| Trainer Version (TODO) | App Update (TODO) |
-|------------------------|-------------------|
-| ![Trainer Version TODO](Docs/Images/TrainerVersion-TODO.png) | ![App Update TODO](Docs/Images/Update-TODO.png) |
+![Demo](Docs/Images/demo.gif)
 
 ---
 
@@ -83,17 +73,25 @@ dotnet tool restore
 .\installer\build-velopack.ps1
 ```
 Packages are generated under `artifacts/velopack`.
+The output also includes `checksums.txt` (SHA256 manifest) for post-download integrity verification.
 
 **Automatic GitHub release**:
 - Version is defined in `Directory.Build.props`
 - Push a matching tag in the form `vX.Y.Z`
 - GitHub Actions builds, validates versions, packs Velopack releases, and uploads assets to GitHub Releases automatically
+- Release assets include `checksums.txt` so users can verify local file hashes
 
 **Legacy Inno Setup**:
 ```powershell
 .\installer\build-installer.ps1
 ```
 This path is kept only as a compatibility/legacy installer flow and is no longer the primary update mechanism.
+
+**Verification and false-positive reporting tips**:
+- Verify SHA256 first (using the `checksums.txt` file from the Release) to ensure the installer is intact.
+- If antivirus still flags the verified installer, submit it through official false-positive channels:
+  - Microsoft Defender submission: [https://www.microsoft.com/en-us/wdsi/filesubmission](https://www.microsoft.com/en-us/wdsi/filesubmission)
+  - Optional cross-engine check via VirusTotal: [https://www.virustotal.com/](https://www.virustotal.com/)
 
 ---
 

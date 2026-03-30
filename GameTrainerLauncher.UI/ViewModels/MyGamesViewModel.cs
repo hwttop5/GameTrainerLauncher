@@ -120,12 +120,24 @@ public partial class MyGamesViewModel : PageFeedbackViewModelBase
 
             // De-duplicate and fix invalid IsDownloaded
             var uniqueGames = dbGames.GroupBy(g => g.Name).Select(g => g.First()).ToList();
-            // 默认倒序：最新添加在前；若有自定义排序（DisplayOrder 已设）则按 DisplayOrder 升序，其余按 AddedDate 倒序
+            // 默认倒序：最新添加在前；若有自定义排序（DisplayOrder 已设）则按 DisplayOrder 升序，其余按 AddedDate 倒序。
+            // 新添加项会被写入更小的 DisplayOrder（min-1），因此会始终置顶。
             uniqueGames = uniqueGames
                 .OrderBy(g => g.DisplayOrder.HasValue ? 0 : 1)
                 .ThenBy(g => g.DisplayOrder ?? int.MaxValue)
                 .ThenByDescending(g => g.AddedDate ?? DateTime.MinValue)
+                .ThenBy(g => g.Id)
                 .ToList();
+
+            // 轻量防护：若历史数据出现重复 DisplayOrder，则按当前可视顺序重排为连续序号，避免顺序抖动。
+            if (HasDuplicateDisplayOrder(uniqueGames))
+            {
+                for (var i = 0; i < uniqueGames.Count; i++)
+                {
+                    uniqueGames[i].DisplayOrder = i;
+                    _dbContext.Games.Update(uniqueGames[i]);
+                }
+            }
             foreach (var g in uniqueGames)
             {
                 if (g.MatchedTrainer != null && g.MatchedTrainer.IsDownloaded &&
@@ -243,6 +255,14 @@ public partial class MyGamesViewModel : PageFeedbackViewModelBase
                     GetString("MsgDatabaseError") + " " + ex.Message);
             });
         }
+    }
+
+    private static bool HasDuplicateDisplayOrder(List<Game> games)
+    {
+        return games
+            .Where(game => game.DisplayOrder.HasValue)
+            .GroupBy(game => game.DisplayOrder!.Value)
+            .Any(group => group.Count() > 1);
     }
 
     /// <summary>Like Remove: command returns immediately, only UI trigger disables the one row (no shared command disabling).</summary>

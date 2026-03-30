@@ -100,12 +100,16 @@ public class TrainerLibraryService : ITrainerLibraryService
             return true;
         }
 
+        var minDisplayOrder = await db.Games.MinAsync(game => (int?)game.DisplayOrder, cancellationToken);
+        var newTopDisplayOrder = (minDisplayOrder ?? 0) - 1;
+
         var game = new Game
         {
             Name = sourceTrainer.Title,
             MatchedTrainer = newTrainer,
             AddedDate = DateTime.Now,
-            CoverUrl = newTrainer.ImageUrl ?? sourceTrainer.ImageUrl
+            CoverUrl = newTrainer.ImageUrl ?? sourceTrainer.ImageUrl,
+            DisplayOrder = newTopDisplayOrder
         };
 
         db.Trainers.Add(newTrainer);

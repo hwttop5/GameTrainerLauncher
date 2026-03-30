@@ -81,6 +81,18 @@ jobs:
         shell: pwsh
         run: dotnet build $env:PROJECT_PATH -c Release -r "${{ steps.version.outputs.publish_runtime }}" --no-restore -p:ContinuousIntegrationBuild=true
 
+      - name: Clean artifacts directories
+        shell: pwsh
+        run: |
+          if (Test-Path "artifacts/publish") {
+            Remove-Item -Recurse -Force "artifacts/publish"
+          }
+          if (Test-Path "artifacts/velopack") {
+            Remove-Item -Recurse -Force "artifacts/velopack"
+          }
+          New-Item -ItemType Directory -Force -Path "artifacts/publish" | Out-Null
+          New-Item -ItemType Directory -Force -Path "artifacts/velopack" | Out-Null
+
       - name: Run tests
         if: steps.tests.outputs.has_tests == 'true'
         shell: pwsh
@@ -234,6 +246,16 @@ jobs:
           }
 
           Get-Content $feedIndex -Raw | ConvertFrom-Json | Out-Null
+
+      - name: Generate checksums manifest
+        shell: pwsh
+        run: |
+          $checksumsPath = Join-Path $PWD "artifacts/velopack/checksums.txt"
+          $lines = Get-ChildItem "artifacts/velopack" -File | Sort-Object Name | ForEach-Object {
+            $hash = Get-FileHash -Path $_.FullName -Algorithm SHA256
+            "$($hash.Hash.ToLower())  $($_.Name)"
+          }
+          Set-Content -Path $checksumsPath -Value $lines -Encoding UTF8
 
       - name: Upload release assets
         shell: pwsh
