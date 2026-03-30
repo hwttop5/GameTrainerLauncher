@@ -36,3 +36,6 @@ installer/Output/
 
 # Logs
 *.log
+
+# Temporary workspace data
+tmp/
