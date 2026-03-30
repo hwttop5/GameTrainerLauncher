@@ -9,6 +9,6 @@ public partial class SearchPage : Page
     {
         InitializeComponent();
         DataContext = viewModel;
-        Loaded += (_, _) => { _ = viewModel.RefreshAlreadyInLibraryCommand.ExecuteAsync(null); };
+        Loaded += async (_, _) => await viewModel.RefreshAlreadyInLibraryCommand.ExecuteAsync(null);
     }
 }
