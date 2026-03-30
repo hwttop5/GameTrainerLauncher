@@ -21,18 +21,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Prepare website publish directory
-        shell: bash
-        run: |
-          rm -rf public
-          mkdir -p public/Docs/Images
-          cp -R Docs/site/. public/
-          cp Docs/Images/demo.gif public/Docs/Images/demo.gif
-
       - name: Deploy site root to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
+          publish_dir: ./Docs/site
           destination_dir: .
           keep_files: true
