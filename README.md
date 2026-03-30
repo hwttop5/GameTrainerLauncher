@@ -13,25 +13,15 @@
 - **搜索**：支持中文或英文游戏名检索；优先走本地标题索引秒回结果，并在后台做增量同步与补齐；结果可「下载并添加」到我的游戏，支持每张卡片独立状态。
 - **热门游戏**：拉取 FlingTrainer 热门修改器列表，一键「下载并添加」到我的游戏，带进度条与超时提示。
 - **版本选择**：下载前可弹窗选择对应版本，适配不同游戏版本，避免版本不匹配导致无法使用。
-- **我的游戏**：已添加的修改器列表，默认按添加时间倒序（最新在前），支持拖拽排序；支持启动、移除；封面会在「添加」时下载到本地，进入页面时会检查是否每个游戏都有本地封面，缺失则自动抓取并补全；可在此页对未下载项单独下载；当游戏库为空时显示友好的无数据提示。
+- **我的游戏**：已添加的修改器列表；新添加项目会默认置顶，兼容历史排序数据并保持顺序稳定；支持拖拽排序、启动、移除；封面会在「添加」时下载到本地，进入页面时会检查是否每个游戏都有本地封面，缺失则自动抓取并补全；可在此页对未下载项单独下载；当游戏库为空时显示友好的无数据提示。
 - **设置**：语言（中文/英文）、主题（亮色/暗色）、检查更新，以及项目 GitHub 仓库入口。
 - **软件更新**：支持手动检查更新、查看版本状态与发布说明，发现新版本后可下载并重启安装。
 
 ---
 
-## 界面截图
+## 功能演示
 
-| 搜索 | 热门游戏 |
-|------|----------|
-| ![搜索](Docs/Images/Search.png) | ![热门游戏](Docs/Images/PopularGames.png) |
-
-| 我的游戏 | 设置 |
-|----------|------|
-| ![我的游戏](Docs/Images/MyLibrary.png) | ![设置](Docs/Images/Settings.png) |
-
-| 版本选择（待补图） | 软件更新（待补图） |
-|-------------------|-------------------|
-| ![版本选择-待补](Docs/Images/TrainerVersion-TODO.png) | ![软件更新-待补](Docs/Images/Update-TODO.png) |
+![功能演示](Docs/Images/demo.gif)
 
 ---
 
@@ -83,17 +73,25 @@ dotnet tool restore
 .\installer\build-velopack.ps1
 ```
 打包产物输出到 `artifacts/velopack`。
+其中会额外生成 `checksums.txt`（SHA256 清单），可用于下载后完整性校验。
 
 **自动发布 GitHub Release**：
 - 版本号统一定义在 `Directory.Build.props`
 - 推送与版本匹配的标签 `vX.Y.Z`
 - GitHub Actions 会自动构建、校验版本、执行 Velopack 打包并上传 Release 资产
+- Release 资产包含 `checksums.txt`，可与本地文件哈希比对
 
 **Legacy Inno Setup**：
 ```powershell
 .\installer\build-installer.ps1
 ```
 该路径仅作为兼容/遗留安装器保留，不再作为主要更新链路。
+
+**校验与误报申诉建议**：
+- 下载后先校验 SHA256（参考 Release 中 `checksums.txt`），确保文件未被篡改。
+- 若杀毒软件误报，可将校验通过的安装包提交到官方误报申诉渠道：
+  - Microsoft Defender 误报提交：[https://www.microsoft.com/en-us/wdsi/filesubmission](https://www.microsoft.com/en-us/wdsi/filesubmission)
+  - 也可先用 VirusTotal 做多引擎交叉检查：[https://www.virustotal.com/](https://www.virustotal.com/)
 
 ---
 

@@ -88,7 +88,16 @@ $releaseDir = Join-Path $root "artifacts\velopack"
 $notesFile = Get-ReleaseNotesFile -notesPath $ReleaseNotesPath -version $buildProps.Version
 
 New-Item -ItemType Directory -Force -Path $releaseDir | Out-Null
-Get-ChildItem -Path $releaseDir -Filter "*$($buildProps.Version)*" -File -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
+
+# Clean output folders to reduce random artifacts.
+if (Test-Path $publishDir) {
+    Get-ChildItem -Path $publishDir -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+}
+if (Test-Path $releaseDir) {
+    Get-ChildItem -Path $releaseDir -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+}
+New-Item -ItemType Directory -Force -Path $publishDir | Out-Null
+New-Item -ItemType Directory -Force -Path $releaseDir | Out-Null
 
 Write-Host "Restoring local tools..." -ForegroundColor Cyan
 dotnet tool restore
@@ -143,5 +152,14 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 $fullPackagePath = Join-Path $releaseDir ("GameTrainerLauncher-" + $buildProps.Version + "-full.nupkg")
 Assert-PackagedRuntimeConfig -packagePath $fullPackagePath
+
+# Generate SHA256 manifest for verification/reporting.
+$checksumsPath = Join-Path $releaseDir "checksums.txt"
+$hashLines = New-Object System.Collections.Generic.List[string]
+Get-ChildItem -Path $releaseDir -File | Sort-Object Name | ForEach-Object {
+    $hash = Get-FileHash -Path $_.FullName -Algorithm SHA256
+    $hashLines.Add("$($hash.Hash.ToLower())  $($_.Name)")
+}
+Set-Content -Path $checksumsPath -Value $hashLines -Encoding UTF8
 
 Write-Host "Done. Packages: $releaseDir" -ForegroundColor Green
