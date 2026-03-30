@@ -7,6 +7,11 @@ internal static class UpdateTextFormatter
 {
     public static string GetStatusText(UpdateStatusSnapshot snapshot)
     {
+        if (string.Equals(snapshot.ErrorMessage, AppUpdateService.SourceUnavailableErrorCode, StringComparison.Ordinal))
+        {
+            return GetString("UpdateStatusSourceUnavailable");
+        }
+
         return snapshot.State switch
         {
             AppUpdateState.NotInstalled => GetString("UpdateStatusNotInstalled"),
@@ -22,6 +27,11 @@ internal static class UpdateTextFormatter
 
     public static string GetManualCheckMessage(UpdateCheckResult result)
     {
+        if (string.Equals(result.ErrorMessage, AppUpdateService.SourceUnavailableErrorCode, StringComparison.Ordinal))
+        {
+            return GetString("UpdateManualSourceUnavailable");
+        }
+
         return result.State switch
         {
             AppUpdateState.UpToDate => GetString("UpdateManualNoUpdate"),

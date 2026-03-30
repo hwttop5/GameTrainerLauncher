@@ -50,6 +50,10 @@ public interface IAppUpdateService
 public sealed class AppUpdateService : IAppUpdateService
 {
     private const string RepositoryUrl = "https://github.com/hwttop5/GameTrainerLauncher";
+    private const string DefaultUpdateFeedBaseUrl = "https://hwttop5.github.io/GameTrainerLauncher/velopack";
+    private const string UpdateFeedBaseUrlEnvVar = "GAME_TRAINER_LAUNCHER_UPDATE_FEED_URL";
+    private const string UpdateSourceOverrideEnvVar = "GAME_TRAINER_LAUNCHER_UPDATE_SOURCE";
+    internal const string SourceUnavailableErrorCode = "UPDATE_FEED_UNAVAILABLE";
     private static readonly TimeSpan AutomaticCheckCooldown = TimeSpan.FromHours(24);
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
@@ -163,11 +167,14 @@ public sealed class AppUpdateService : IAppUpdateService
         catch (Exception ex)
         {
             Logger.Warn(ex, "Update check failed.");
+            var checkedAtUtc = DateTimeOffset.UtcNow;
+            _settingsService.Update(next => next.LastUpdateCheckUtc = checkedAtUtc);
             return SetLastStatus(new UpdateCheckResult
             {
                 State = AppUpdateState.Error,
                 CurrentVersion = GetCurrentVersionDisplay(),
-                ErrorMessage = ex.Message
+                ErrorMessage = NormalizeUpdateErrorMessage(ex.Message),
+                CheckedAtUtc = checkedAtUtc
             });
         }
         finally
@@ -238,8 +245,41 @@ public sealed class AppUpdateService : IAppUpdateService
 
     private UpdateManager CreateUpdateManager()
     {
-        var source = new GithubSource(RepositoryUrl, accessToken: null, prerelease: false, downloader: null);
-        return new UpdateManager(source, options: null, locator: null);
+        var sourceOverride = Environment.GetEnvironmentVariable(UpdateSourceOverrideEnvVar);
+        if (string.Equals(sourceOverride, "github", StringComparison.OrdinalIgnoreCase))
+        {
+            Logger.Info("App update source overridden to GithubSource by env var {EnvVar}.", UpdateSourceOverrideEnvVar);
+            var source = new GithubSource(RepositoryUrl, accessToken: null, prerelease: false, downloader: null);
+            return new UpdateManager(source, new UpdateOptions(), locator: null);
+        }
+
+        var feedBaseUrl = Environment.GetEnvironmentVariable(UpdateFeedBaseUrlEnvVar);
+        if (string.IsNullOrWhiteSpace(feedBaseUrl))
+        {
+            feedBaseUrl = DefaultUpdateFeedBaseUrl;
+        }
+
+        feedBaseUrl = feedBaseUrl.Trim().TrimEnd('/');
+        Logger.Info("Using static update feed: {FeedBaseUrl}", feedBaseUrl);
+        return new UpdateManager(feedBaseUrl, new UpdateOptions(), locator: null);
+    }
+
+    private static string NormalizeUpdateErrorMessage(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return message;
+        }
+
+        if (message.Contains("403", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("404", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("rate limit", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("timed out", StringComparison.OrdinalIgnoreCase))
+        {
+            return SourceUnavailableErrorCode;
+        }
+
+        return message;
     }
 
     private UpdateCheckResult SetLastStatus(UpdateCheckResult result)

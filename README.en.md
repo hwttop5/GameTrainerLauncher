@@ -12,10 +12,10 @@ Tired of manually downloading and managing lots of game trainer .exe files, and 
 
 - **Search**: Search by game name in Chinese or English; local title index returns results immediately, then background incremental sync/backfill improves coverage; add results to library with per-card state.
 - **Popular Games**: Fetches popular trainers from FlingTrainer; add to library with one click (download + add), progress bar and timeout (1 min).
+- **Version Selection**: Choose the trainer version before downloading to match your game build and reduce version mismatch issues.
 - **My Library**: List of added trainers; default order is newest first, drag to reorder; launch or remove; covers are downloaded locally when adding; when entering this page it checks whether each game has a local cover and backfills missing ones automatically; download missing trainers from this page; displays a friendly no-data prompt when the library is empty.
-- **Trainer Version Selection**: Choose the trainer version before downloading to match your game build and reduce version mismatch issues.
-- **App Update**: Check for updates, review current update status/release notes, then download and restart to install newer versions.
 - **Settings**: Language (Chinese/English), theme (light/dark), update checks, and a GitHub repository shortcut.
+- **App Update**: Check for updates, review current update status/release notes, then download and restart to install newer versions.
 
 ---
 
@@ -88,10 +88,6 @@ Packages are generated under `artifacts/velopack`.
 - Version is defined in `Directory.Build.props`
 - Push a matching tag in the form `vX.Y.Z`
 - GitHub Actions builds, validates versions, packs Velopack releases, and uploads assets to GitHub Releases automatically
-- Release guard runs before publish:
-  - `installer/validate-update-dialog-ui.ps1`
-  - Fails the release if update dialog release-notes panel regresses to `TextBox`
-  - Fails the release if shortcut self-repair wiring is missing in startup
 
 **Legacy Inno Setup**:
 ```powershell

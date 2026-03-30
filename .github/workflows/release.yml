@@ -225,6 +225,16 @@ jobs:
               throw "Packaged runtime config still contains framework references."
           }
 
+      - name: Validate static update feed index
+        shell: pwsh
+        run: |
+          $feedIndex = Join-Path $PWD "artifacts/velopack/releases.$env:RELEASE_CHANNEL.json"
+          if (-not (Test-Path $feedIndex)) {
+              throw "Static update feed index not found: $feedIndex"
+          }
+
+          Get-Content $feedIndex -Raw | ConvertFrom-Json | Out-Null
+
       - name: Upload release assets
         shell: pwsh
         run: |
@@ -253,3 +263,24 @@ jobs:
         with:
           name: velopack-${{ steps.version.outputs.version }}
           path: artifacts/velopack/*
+
+  deploy-static-feed:
+    runs-on: ubuntu-latest
+    needs: release
+    permissions:
+      contents: write
+    steps:
+      - name: Download Velopack artifact
+        uses: actions/download-artifact@v4
+        with:
+          pattern: velopack-*
+          merge-multiple: true
+          path: feed
+
+      - name: Deploy static update feed to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./feed
+          destination_dir: velopack
+          keep_files: true

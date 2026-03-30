@@ -73,6 +73,7 @@
     <system:String x:Key="UpdateStatusAvailable">发现新版本：{0}</system:String>
     <system:String x:Key="UpdateStatusSkipped">已跳过版本：{0}</system:String>
     <system:String x:Key="UpdateStatusPendingRestart">更新已下载完成，重启后即可安装。</system:String>
+    <system:String x:Key="UpdateStatusSourceUnavailable">更新源暂时不可用，请稍后再试。</system:String>
     <system:String x:Key="UpdateStatusError">检查更新失败：{0}</system:String>
     <system:String x:Key="UpdateDialogTitle">应用更新</system:String>
     <system:String x:Key="UpdateDialogSummary">发现新版本。&#x0a;当前：{0}&#x0a;最新：{1}</system:String>
@@ -89,6 +90,8 @@
     <system:String x:Key="UpdateManualNoUpdate">当前已经是最新版本。</system:String>
     <system:String x:Key="UpdateManualPendingRestart">已下载的更新将在重启后自动安装。</system:String>
     <system:String x:Key="UpdateManualNotInstalled">自动更新仅适用于通过 Velopack 安装的正式版本。</system:String>
+    <system:String x:Key="UpdateManualSourceUnavailable">暂时无法连接更新源，请稍后重试，或前往 Releases 页面手动下载。</system:String>
+    <system:String x:Key="UpdateOpenReleases">打开 Releases 页面</system:String>
     <system:String x:Key="UpdateManualError">无法检查更新：{0}</system:String>
     <system:String x:Key="MsgNoTrainerVersions">未找到该游戏可下载的修改器版本。</system:String>
     <system:String x:Key="LabelTrainerVersion">修改器版本：</system:String>

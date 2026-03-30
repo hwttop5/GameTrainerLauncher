@@ -10,6 +10,7 @@ namespace GameTrainerLauncher.UI.Views;
 public partial class SettingsPage : Page
 {
     private const string RepositoryUrl = "https://github.com/hwttop5/GameTrainerLauncher";
+    private const string ReleasesUrl = "https://github.com/hwttop5/GameTrainerLauncher/releases";
     private readonly IThemeService _themeService;
     private readonly IAppUpdateService _appUpdateService;
     private readonly IAppNotificationService _notificationService;
@@ -82,6 +83,23 @@ public partial class SettingsPage : Page
             Process.Start(new ProcessStartInfo
             {
                 FileName = RepositoryUrl,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            var message = UpdateTextFormatter.Format("MsgNavigationError", ex.Message);
+            _notificationService.ShowError(message);
+        }
+    }
+
+    private void OpenReleases_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = ReleasesUrl,
                 UseShellExecute = true
             });
         }
