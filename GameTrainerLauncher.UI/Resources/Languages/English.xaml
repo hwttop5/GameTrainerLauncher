@@ -73,6 +73,7 @@
     <system:String x:Key="UpdateStatusAvailable">Version {0} is available.</system:String>
     <system:String x:Key="UpdateStatusSkipped">Version {0} was skipped.</system:String>
     <system:String x:Key="UpdateStatusPendingRestart">An update is ready to install on restart.</system:String>
+    <system:String x:Key="UpdateStatusSourceUnavailable">Update feed is temporarily unavailable. Please try again later.</system:String>
     <system:String x:Key="UpdateStatusError">Update check failed: {0}</system:String>
     <system:String x:Key="UpdateDialogTitle">Application Update</system:String>
     <system:String x:Key="UpdateDialogSummary">A new version is available.&#x0a;Current: {0}&#x0a;Latest: {1}</system:String>
@@ -89,6 +90,8 @@
     <system:String x:Key="UpdateManualNoUpdate">You are already on the latest version.</system:String>
     <system:String x:Key="UpdateManualPendingRestart">A downloaded update is ready and will be installed after restart.</system:String>
     <system:String x:Key="UpdateManualNotInstalled">Automatic updates work only in the installed Velopack release build.</system:String>
+    <system:String x:Key="UpdateManualSourceUnavailable">Unable to reach the update feed right now. Please try again later, or download manually from Releases.</system:String>
+    <system:String x:Key="UpdateOpenReleases">Open Releases Page</system:String>
     <system:String x:Key="UpdateManualError">Could not check for updates: {0}</system:String>
     <system:String x:Key="MsgNoTrainerVersions">No downloadable trainer versions were found for this game.</system:String>
     <system:String x:Key="LabelTrainerVersion">Trainer Version:</system:String>

@@ -64,6 +64,11 @@
                                        Content="{DynamicResource UpdateCheckNow}"
                                        Click="CheckForUpdates_Click"
                                        Appearance="Primary"/>
+                            <ui:Button x:Name="OpenReleasesButton"
+                                       Content="{DynamicResource UpdateOpenReleases}"
+                                       Click="OpenReleases_Click"
+                                       Margin="8,0,0,0"
+                                       Appearance="Secondary"/>
                         </StackPanel>
                     </StackPanel>
                 </ui:Card>
