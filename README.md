@@ -6,6 +6,8 @@
 
 **下载安装包**：[https://github.com/hwttop5/GameTrainerLauncher/releases](https://github.com/hwttop5/GameTrainerLauncher/releases)
 
+**项目官网**：[https://hwttop5.github.io/GameTrainerLauncher/](https://hwttop5.github.io/GameTrainerLauncher/)
+
 ---
 
 ## 功能概览

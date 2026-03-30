@@ -6,6 +6,8 @@ Tired of manually downloading and managing lots of game trainer .exe files, and 
 
 **Download**: [https://github.com/hwttop5/GameTrainerLauncher/releases](https://github.com/hwttop5/GameTrainerLauncher/releases)
 
+**Website**: [https://hwttop5.github.io/GameTrainerLauncher/](https://hwttop5.github.io/GameTrainerLauncher/)
+
 ---
 
 ## Features
