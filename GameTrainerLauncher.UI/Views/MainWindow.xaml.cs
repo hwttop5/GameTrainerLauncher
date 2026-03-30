@@ -3,9 +3,6 @@ using System.Windows.Media.Imaging;
 using GameTrainerLauncher.UI.Services;
 using GameTrainerLauncher.UI.ViewModels;
 using Wpf.Ui.Controls;
-using System.IO;
-using System.Text.Json;
-using System.Windows.Media;
 using System.Windows;
 using GameTrainerLauncher.UI.Models;
 
@@ -27,53 +24,7 @@ public partial class MainWindow : FluentWindow
 
         TrySetIconFromExecutable();
 
-        // #region agent log
-        Loaded += (_, _) =>
-        {
-            ApplyDefaultWindowSizeForCardGrid(columns: 4, rows: 2);
-
-            double? searchBorderOpacity = null;
-            string? searchBorderType = null;
-            string? searchBorderColor = null;
-            double? searchForegroundOpacity = null;
-            string? searchForegroundType = null;
-            string? searchForegroundColor = null;
-            try
-            {
-                if (SearchButtonBorder?.BorderBrush is Brush b)
-                {
-                    searchBorderOpacity = b.Opacity;
-                    searchBorderType = b.GetType().Name;
-                    if (b is SolidColorBrush scb)
-                        searchBorderColor = scb.Color.ToString();
-                }
-
-                if (SearchButton?.Foreground is Brush f)
-                {
-                    searchForegroundOpacity = f.Opacity;
-                    searchForegroundType = f.GetType().Name;
-                    if (f is SolidColorBrush fscb)
-                        searchForegroundColor = fscb.Color.ToString();
-                }
-            }
-            catch { }
-
-            TryWriteDebugLog("H_border", "MainWindow.xaml.cs:Loaded", "Capture border styles", new
-            {
-                navSettingsBorder = NavSettingsButton?.BorderBrush?.ToString(),
-                navSettingsThickness = NavSettingsButton?.BorderThickness.ToString(),
-                searchBorder = SearchButton?.BorderBrush?.ToString(),
-                searchThickness = SearchButton?.BorderThickness.ToString(),
-                searchBorderBrushType = searchBorderType,
-                searchBorderBrushOpacity = searchBorderOpacity,
-                searchBorderBrushColor = searchBorderColor
-                ,
-                searchForegroundBrushType = searchForegroundType,
-                searchForegroundBrushOpacity = searchForegroundOpacity,
-                searchForegroundBrushColor = searchForegroundColor
-            });
-        };
-        // #endregion
+        Loaded += (_, _) => ApplyDefaultWindowSizeForCardGrid(columns: 4, rows: 2);
     }
 
     private void ApplyDefaultWindowSizeForCardGrid(int columns, int rows)
@@ -85,8 +36,8 @@ public partial class MainWindow : FluentWindow
 
         // TrainerCard: Width=220 + Card.Margin(10,10) => 240
         const double cardOuterWidth = 240;
-        // TrainerCard: MinHeight=280 + Card.Margin(10,10) => 300
-        const double cardOuterHeight = 300;
+        // TrainerCard: MinHeight=284 + Card.Margin(10,10) => 304
+        const double cardOuterHeight = 304;
 
         // SearchPage and MainWindow structural spacing.
         const double searchPageHorizontalPadding = 20; // SearchPage Grid Margin=10
@@ -96,8 +47,10 @@ public partial class MainWindow : FluentWindow
         const double titleBarHeight = 36;              // MainWindow row0 MinHeight=36
         const double searchBarRowHeight = 44;          // search input + button row estimated height
         const double searchBarBottomMargin = 8;        // row0 margin bottom
+        const double frameSafetyWidth = 0;             // Scrollbar + border/pixel-rounding safety (max tightened)
+        const double widthTightenOffset = 74;          // Additional startup width tighten (-20 more)
 
-        var targetFrameWidth = columns * cardOuterWidth + searchPageHorizontalPadding;
+        var targetFrameWidth = columns * cardOuterWidth + searchPageHorizontalPadding + frameSafetyWidth;
         var targetFrameHeight = rows * cardOuterHeight + searchPageVerticalPadding;
 
         // Column(1) must include right grid margin, then row(1) must include search row and frame.
@@ -110,11 +63,12 @@ public partial class MainWindow : FluentWindow
         if (chromeWidth <= 0) chromeWidth = 16;
         if (chromeHeight <= 0) chromeHeight = 40;
 
-        var targetWindowWidth = targetClientWidth + chromeWidth;
+        var targetWindowWidth = targetClientWidth + chromeWidth - widthTightenOffset;
         var targetWindowHeight = targetClientHeight + chromeHeight;
 
         // Keep within work area and retain minimum constraints.
         var workArea = SystemParameters.WorkArea;
+
         Width = Math.Max(MinWidth, Math.Min(workArea.Width, targetWindowWidth));
         Height = Math.Max(MinHeight, Math.Min(workArea.Height, targetWindowHeight));
 
@@ -155,27 +109,4 @@ public partial class MainWindow : FluentWindow
         }
     }
 
-    // #region agent log
-    private static void TryWriteDebugLog(string hypothesisId, string location, string message, object data)
-    {
-        try
-        {
-            var payload = new
-            {
-                sessionId = "d901ba",
-                runId = "pre-fix",
-                hypothesisId,
-                location,
-                message,
-                data,
-                timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-            };
-
-            File.AppendAllText(
-                Path.Combine(System.Environment.CurrentDirectory, "debug-d901ba.log"),
-                JsonSerializer.Serialize(payload) + System.Environment.NewLine);
-        }
-        catch { }
-    }
-    // #endregion
 }

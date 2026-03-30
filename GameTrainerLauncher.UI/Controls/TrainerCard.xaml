@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:converters="clr-namespace:GameTrainerLauncher.UI.Converters"
-             Width="220" MinHeight="280">
+             Width="220" MinHeight="284">
     <ui:Card Margin="10" Padding="0" VerticalAlignment="Top" Cursor="Hand"
              RenderTransformOrigin="0.5,0.5">
         <ui:Card.RenderTransform>
@@ -33,11 +33,12 @@
                 </Style.Triggers>
             </Style>
         </ui:Card.Style>
-        <Grid MinHeight="280">
+        <Grid MinHeight="284">
             <Grid.RowDefinitions>
-                <RowDefinition Height="140"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="156"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
             <!-- Cover：亮色主题下使用浅灰占位，暗色使用深灰 -->
@@ -64,16 +65,16 @@
             </Border>
 
             <!-- Title + Date: 日期上收下放，视觉上平衡（上面显宽时加大日期下边距） -->
-            <StackPanel Grid.Row="1" Margin="10,2,10,0" VerticalAlignment="Top">
-                <TextBlock Text="{Binding DisplayTitle}" FontWeight="SemiBold" TextWrapping="Wrap" MinHeight="36" MaxHeight="40" LineHeight="18" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis"/>
+            <StackPanel Grid.Row="1" Margin="10,7,10,0" VerticalAlignment="Top">
+                <TextBlock Text="{Binding DisplayTitle}" FontWeight="SemiBold" TextWrapping="Wrap" MinHeight="30" MaxHeight="34" LineHeight="15" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis"/>
                 <TextBlock Text="{Binding SecondaryDisplayTitle}"
                            Foreground="{DynamicResource SecondaryTextBrush}"
                            FontSize="11"
-                           Margin="0,3,0,0"
+                           Height="12"
+                           Margin="0,-5,0,0"
                            TextWrapping="NoWrap"
-                           TextTrimming="CharacterEllipsis"
-                           Visibility="{Binding SecondaryDisplayTitle, Converter={StaticResource NullOrEmptyToVisibilityConverter}}"/>
-                <TextBlock Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11" LineHeight="18" Margin="0,6,0,11">
+                           TextTrimming="CharacterEllipsis"/>
+                <TextBlock Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11" LineHeight="14" Margin="0,5,0,10">
                     <TextBlock.Text>
                         <Binding Path="LastUpdated" StringFormat="{}{0:yyyy.MM.dd}" TargetNullValue="—"/>
                     </TextBlock.Text>
@@ -81,7 +82,7 @@
             </StackPanel>
 
             <!-- Add button：添加中显示 loading + 进度条，下载完成后弹添加成功 -->
-            <StackPanel Grid.Row="2" Margin="10,0,10,10" VerticalAlignment="Bottom">
+            <StackPanel Grid.Row="2" Margin="10,5,10,3" VerticalAlignment="Top">
                 <Border BorderThickness="1"
                         BorderBrush="{Binding ElementName=AddButton, Path=Foreground, Converter={StaticResource BrushOpacityConverter}, ConverterParameter=0.25}"
                         CornerRadius="4">
@@ -112,10 +113,10 @@
                         </ui:Button.Style>
                     </ui:Button>
                 </Border>
-                <ProgressBar Value="{Binding DownloadProgress}" Maximum="100" Height="6" Margin="0,6,0,0"
+                <ProgressBar Value="{Binding DownloadProgress}" Maximum="100" Height="6" Margin="0,0,0,0"
                              Visibility="{Binding IsAdding, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                 <TextBlock Text="{Binding DownloadStatusText}"
-                           Margin="0,4,0,0"
+                           Margin="0,0,0,0"
                            FontSize="11"
                            Foreground="{DynamicResource SecondaryTextBrush}"
                            Visibility="{Binding IsAdding, Converter={StaticResource BooleanToVisibilityConverter}}"/>
