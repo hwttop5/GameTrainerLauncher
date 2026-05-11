@@ -1,1 +1,37 @@
-{"Assets":[{"PackageId":"GameTrainerLauncher","Version":"1.2.2","Type":"Full","FileName":"GameTrainerLauncher-1.2.2-full.nupkg","SHA1":"76C2E478156AC7F5FCCDC0BF1A0F97A521C8AF2A","SHA256":"66ED156481E69D8149CA28C7236D3C4C8C305B2E5BD448133343FD8F97E864E2","Size":80491129,"NotesMarkdown":"# Game Trainer Launcher v1.2.2\n\nSystem.Object[]","NotesHTML":"<h1>Game Trainer Launcher v1.2.2</h1>\n<p>System.Object[]</p>"},{"PackageId":"GameTrainerLauncher","Version":"1.2.2","Type":"Delta","FileName":"GameTrainerLauncher-1.2.2-delta.nupkg","SHA1":"1EDDB8210B4834CB2A248981B183B011CAF773DA","SHA256":"A7AE5EA970D51718C7CF0069687F35187FDBBB91DE7CEB3AD195952E493AEC13","Size":4311386,"NotesMarkdown":"# Game Trainer Launcher v1.2.2\n\nSystem.Object[]","NotesHTML":"<h1>Game Trainer Launcher v1.2.2</h1>\n<p>System.Object[]</p>"},{"PackageId":"GameTrainerLauncher","Version":"1.2.1","Type":"Full","FileName":"GameTrainerLauncher-1.2.1-full.nupkg","SHA1":"C9EF74C09095D938AAFF68C9C8FA8816464CA458","SHA256":"7A3312858F1580DAC3743E938E057BC78F8084727A436057665E6A5A7E4F97B5","Size":80483092,"NotesMarkdown":"# Game Trainer Launcher v1.2.1\n\nSystem.Object[]","NotesHTML":"<h1>Game Trainer Launcher v1.2.1</h1>\n<p>System.Object[]</p>"}]}
+{
+    "Assets":  [
+                   {
+                       "PackageId":  "GameTrainerLauncher",
+                       "Version":  "1.2.2",
+                       "Type":  "Full",
+                       "FileName":  "GameTrainerLauncher-1.2.2-full.nupkg",
+                       "SHA1":  "76C2E478156AC7F5FCCDC0BF1A0F97A521C8AF2A",
+                       "SHA256":  "66ED156481E69D8149CA28C7236D3C4C8C305B2E5BD448133343FD8F97E864E2",
+                       "Size":  80491129,
+                       "NotesMarkdown":  "# Game Trainer Launcher v1.2.2\r\n\r\n- Release v1.2.2\r\n- chore: clean tmp directory and harden site assets",
+                       "NotesHTML":  "\u003ch1\u003eGame Trainer Launcher v1.2.2\u003c/h1\u003e\n\u003cul\u003e\n\u003cli\u003eRelease v1.2.2\u003c/li\u003e\n\u003cli\u003echore: clean tmp directory and harden site assets\u003c/li\u003e\n\u003c/ul\u003e"
+                   },
+                   {
+                       "PackageId":  "GameTrainerLauncher",
+                       "Version":  "1.2.2",
+                       "Type":  "Delta",
+                       "FileName":  "GameTrainerLauncher-1.2.2-delta.nupkg",
+                       "SHA1":  "1EDDB8210B4834CB2A248981B183B011CAF773DA",
+                       "SHA256":  "A7AE5EA970D51718C7CF0069687F35187FDBBB91DE7CEB3AD195952E493AEC13",
+                       "Size":  4311386,
+                       "NotesMarkdown":  "# Game Trainer Launcher v1.2.2\r\n\r\n- Release v1.2.2\r\n- chore: clean tmp directory and harden site assets",
+                       "NotesHTML":  "\u003ch1\u003eGame Trainer Launcher v1.2.2\u003c/h1\u003e\n\u003cul\u003e\n\u003cli\u003eRelease v1.2.2\u003c/li\u003e\n\u003cli\u003echore: clean tmp directory and harden site assets\u003c/li\u003e\n\u003c/ul\u003e"
+                   },
+                   {
+                       "PackageId":  "GameTrainerLauncher",
+                       "Version":  "1.2.1",
+                       "Type":  "Full",
+                       "FileName":  "GameTrainerLauncher-1.2.1-full.nupkg",
+                       "SHA1":  "C9EF74C09095D938AAFF68C9C8FA8816464CA458",
+                       "SHA256":  "7A3312858F1580DAC3743E938E057BC78F8084727A436057665E6A5A7E4F97B5",
+                       "Size":  80483092,
+                       "NotesMarkdown":  "# Game Trainer Launcher v1.2.1\r\n\r\n- Release v1.2.1\r\n- feat: refine trainer card spacing and startup sizing",
+                       "NotesHTML":  "\u003ch1\u003eGame Trainer Launcher v1.2.1\u003c/h1\u003e\n\u003cul\u003e\n\u003cli\u003eRelease v1.2.1\u003c/li\u003e\n\u003cli\u003efeat: refine trainer card spacing and startup sizing\u003c/li\u003e\n\u003c/ul\u003e"
+                   }
+               ]
+}
