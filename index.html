@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#08111f">
   <link rel="icon" type="image/x-icon" href="./assets/logo.ico">
   <link rel="shortcut icon" type="image/x-icon" href="./assets/logo.ico">
-  <link rel="stylesheet" href="./styles.css?v=20260511b">
+  <link rel="stylesheet" href="./styles.css?v=20260513b">
 </head>
 <body>
   <header class="site-header">
@@ -28,7 +28,6 @@
           <a href="#features" data-i18n="nav.features">核心能力</a>
           <a href="#workflow" data-i18n="nav.workflow">使用流程</a>
           <a href="#trust" data-i18n="nav.trust">开源与更新</a>
-          <a href="https://github.com/hwttop5/GameTrainerLauncher/releases" target="_blank" rel="noreferrer" data-i18n="nav.releases">Releases</a>
           <a href="https://github.com/hwttop5/GameTrainerLauncher" target="_blank" rel="noreferrer" data-i18n="nav.github">GitHub</a>
         </nav>
 
@@ -47,7 +46,7 @@
           <div class="hero-grid">
             <div class="hero-copy">
               <p class="eyebrow" data-i18n="hero.eyebrow">Windows 桌面应用</p>
-              <h1 class="hero-title" data-i18n="hero.title">更轻松地管理游戏修改器</h1>
+              <h1 class="hero-title" data-i18n-html="hero.title">更轻松地<br>管理游戏<br>修改器</h1>
               <p class="hero-subtitle" data-i18n="hero.subtitle">浏览、搜索、下载并启动修改器。支持中英文搜索与本地索引，启动快，管理稳。</p>
 
               <div class="hero-metrics" aria-label="Workflow pillars">
@@ -67,14 +66,14 @@
 
               <div class="hero-actions">
                 <a class="btn primary" href="https://github.com/hwttop5/GameTrainerLauncher/releases" target="_blank" rel="noreferrer">
-                  <span class="btn-icon" aria-hidden="true">↓</span>
+                  <span class="btn-icon icon-download" aria-hidden="true"></span>
                   <span>
                     <strong data-i18n="hero.download">下载最新版</strong>
                     <small data-i18n="hero.platform">Windows 10/11 (64-bit)</small>
                   </span>
                 </a>
                 <a class="btn secondary" href="https://github.com/hwttop5/GameTrainerLauncher" target="_blank" rel="noreferrer">
-                  <span class="btn-icon" aria-hidden="true">◎</span>
+                  <span class="btn-icon icon-branch" aria-hidden="true"></span>
                   <span>
                     <strong data-i18n="hero.github">查看 GitHub</strong>
                     <small data-i18n="hero.opensource">开源项目</small>
@@ -83,10 +82,10 @@
               </div>
 
               <div class="hero-badges" aria-label="Highlights">
-                <span class="badge-chip" data-i18n="hero.badge.windows">Windows 专属</span>
-                <span class="badge-chip" data-i18n="hero.badge.bilingual">中英双语</span>
-                <span class="badge-chip" data-i18n="hero.badge.opensource">开源免费</span>
-                <span class="badge-chip" data-i18n="hero.badge.releases">GitHub Releases</span>
+                <span class="badge-chip badge-windows" data-i18n="hero.badge.windows">Windows 专属</span>
+                <span class="badge-chip badge-bilingual" data-i18n="hero.badge.bilingual">中英双语</span>
+                <span class="badge-chip badge-opensource" data-i18n="hero.badge.opensource">开源免费</span>
+                <span class="badge-chip badge-releases" data-i18n="hero.badge.releases">GitHub Releases</span>
               </div>
             </div>
 
@@ -149,19 +148,34 @@
 
         <div class="workflow-grid">
           <article class="step-card">
-            <div class="step-index">1</div>
-            <h3 data-i18n="workflow.step1.title">搜索与浏览</h3>
-            <p data-i18n="workflow.step1.desc">先走本地索引，再做后台同步，快速找到你要的修改器。</p>
+            <div class="step-top">
+              <div class="step-index">1</div>
+              <div class="step-visual icon-search" aria-hidden="true"></div>
+            </div>
+            <div class="step-copy">
+              <h3 data-i18n="workflow.step1.title">搜索与浏览</h3>
+              <p data-i18n="workflow.step1.desc">先走本地索引，再做后台同步，快速找到你要的修改器。</p>
+            </div>
           </article>
           <article class="step-card">
-            <div class="step-index">2</div>
-            <h3 data-i18n="workflow.step2.title">下载与管理</h3>
-            <p data-i18n="workflow.step2.desc">一键下载并加入本地库，版本状态和封面统一管理。</p>
+            <div class="step-top">
+              <div class="step-index">2</div>
+              <div class="step-visual icon-library" aria-hidden="true"></div>
+            </div>
+            <div class="step-copy">
+              <h3 data-i18n="workflow.step2.title">下载与管理</h3>
+              <p data-i18n="workflow.step2.desc">一键下载并加入本地库，版本状态和封面统一管理。</p>
+            </div>
           </article>
           <article class="step-card">
-            <div class="step-index">3</div>
-            <h3 data-i18n="workflow.step3.title">启动与维护</h3>
-            <p data-i18n="workflow.step3.desc">从库中直接启动游戏或修改器，更新检查与版本提示保持清晰。</p>
+            <div class="step-top">
+              <div class="step-index">3</div>
+              <div class="step-visual icon-update" aria-hidden="true"></div>
+            </div>
+            <div class="step-copy">
+              <h3 data-i18n="workflow.step3.title">启动与维护</h3>
+              <p data-i18n="workflow.step3.desc">从库中直接启动游戏或修改器，更新检查与版本提示保持清晰。</p>
+            </div>
           </article>
         </div>
       </div>
@@ -176,22 +190,22 @@
 
         <div class="feature-grid">
           <article class="feature-card">
-            <div class="feature-icon" aria-hidden="true">⌕</div>
+            <div class="feature-icon icon-search" aria-hidden="true"></div>
             <h3 data-i18n="features.search.title">中英文搜索</h3>
             <p data-i18n="features.search.desc">本地标题索引优先返回结果，减少等待时间。</p>
           </article>
           <article class="feature-card">
-            <div class="feature-icon" aria-hidden="true">▣</div>
+            <div class="feature-icon icon-library" aria-hidden="true"></div>
             <h3 data-i18n="features.library.title">本地库管理</h3>
             <p data-i18n="features.library.desc">添加、拖拽排序、移除和封面补全都在一个界面完成。</p>
           </article>
           <article class="feature-card">
-            <div class="feature-icon" aria-hidden="true">◎</div>
+            <div class="feature-icon icon-version" aria-hidden="true"></div>
             <h3 data-i18n="features.version.title">版本选择</h3>
             <p data-i18n="features.version.desc">下载前选择对应版本，降低版本不匹配带来的问题。</p>
           </article>
           <article class="feature-card">
-            <div class="feature-icon" aria-hidden="true">↻</div>
+            <div class="feature-icon icon-update" aria-hidden="true"></div>
             <h3 data-i18n="features.update.title">自带更新流程</h3>
             <p data-i18n="features.update.desc">基于 Velopack 和 GitHub Releases，检查、下载并重启安装。</p>
           </article>
@@ -257,6 +271,6 @@
     </div>
   </footer>
 
-  <script src="./app.js?v=20260511b"></script>
+  <script src="./app.js?v=20260513b"></script>
 </body>
 </html>
