@@ -23,7 +23,12 @@ Tired of manually downloading and managing lots of game trainer .exe files, and 
 
 ## Demo
 
-![Demo](Docs/Images/demo.gif)
+<p align="center">
+  <img src="Docs/Images/demo-popular-loaded.png" alt="Popular games screen" width="48%">
+  <img src="Docs/Images/demo-search-loaded.png" alt="Search results screen" width="48%">
+  <img src="Docs/Images/demo-library-loaded.png" alt="Local library screen" width="48%">
+  <img src="Docs/Images/demo-settings-loaded.png" alt="Settings screen" width="48%">
+</p>
 
 ---
 

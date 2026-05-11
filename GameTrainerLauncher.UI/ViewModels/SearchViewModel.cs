@@ -68,12 +68,12 @@ public partial class SearchViewModel : PageFeedbackViewModelBase
         {
             await using var scope = _scopeFactory.CreateAsyncScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var existingNames = (await db.Games.Select(game => game.Name).ToListAsync()).ToHashSet();
+            var existingTrainers = await GetExistingLibraryTrainersAsync(db);
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 foreach (var trainer in SearchResults)
                 {
-                    trainer.IsDownloaded = existingNames.Contains(trainer.Title);
+                    trainer.IsDownloaded = IsAlreadyInLibrary(trainer, existingTrainers);
                 }
             });
         }
@@ -111,14 +111,11 @@ public partial class SearchViewModel : PageFeedbackViewModelBase
             var searchResult = await _trainerSearchService.SearchAsync(keyword);
 
             await _dbContext.Database.EnsureCreatedAsync();
-            var existingNames = _dbContext.Games.Select(game => game.Name).ToHashSet();
+            var existingTrainers = await GetExistingLibraryTrainersAsync(_dbContext);
 
             foreach (var trainer in searchResult.Trainers)
             {
-                if (existingNames.Contains(trainer.Title))
-                {
-                    trainer.IsDownloaded = true;
-                }
+                trainer.IsDownloaded = IsAlreadyInLibrary(trainer, existingTrainers);
 
                 SearchResults.Add(trainer);
             }
@@ -197,6 +194,8 @@ public partial class SearchViewModel : PageFeedbackViewModelBase
                     trainer.DownloadOptions = details.DownloadOptions;
                     trainer.ImageUrl = string.IsNullOrEmpty(details.ImageUrl) ? trainer.ImageUrl : details.ImageUrl;
                 });
+
+                await RefreshAlreadyInLibraryAsync();
             }
             catch
             {
@@ -220,6 +219,7 @@ public partial class SearchViewModel : PageFeedbackViewModelBase
             await _dbContext.Database.EnsureCreatedAsync();
             if (_dbContext.Games.Any(game => game.Name == trainer.Title))
             {
+                trainer.IsDownloaded = true;
                 trainer.IsAddPending = false;
                 var msg = (string)Application.Current.FindResource("MsgAlreadyInLibrary");
                 var title = (string)Application.Current.FindResource("MsgInfoTitle");
@@ -326,4 +326,38 @@ public partial class SearchViewModel : PageFeedbackViewModelBase
         trainer.IsDownloadProgressEstimated = false;
         trainer.DownloadStage = TrainerDownloadStage.Preparing;
     }
+
+    private static async Task<List<ExistingLibraryTrainer>> GetExistingLibraryTrainersAsync(AppDbContext db)
+    {
+        return await db.Games
+            .Select(game => new ExistingLibraryTrainer(
+                game.Name,
+                game.MatchedTrainer != null ? game.MatchedTrainer.PageUrl : null))
+            .ToListAsync();
+    }
+
+    private static bool IsAlreadyInLibrary(Trainer trainer, IReadOnlyList<ExistingLibraryTrainer> existingTrainers)
+    {
+        return existingTrainers.Any(existing =>
+            IsSameTitle(existing.Name, trainer.Title) ||
+            IsSameTitle(existing.Name, trainer.PrimaryDisplayTitle) ||
+            IsSameTitle(existing.Name, trainer.MatchedEnglishName) ||
+            IsSamePageUrl(existing.PageUrl, trainer.PageUrl));
+    }
+
+    private static bool IsSameTitle(string? left, string? right)
+    {
+        return !string.IsNullOrWhiteSpace(left) &&
+               !string.IsNullOrWhiteSpace(right) &&
+               string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsSamePageUrl(string? left, string? right)
+    {
+        return !string.IsNullOrWhiteSpace(left) &&
+               !string.IsNullOrWhiteSpace(right) &&
+               string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private sealed record ExistingLibraryTrainer(string Name, string? PageUrl);
 }

@@ -4,16 +4,17 @@
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                  Title="{DynamicResource UpdateDownloadTitle}"
                  Height="260"
-                 Width="460"
+                 Width="480"
                  MinHeight="260"
-                 MinWidth="460"
+                 MinWidth="480"
                  WindowStartupLocation="CenterOwner"
                  ResizeMode="NoResize"
                  Icon="/Assets/logo.ico"
                  WindowBackdropType="None"
                  ExtendsContentIntoTitleBar="True"
                  Background="{DynamicResource ApplicationBackgroundBrush}"
-                 Foreground="{DynamicResource DialogTextBrush}">
+                 Foreground="{DynamicResource DialogTextBrush}"
+                 FontFamily="{StaticResource AppFontFamily}">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -21,7 +22,8 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <ui:TitleBar Title="{DynamicResource UpdateDownloadTitle}">
+        <ui:TitleBar Title="{DynamicResource UpdateDownloadTitle}"
+                     Background="{DynamicResource ShellTopBarBrush}">
             <ui:TitleBar.Icon>
                 <ui:ImageIcon Source="/Assets/logo.ico" Width="16" Height="16" />
             </ui:TitleBar.Icon>
@@ -32,7 +34,13 @@
                     Background="{DynamicResource DialogCardBrush}"
                     BorderBrush="{DynamicResource DialogBorderBrush}"
                     BorderThickness="1"
-                    CornerRadius="12">
+                    CornerRadius="10">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="18"
+                                      ShadowDepth="3"
+                                      Opacity="0.75"
+                                      Color="{DynamicResource ElevatedShadowColor}" />
+                </Border.Effect>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -40,23 +48,40 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <StackPanel>
-                        <TextBlock Text="{DynamicResource UpdateDownloadTitle}"
-                                   FontSize="20"
-                                   FontWeight="SemiBold"
-                                   Foreground="{DynamicResource DialogAccentBrush}" />
-                        <TextBlock x:Name="StatusText"
-                                   Margin="0,10,0,0"
-                                   Text="{DynamicResource UpdateDownloadingMessage}"
-                                   TextWrapping="Wrap"
-                                   FontSize="14"
-                                   FontWeight="SemiBold" />
-                    </StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border Width="36"
+                                Height="36"
+                                CornerRadius="9"
+                                Background="{DynamicResource AccentSoftBrush}"
+                                Margin="0,0,12,0">
+                            <ui:ProgressRing IsIndeterminate="True"
+                                             Width="22"
+                                             Height="22"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="{DynamicResource UpdateDownloadTitle}"
+                                       FontSize="19"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource DialogAccentBrush}" />
+                            <TextBlock x:Name="StatusText"
+                                       Margin="0,7,0,0"
+                                       Text="{DynamicResource UpdateDownloadingMessage}"
+                                       TextWrapping="Wrap"
+                                       FontSize="13"
+                                       Foreground="{DynamicResource DialogTextBrush}" />
+                        </StackPanel>
+                    </Grid>
 
                     <ProgressBar x:Name="DownloadProgressBar"
                                  Grid.Row="1"
-                                 Height="16"
-                                 Margin="0,18,0,0"
+                                 Height="12"
+                                 Margin="0,20,0,0"
                                  Minimum="0"
                                  Maximum="100"
                                  IsIndeterminate="True" />
@@ -65,7 +90,8 @@
                                Margin="0,12,0,0"
                                Foreground="{DynamicResource DialogMutedBrush}"
                                Text="{DynamicResource UpdateRestartingMessage}"
-                               Opacity="0.85"
+                               Opacity="0.9"
+                               FontSize="12"
                                TextWrapping="Wrap" />
                 </Grid>
             </Border>

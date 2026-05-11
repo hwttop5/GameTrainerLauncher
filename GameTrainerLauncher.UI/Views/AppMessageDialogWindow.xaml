@@ -12,10 +12,11 @@
                  WindowBackdropType="None"
                  ExtendsContentIntoTitleBar="True"
                  Background="{DynamicResource ApplicationBackgroundBrush}"
-                 Foreground="{DynamicResource DialogTextBrush}">
+                 Foreground="{DynamicResource DialogTextBrush}"
+                 FontFamily="{StaticResource AppFontFamily}">
     <Window.Resources>
         <Style x:Key="DialogActionButtonStyle" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
-            <Setter Property="MinWidth" Value="96" />
+            <Setter Property="MinWidth" Value="104" />
             <Setter Property="Padding" Value="18,8" />
             <Setter Property="Margin" Value="8,0,0,0" />
         </Style>
@@ -27,7 +28,8 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <ui:TitleBar x:Name="DialogTitleBar">
+        <ui:TitleBar x:Name="DialogTitleBar"
+                     Background="{DynamicResource ShellTopBarBrush}">
             <ui:TitleBar.Icon>
                 <ui:ImageIcon Source="/Assets/logo.ico" Width="16" Height="16" />
             </ui:TitleBar.Icon>
@@ -42,12 +44,12 @@
             <Border Background="{DynamicResource NotificationSurfaceBrush}"
                     BorderBrush="{DynamicResource NotificationSurfaceBorderBrush}"
                     BorderThickness="1"
-                    CornerRadius="14"
+                    CornerRadius="12"
                     Padding="20">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="24"
                                       ShadowDepth="4"
-                                      Opacity="1"
+                                      Opacity="0.85"
                                       Color="{DynamicResource NotificationShadowColor}" />
                 </Border.Effect>
                 <Grid>
@@ -57,9 +59,9 @@
                     </Grid.ColumnDefinitions>
 
                     <Border x:Name="SeverityIconHost"
-                            Width="36"
-                            Height="36"
-                            CornerRadius="18"
+                            Width="38"
+                            Height="38"
+                            CornerRadius="19"
                             VerticalAlignment="Top"
                             Margin="0,0,16,0">
                         <TextBlock x:Name="SeverityIconText"
@@ -76,13 +78,14 @@
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource NotificationTitleBrush}"
                                    TextWrapping="Wrap" />
-                        <ScrollViewer Margin="0,14,0,0"
+                        <ScrollViewer Margin="0,12,0,0"
                                       VerticalScrollBarVisibility="Auto"
                                       HorizontalScrollBarVisibility="Disabled"
                                       MaxHeight="160">
                             <TextBlock x:Name="DialogMessageText"
                                        Foreground="{DynamicResource NotificationMessageBrush}"
-                                       FontSize="14"
+                                       FontSize="13"
+                                       LineHeight="20"
                                        TextWrapping="Wrap" />
                         </ScrollViewer>
                     </StackPanel>

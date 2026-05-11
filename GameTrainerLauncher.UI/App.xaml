@@ -27,63 +27,251 @@
             <converters:BrushOpacityConverter x:Key="BrushOpacityConverter" />
             <converters:EnabledToPrimaryForegroundBrushConverter x:Key="EnabledToPrimaryForegroundBrushConverter" />
             
-            <SolidColorBrush x:Key="SystemControlBackgroundChromeMediumLowBrush" Color="#1e2021" />
-            <SolidColorBrush x:Key="ApplicationBackgroundBrush" Color="#1e2021" />
-            <SolidColorBrush x:Key="WindowBackground" Color="#1e2021" />
-            <Color x:Key="WindowBackgroundColor">#1e2021</Color>
+            <FontFamily x:Key="AppFontFamily">Segoe UI, Microsoft YaHei UI</FontFamily>
+            <SolidColorBrush x:Key="SystemControlBackgroundChromeMediumLowBrush" Color="#15191D" />
+            <SolidColorBrush x:Key="ApplicationBackgroundBrush" Color="#171B1F" />
+            <SolidColorBrush x:Key="WindowBackground" Color="#171B1F" />
+            <Color x:Key="WindowBackgroundColor">#171B1F</Color>
+            <SolidColorBrush x:Key="ShellSidebarBrush" Color="#11161B" />
+            <SolidColorBrush x:Key="ShellSidebarBorderBrush" Color="#25313B" />
+            <SolidColorBrush x:Key="ShellContentBrush" Color="#171B1F" />
+            <SolidColorBrush x:Key="ShellTopBarBrush" Color="#171B1F" />
+            <SolidColorBrush x:Key="SurfaceBrush" Color="#1F2429" />
+            <SolidColorBrush x:Key="SurfaceRaisedBrush" Color="#252B31" />
+            <SolidColorBrush x:Key="SurfaceHoverBrush" Color="#2A3239" />
+            <SolidColorBrush x:Key="SurfacePressedBrush" Color="#20262C" />
+            <SolidColorBrush x:Key="SubtleSurfaceBrush" Color="#1A2026" />
+            <SolidColorBrush x:Key="StrongTextBrush" Color="#F3F7FA" />
+            <SolidColorBrush x:Key="MutedTextBrush" Color="#9AA7B2" />
+            <SolidColorBrush x:Key="FaintTextBrush" Color="#64717C" />
+            <SolidColorBrush x:Key="AccentPrimaryBrush" Color="#2D9CFF" />
+            <SolidColorBrush x:Key="AccentPrimaryHoverBrush" Color="#1D86DF" />
+            <SolidColorBrush x:Key="AccentPrimaryPressedBrush" Color="#126CB8" />
+            <SolidColorBrush x:Key="PrimaryButtonBrush" Color="#1268AE" />
+            <SolidColorBrush x:Key="PrimaryButtonHoverBrush" Color="#1777C2" />
+            <SolidColorBrush x:Key="PrimaryButtonPressedBrush" Color="#0D568F" />
+            <SolidColorBrush x:Key="AccentSoftBrush" Color="#183B56" />
+            <SolidColorBrush x:Key="AccentSuccessBrush" Color="#30C978" />
+            <SolidColorBrush x:Key="AccentSuccessSoftBrush" Color="#153A2A" />
+            <SolidColorBrush x:Key="AccentWarningBrush" Color="#F0B442" />
+            <SolidColorBrush x:Key="AccentWarningSoftBrush" Color="#3B2B12" />
+            <SolidColorBrush x:Key="AccentDangerBrush" Color="#F04444" />
+            <SolidColorBrush x:Key="AccentDangerHoverBrush" Color="#D93636" />
+            <SolidColorBrush x:Key="AccentDangerSoftBrush" Color="#461D1D" />
+            <SolidColorBrush x:Key="DividerBrush" Color="#2D363F" />
+            <Color x:Key="ElevatedShadowColor">#66000000</Color>
             <!-- 主题相关：亮色主题下覆盖为浅色，暗色为深灰 -->
-            <SolidColorBrush x:Key="CoverPlaceholderBrush" Color="#2a2a2a" />
-            <SolidColorBrush x:Key="SecondaryTextBrush" Color="#808080" />
-            <SolidColorBrush x:Key="CardBackgroundBrush" Color="#252525" />
-            <SolidColorBrush x:Key="CardBorderBrush" Color="#3a3a3a" />
-            <SolidColorBrush x:Key="ListItemHoverBrush" Color="#2d2d2d" />
-            <SolidColorBrush x:Key="DialogCardBrush" Color="#232323" />
-            <SolidColorBrush x:Key="DialogHeaderBrush" Color="#292929" />
-            <SolidColorBrush x:Key="DialogBorderBrush" Color="#343434" />
-            <SolidColorBrush x:Key="DialogMutedBrush" Color="#C8C8C8" />
-            <SolidColorBrush x:Key="DialogTextBrush" Color="#F2F2F2" />
-            <SolidColorBrush x:Key="DialogAccentBrush" Color="#0078D4" />
-            <SolidColorBrush x:Key="DialogBadgeBackgroundBrush" Color="#1E2E45" />
-            <SolidColorBrush x:Key="DialogBadgeBorderBrush" Color="#2D4F78" />
-            <SolidColorBrush x:Key="NotificationSurfaceBrush" Color="#232323" />
-            <SolidColorBrush x:Key="NotificationSurfaceBorderBrush" Color="#343434" />
-            <SolidColorBrush x:Key="NotificationTitleBrush" Color="#F2F2F2" />
-            <SolidColorBrush x:Key="NotificationMessageBrush" Color="#D2D2D2" />
-            <SolidColorBrush x:Key="NotificationCloseBrush" Color="#8A8A8A" />
-            <Color x:Key="NotificationShadowColor">#55000000</Color>
-            <SolidColorBrush x:Key="StatusInfoBrush" Color="#0078D4" />
-            <SolidColorBrush x:Key="StatusSuccessBrush" Color="#59C15E" />
-            <SolidColorBrush x:Key="StatusWarningBrush" Color="#F0B431" />
-            <SolidColorBrush x:Key="StatusErrorBrush" Color="#EA5B5B" />
+            <SolidColorBrush x:Key="CoverPlaceholderBrush" Color="#20262C" />
+            <SolidColorBrush x:Key="SecondaryTextBrush" Color="#9AA7B2" />
+            <SolidColorBrush x:Key="CardBackgroundBrush" Color="#20262C" />
+            <SolidColorBrush x:Key="CardBorderBrush" Color="#2D363F" />
+            <SolidColorBrush x:Key="ListItemHoverBrush" Color="#273039" />
+            <SolidColorBrush x:Key="DialogCardBrush" Color="#20262C" />
+            <SolidColorBrush x:Key="DialogHeaderBrush" Color="#242B32" />
+            <SolidColorBrush x:Key="DialogBorderBrush" Color="#33404A" />
+            <SolidColorBrush x:Key="DialogMutedBrush" Color="#B5C0C9" />
+            <SolidColorBrush x:Key="DialogTextBrush" Color="#F3F7FA" />
+            <SolidColorBrush x:Key="DialogAccentBrush" Color="#2D9CFF" />
+            <SolidColorBrush x:Key="DialogBadgeBackgroundBrush" Color="#182C3D" />
+            <SolidColorBrush x:Key="DialogBadgeBorderBrush" Color="#315A77" />
+            <SolidColorBrush x:Key="NotificationSurfaceBrush" Color="#20262C" />
+            <SolidColorBrush x:Key="NotificationSurfaceBorderBrush" Color="#33404A" />
+            <SolidColorBrush x:Key="NotificationTitleBrush" Color="#F3F7FA" />
+            <SolidColorBrush x:Key="NotificationMessageBrush" Color="#C7D0D8" />
+            <SolidColorBrush x:Key="NotificationCloseBrush" Color="#94A1AD" />
+            <Color x:Key="NotificationShadowColor">#77000000</Color>
+            <SolidColorBrush x:Key="StatusInfoBrush" Color="#2D9CFF" />
+            <SolidColorBrush x:Key="StatusSuccessBrush" Color="#30C978" />
+            <SolidColorBrush x:Key="StatusWarningBrush" Color="#F0B442" />
+            <SolidColorBrush x:Key="StatusErrorBrush" Color="#F04444" />
             <!-- 空状态标题（暂无游戏/No Games）：暗色主题白字，亮色主题深色字 -->
             <SolidColorBrush x:Key="EmptyStateTitleBrush" Color="White" />
             <!-- 顶部搜索按钮：亮/暗主题下均固定为蓝底白字，避免白色模式下样式被主题覆盖 -->
-            <SolidColorBrush x:Key="SearchButtonBackgroundBrush" Color="#0078D4" />
+            <SolidColorBrush x:Key="SearchButtonBackgroundBrush" Color="#1268AE" />
             <SolidColorBrush x:Key="SearchButtonForegroundBrush" Color="White" />
+
+            <Style x:Key="PageTitleTextStyle" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
+                <Setter Property="FontSize" Value="24" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Foreground" Value="{DynamicResource StrongTextBrush}" />
+            </Style>
+
+            <Style x:Key="PageSubtitleTextStyle" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}" />
+            </Style>
+
+            <Style x:Key="SectionCardStyle" TargetType="Border">
+                <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="Padding" Value="18" />
+            </Style>
+
+            <Style x:Key="StatusPillTextStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="11" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Foreground" Value="{DynamicResource AccentSuccessBrush}" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
 
             <!-- 统一“左侧菜单选中态”同款：蓝底白字按钮样式 -->
             <Style x:Key="BluePrimaryButtonStyle" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
-                <Setter Property="Appearance" Value="Primary" />
-                <Setter Property="Background" Value="#0078D4" />
+                <Setter Property="Background" Value="{DynamicResource PrimaryButtonBrush}" />
                 <Setter Property="Foreground" Value="White" />
-                <!-- 边框线颜色始终等于按钮字体颜色 -->
-                <Setter Property="BorderBrush" Value="{Binding RelativeSource={RelativeSource Self}, Path=Foreground}" />
-                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryButtonBrush}" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Padding" Value="16,8" />
+                <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="Cursor" Value="Hand" />
                 <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ui:Button">
+                            <Border x:Name="RootBorder"
+                                    Background="{DynamicResource PrimaryButtonBrush}"
+                                    BorderBrush="{DynamicResource PrimaryButtonBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="4"
+                                    Padding="{TemplateBinding Padding}">
+                                <TextBlock Text="{TemplateBinding Content}"
+                                           Foreground="{TemplateBinding Foreground}"
+                                           FontFamily="{TemplateBinding FontFamily}"
+                                           FontSize="{TemplateBinding FontSize}"
+                                           FontWeight="{TemplateBinding FontWeight}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           TextAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="RootBorder" Property="Background" Value="{DynamicResource PrimaryButtonHoverBrush}" />
+                                    <Setter TargetName="RootBorder" Property="BorderBrush" Value="{DynamicResource PrimaryButtonHoverBrush}" />
+                                    <Setter Property="Foreground" Value="White" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="RootBorder" Property="Background" Value="{DynamicResource PrimaryButtonPressedBrush}" />
+                                    <Setter TargetName="RootBorder" Property="BorderBrush" Value="{DynamicResource PrimaryButtonPressedBrush}" />
+                                    <Setter Property="Foreground" Value="White" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="RootBorder" Property="Background" Value="{DynamicResource SurfaceRaisedBrush}" />
+                                    <Setter TargetName="RootBorder" Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Background" Value="#106EBE" />
+                        <Setter Property="Background" Value="{DynamicResource PrimaryButtonHoverBrush}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryButtonHoverBrush}" />
+                        <Setter Property="Foreground" Value="White" />
                     </Trigger>
                     <Trigger Property="IsPressed" Value="True">
-                        <Setter Property="Background" Value="#005A9E" />
+                        <Setter Property="Background" Value="{DynamicResource PrimaryButtonPressedBrush}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryButtonPressedBrush}" />
+                        <Setter Property="Foreground" Value="White" />
                     </Trigger>
                     <Trigger Property="IsEnabled" Value="False">
-                        <!-- 让“已添加/添加中”呈现图中那种灰字灰边框（边框跟随 Foreground） -->
-                        <Setter Property="Background" Value="Transparent" />
-                        <!-- Foreground 由控件本地 Binding 控制，避免被 Wpf.Ui 模板覆盖 -->
+                        <Setter Property="Background" Value="{DynamicResource SurfaceRaisedBrush}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
+                        <Setter Property="BorderThickness" Value="1" />
                     </Trigger>
                 </Style.Triggers>
             </Style>
+
+            <Style x:Key="DangerButtonStyle" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                <Setter Property="Appearance" Value="Danger" />
+                <Setter Property="Background" Value="{DynamicResource AccentDangerBrush}" />
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Padding" Value="16,7" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource AccentDangerHoverBrush}" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="ShellNavButtonStyle" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Height" Value="52" />
+                <Setter Property="Padding" Value="22,0" />
+                <Setter Property="Margin" Value="0,6" />
+                <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
+                <Setter Property="Background" Value="{DynamicResource SubtleSurfaceBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource StrongTextBrush}" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ui:Button">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="6"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                  RecognizesAccessKey="True" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+                    </Trigger>
+                    <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="ToolbarSearchTextBoxStyle" TargetType="ui:TextBox" BasedOn="{StaticResource {x:Type ui:TextBox}}">
+                <Setter Property="Height" Value="40" />
+                <Setter Property="MinWidth" Value="280" />
+                <Setter Property="Padding" Value="14,0" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="Foreground" Value="{DynamicResource StrongTextBrush}" />
+                <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+            </Style>
+
+            <Style x:Key="ToolbarSearchPlainTextBoxStyle" TargetType="TextBox">
+                <Setter Property="Height" Value="32" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{DynamicResource StrongTextBrush}" />
+                <Setter Property="CaretBrush" Value="{DynamicResource StrongTextBrush}" />
+                <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="TextBox">
+                            <Border Background="{TemplateBinding Background}">
+                                <ScrollViewer x:Name="PART_ContentHost"
+                                              VerticalAlignment="Center" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

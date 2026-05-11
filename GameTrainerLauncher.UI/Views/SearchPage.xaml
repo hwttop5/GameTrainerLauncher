@@ -3,43 +3,145 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       xmlns:controls="clr-namespace:GameTrainerLauncher.UI.Controls"
-      Title="{DynamicResource BtnSearch}">
-    <Grid Margin="10">
+      Title="{DynamicResource BtnSearch}"
+      Background="{DynamicResource ApplicationBackgroundBrush}">
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0"
-                Margin="0,0,0,8"
-                Visibility="{Binding PageFeedback.IsOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <ui:InfoBar IsClosable="True"
-                        IsOpen="{Binding PageFeedback.IsOpen, Mode=TwoWay}"
-                        Severity="{Binding PageFeedback.Severity}"
-                        Title="{Binding PageFeedback.Title}"
-                        Message="{Binding PageFeedback.Message}"/>
-        </Border>
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <DockPanel LastChildFill="True">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{DynamicResource SearchResultsTitle}"
+                                   Style="{StaticResource PageTitleTextStyle}" />
+                        <Border Margin="12,2,0,0"
+                                Padding="9,4"
+                                Background="{DynamicResource AccentSoftBrush}"
+                                CornerRadius="6"
+                                VerticalAlignment="Center">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SearchKeyword}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding SearchKeyword}" Value="">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <TextBlock Text="{Binding SearchKeyword}"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource AccentPrimaryBrush}" />
+                        </Border>
+                        <TextBlock Text="{DynamicResource LabelResultsCount}"
+                                   Margin="18,4,0,0"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource MutedTextBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text=" "
+                                   FontSize="12" />
+                        <TextBlock Text="{Binding SearchResults.Count}"
+                                   Margin="4,4,0,0"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource StrongTextBrush}"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Text="{DynamicResource SearchResultsHint}"
+                               Margin="0,5,0,0"
+                               Style="{StaticResource PageSubtitleTextStyle}" />
+                </StackPanel>
+            </DockPanel>
+
+            <Border Grid.Row="1"
+                    Margin="0,14,0,0"
+                    Visibility="{Binding PageFeedback.IsOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <ui:InfoBar IsClosable="True"
+                            IsOpen="{Binding PageFeedback.IsOpen, Mode=TwoWay}"
+                            Severity="{Binding PageFeedback.Severity}"
+                            Title="{Binding PageFeedback.Title}"
+                            Message="{Binding PageFeedback.Message}" />
+            </Border>
+        </Grid>
 
         <Grid Grid.Row="1">
-            <ui:ProgressRing IsIndeterminate="True"
-                             Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
-                             VerticalAlignment="Center" HorizontalAlignment="Center" Width="60" Height="60"
-                             Panel.ZIndex="1000"/>
+            <Border VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Panel.ZIndex="1000"
+                    Padding="28"
+                    Background="{DynamicResource SurfaceBrush}"
+                    BorderBrush="{DynamicResource CardBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel>
+                    <ui:ProgressRing IsIndeterminate="True"
+                                     Width="48"
+                                     Height="48"
+                                     HorizontalAlignment="Center" />
+                    <TextBlock Text="{DynamicResource StatusSearching}"
+                               Margin="0,12,0,0"
+                               Foreground="{DynamicResource MutedTextBrush}"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
 
-            <TextBlock Text="{DynamicResource MsgNoResults}"
-                       Visibility="{Binding HasNoResults, Converter={StaticResource BooleanToVisibilityConverter}}"
-                       VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Foreground="Gray"/>
+            <Grid Visibility="{Binding HasNoResults, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Border Width="360"
+                        Padding="28"
+                        Background="{DynamicResource SurfaceBrush}"
+                        BorderBrush="{DynamicResource CardBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                    <StackPanel HorizontalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Games24"
+                                       FontSize="48"
+                                       Foreground="{DynamicResource FaintTextBrush}"
+                                       Margin="0,0,0,14" />
+                        <TextBlock Text="{DynamicResource MsgNoResults}"
+                                   HorizontalAlignment="Center"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource EmptyStateTitleBrush}" />
+                        <TextBlock Text="{DynamicResource SearchResultsHint}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,8,0,0"
+                                   TextWrapping="Wrap"
+                                   TextAlignment="Center"
+                                   Foreground="{DynamicResource MutedTextBrush}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
 
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <ItemsControl ItemsSource="{Binding SearchResults}">
+            <ScrollViewer x:Name="SearchResultsScrollViewer"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding SearchResults}"
+                              HorizontalAlignment="Stretch"
+                              Margin="-10,0,0,0">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left"/>
+                            <WrapPanel Orientation="Horizontal"
+                                       HorizontalAlignment="Left" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <controls:TrainerCard/>
+                            <controls:TrainerCard />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

@@ -3,72 +3,87 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       xmlns:controls="clr-namespace:GameTrainerLauncher.UI.Controls"
-      Title="{DynamicResource NavPopular}">
-    <Grid Margin="10">
+      Title="{DynamicResource NavPopular}"
+      Background="{DynamicResource ApplicationBackgroundBrush}">
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0"
-                Margin="0,0,0,8"
-                Visibility="{Binding PageFeedback.IsOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <ui:InfoBar IsClosable="True"
-                        IsOpen="{Binding PageFeedback.IsOpen, Mode=TwoWay}"
-                        Severity="{Binding PageFeedback.Severity}"
-                        Title="{Binding PageFeedback.Title}"
-                        Message="{Binding PageFeedback.Message}"/>
-        </Border>
+        <Grid Grid.Row="0" Margin="0,0,0,6">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <DockPanel LastChildFill="True">
+                <StackPanel>
+                    <TextBlock Text="{DynamicResource NavPopular}"
+                               Style="{StaticResource PageTitleTextStyle}" />
+                </StackPanel>
+            </DockPanel>
+
+            <Border Grid.Row="1"
+                    Margin="0,14,0,0"
+                    Visibility="{Binding PageFeedback.IsOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <ui:InfoBar IsClosable="True"
+                            IsOpen="{Binding PageFeedback.IsOpen, Mode=TwoWay}"
+                            Severity="{Binding PageFeedback.Severity}"
+                            Title="{Binding PageFeedback.Title}"
+                            Message="{Binding PageFeedback.Message}" />
+            </Border>
+        </Grid>
 
         <Grid Grid.Row="1">
-            <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Panel.ZIndex="1000">
-                <Grid.Style>
-                    <Style TargetType="Grid">
-                        <Setter Property="Opacity" Value="0"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsLoading}" Value="True">
-                                <DataTrigger.EnterActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.2"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </DataTrigger.EnterActions>
-                                <DataTrigger.ExitActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.15"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </DataTrigger.ExitActions>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Grid.Style>
-                <ui:ProgressRing IsIndeterminate="True"
-                                 Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                 Width="60" Height="60"/>
-            </Grid>
-
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Border VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Panel.ZIndex="1000"
+                    Padding="28"
+                    Background="{DynamicResource SurfaceBrush}"
+                    BorderBrush="{DynamicResource CardBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <StackPanel>
-                    <ItemsControl ItemsSource="{Binding Trainers}">
+                    <ui:ProgressRing IsIndeterminate="True"
+                                     Width="48"
+                                     Height="48"
+                                     HorizontalAlignment="Center" />
+                    <TextBlock Text="{DynamicResource StatusDownloading}"
+                               Margin="0,12,0,0"
+                               Foreground="{DynamicResource MutedTextBrush}"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
+
+            <ScrollViewer x:Name="PopularScrollViewer"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
+                    <ItemsControl ItemsSource="{Binding Trainers}"
+                                  HorizontalAlignment="Stretch"
+                                  Margin="-10,0,0,0">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left"/>
+                                <WrapPanel Orientation="Horizontal"
+                                           HorizontalAlignment="Left" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <controls:TrainerCard/>
+                                <controls:TrainerCard />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
                     <ui:Button Content="{DynamicResource BtnLoadMore}"
-                                Command="{Binding LoadMoreCommand}"
-                                Visibility="{Binding IsLoadMoreVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                HorizontalAlignment="Center" Margin="0,20" Appearance="Secondary" Width="200"/>
+                               Command="{Binding LoadMoreCommand}"
+                               Visibility="{Binding IsLoadMoreVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               HorizontalAlignment="Center"
+                               Margin="0,18,0,6"
+                               Appearance="Secondary"
+                               Width="220"
+                               Padding="0,9" />
                 </StackPanel>
             </ScrollViewer>
         </Grid>

@@ -13,9 +13,16 @@
                  WindowBackdropType="None"
                  ExtendsContentIntoTitleBar="True"
                  Background="{DynamicResource ApplicationBackgroundBrush}"
-                 Foreground="{DynamicResource DialogTextBrush}">
+                 Foreground="{DynamicResource DialogTextBrush}"
+                 FontFamily="{StaticResource AppFontFamily}">
     <Window.Resources>
         <Style x:Key="UpdateActionButtonStyle" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+            <Setter Property="MinWidth" Value="118" />
+            <Setter Property="Padding" Value="18,8" />
+            <Setter Property="Margin" Value="8,0,0,0" />
+        </Style>
+
+        <Style x:Key="UpdatePrimaryActionButtonStyle" TargetType="ui:Button" BasedOn="{StaticResource BluePrimaryButtonStyle}">
             <Setter Property="MinWidth" Value="118" />
             <Setter Property="Padding" Value="18,8" />
             <Setter Property="Margin" Value="8,0,0,0" />
@@ -28,7 +35,8 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <ui:TitleBar Title="{DynamicResource UpdateDialogTitle}">
+        <ui:TitleBar Title="{DynamicResource UpdateDialogTitle}"
+                     Background="{DynamicResource ShellTopBarBrush}">
             <ui:TitleBar.Icon>
                 <ui:ImageIcon Source="/Assets/logo.ico" Width="16" Height="16" />
             </ui:TitleBar.Icon>
@@ -46,33 +54,48 @@
                     Background="{DynamicResource DialogHeaderBrush}"
                     BorderBrush="{DynamicResource DialogBorderBrush}"
                     BorderThickness="1"
-                    CornerRadius="12">
+                    CornerRadius="10">
                 <Grid>
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel>
-                        <TextBlock Text="{DynamicResource UpdateDialogTitle}"
+                    <Border Width="40"
+                            Height="40"
+                            CornerRadius="10"
+                            Background="{DynamicResource AccentWarningSoftBrush}"
+                            Margin="0,0,14,0">
+                        <TextBlock Text="!"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource AccentWarningBrush}"
                                    FontSize="22"
+                                   FontWeight="Bold" />
+                    </Border>
+
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="{DynamicResource UpdateDialogTitle}"
+                                   FontSize="21"
                                    FontWeight="SemiBold"
-                                   Foreground="{DynamicResource DialogAccentBrush}" />
+                                   Foreground="{DynamicResource DialogTextBrush}" />
                         <TextBlock x:Name="SummaryText"
-                                   Margin="0,10,0,0"
-                                   FontSize="15"
+                                   Margin="0,8,0,0"
+                                   FontSize="14"
                                    FontWeight="SemiBold"
+                                   Foreground="{DynamicResource DialogMutedBrush}"
                                    TextWrapping="Wrap" />
                     </StackPanel>
 
-                    <Border Grid.Column="1"
-                            Padding="12,6"
+                    <Border Grid.Column="2"
+                            Padding="11,5"
                             Margin="16,0,0,0"
                             VerticalAlignment="Top"
                             Background="{DynamicResource DialogBadgeBackgroundBrush}"
                             BorderBrush="{DynamicResource DialogBadgeBorderBrush}"
                             BorderThickness="1"
-                            CornerRadius="999">
+                            CornerRadius="6">
                         <TextBlock Text="{DynamicResource UpdateReleaseNotes}"
                                    FontSize="12"
                                    FontWeight="SemiBold"
@@ -82,7 +105,7 @@
             </Border>
 
             <TextBlock Grid.Row="1"
-                       Margin="4,18,0,10"
+                       Margin="4,16,0,10"
                        Text="{DynamicResource UpdateReleaseNotes}"
                        FontSize="13"
                        FontWeight="SemiBold"
@@ -92,7 +115,7 @@
                     Background="{DynamicResource DialogCardBrush}"
                     BorderBrush="{DynamicResource DialogBorderBrush}"
                     BorderThickness="1"
-                    CornerRadius="12">
+                    CornerRadius="10">
                 <ScrollViewer Margin="1"
                               Background="{DynamicResource DialogCardBrush}"
                               VerticalScrollBarVisibility="Auto"
@@ -100,7 +123,8 @@
                               Focusable="False">
                     <TextBlock x:Name="ReleaseNotesTextBlock"
                                Margin="18"
-                               FontSize="14"
+                               FontSize="13"
+                               LineHeight="20"
                                Foreground="{DynamicResource DialogTextBrush}"
                                TextWrapping="Wrap" />
                 </ScrollViewer>
@@ -110,12 +134,11 @@
                 <TextBlock DockPanel.Dock="Left"
                            VerticalAlignment="Center"
                            Foreground="{DynamicResource DialogMutedBrush}"
-                           Text="Velopack · GitHub Releases"
+                           Text="Velopack - GitHub Releases"
                            Opacity="0.85" />
 
                 <ui:Button DockPanel.Dock="Right"
-                           Style="{StaticResource UpdateActionButtonStyle}"
-                           Appearance="Primary"
+                           Style="{StaticResource UpdatePrimaryActionButtonStyle}"
                            Click="UpdateNow_Click"
                            Content="{DynamicResource UpdateNow}" />
                 <ui:Button DockPanel.Dock="Right"
