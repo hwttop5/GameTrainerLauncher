@@ -5,61 +5,244 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Game Trainer Launcher</title>
   <meta name="description" content="基于 FlingTrainer 的 Windows 游戏修改器启动器，支持中英文搜索、一键下载与本地管理。">
+  <meta name="theme-color" content="#08111f">
   <link rel="icon" type="image/x-icon" href="./assets/logo.ico">
   <link rel="shortcut icon" type="image/x-icon" href="./assets/logo.ico">
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.css?v=20260511b">
 </head>
 <body>
   <header class="site-header">
-    <div class="container nav">
-      <a class="brand" href="./">Game Trainer Launcher</a>
-      <div class="nav-actions">
-        <button id="langToggle" class="btn ghost" type="button">EN</button>
-        <button id="themeToggle" class="btn ghost" type="button">Light</button>
+    <div class="container nav-shell">
+      <a class="brand" href="./" aria-label="Game Trainer Launcher Home">
+        <img src="./assets/logo.png" alt="" width="40" height="40">
+        <span>Game Trainer Launcher</span>
+      </a>
+
+      <button id="menuToggle" class="menu-toggle" type="button" aria-expanded="false" aria-controls="siteNav">
+        <span class="menu-icon" aria-hidden="true"></span>
+        <span data-i18n="toggle.menu">菜单</span>
+      </button>
+
+      <div class="nav-panel" id="siteNav">
+        <nav class="site-nav" aria-label="Primary">
+          <a href="#features" data-i18n="nav.features">核心能力</a>
+          <a href="#workflow" data-i18n="nav.workflow">使用流程</a>
+          <a href="#trust" data-i18n="nav.trust">开源与更新</a>
+          <a href="https://github.com/hwttop5/GameTrainerLauncher/releases" target="_blank" rel="noreferrer" data-i18n="nav.releases">Releases</a>
+          <a href="https://github.com/hwttop5/GameTrainerLauncher" target="_blank" rel="noreferrer" data-i18n="nav.github">GitHub</a>
+        </nav>
+
+        <div class="nav-actions">
+          <button id="langToggle" class="control-btn" type="button">EN</button>
+          <button id="themeToggle" class="control-btn" type="button">Light</button>
+        </div>
       </div>
     </div>
   </header>
 
   <main>
-    <section class="hero container">
-      <p class="badge" data-i18n="hero.badge">Windows 桌面应用</p>
-      <h1 data-i18n="hero.title">更轻松地管理游戏修改器</h1>
-      <p class="hero-desc" data-i18n="hero.desc">
-        浏览、搜索、下载并启动修改器。支持中英文搜索与本地索引，启动快、管理稳。
-      </p>
-      <div class="hero-actions">
-        <a class="btn primary" href="https://github.com/hwttop5/GameTrainerLauncher/releases" target="_blank" rel="noreferrer" data-i18n="hero.download">下载最新版</a>
-        <a class="btn" href="https://github.com/hwttop5/GameTrainerLauncher" target="_blank" rel="noreferrer" data-i18n="hero.github">查看 GitHub</a>
+    <section class="hero-section">
+      <div class="container">
+        <div class="hero-stage">
+          <div class="hero-grid">
+            <div class="hero-copy">
+              <p class="eyebrow" data-i18n="hero.eyebrow">Windows 桌面应用</p>
+              <h1 class="hero-title" data-i18n="hero.title">更轻松地管理游戏修改器</h1>
+              <p class="hero-subtitle" data-i18n="hero.subtitle">浏览、搜索、下载并启动修改器。支持中英文搜索与本地索引，启动快，管理稳。</p>
+
+              <div class="hero-metrics" aria-label="Workflow pillars">
+                <article class="metric-card">
+                  <strong data-i18n="hero.metric1.value">本地索引</strong>
+                  <span data-i18n="hero.metric1.label">优先返回搜索结果</span>
+                </article>
+                <article class="metric-card">
+                  <strong data-i18n="hero.metric2.value">版本匹配</strong>
+                  <span data-i18n="hero.metric2.label">下载前选择适配版本</span>
+                </article>
+                <article class="metric-card">
+                  <strong data-i18n="hero.metric3.value">本地库</strong>
+                  <span data-i18n="hero.metric3.label">统一管理封面与启动入口</span>
+                </article>
+              </div>
+
+              <div class="hero-actions">
+                <a class="btn primary" href="https://github.com/hwttop5/GameTrainerLauncher/releases" target="_blank" rel="noreferrer">
+                  <span class="btn-icon" aria-hidden="true">↓</span>
+                  <span>
+                    <strong data-i18n="hero.download">下载最新版</strong>
+                    <small data-i18n="hero.platform">Windows 10/11 (64-bit)</small>
+                  </span>
+                </a>
+                <a class="btn secondary" href="https://github.com/hwttop5/GameTrainerLauncher" target="_blank" rel="noreferrer">
+                  <span class="btn-icon" aria-hidden="true">◎</span>
+                  <span>
+                    <strong data-i18n="hero.github">查看 GitHub</strong>
+                    <small data-i18n="hero.opensource">开源项目</small>
+                  </span>
+                </a>
+              </div>
+
+              <div class="hero-badges" aria-label="Highlights">
+                <span class="badge-chip" data-i18n="hero.badge.windows">Windows 专属</span>
+                <span class="badge-chip" data-i18n="hero.badge.bilingual">中英双语</span>
+                <span class="badge-chip" data-i18n="hero.badge.opensource">开源免费</span>
+                <span class="badge-chip" data-i18n="hero.badge.releases">GitHub Releases</span>
+              </div>
+            </div>
+
+            <div class="hero-visual">
+              <div class="visual-glow" aria-hidden="true"></div>
+              <div class="product-shell">
+                <div class="product-shell-badge" data-i18n="hero.panelBadge">Desktop workflow</div>
+                <div class="window-topbar">
+                  <div class="window-brand">
+                    <img src="./assets/logo.png" alt="" width="18" height="18">
+                    <span>Game Trainer Launcher</span>
+                  </div>
+                  <div class="window-controls" aria-hidden="true">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+                <div class="product-media demo-carousel" data-demo-carousel>
+                  <div class="demo-track">
+                    <figure class="demo-slide is-active" data-demo-slide>
+                      <img src="./assets/demo-popular-loaded.png" alt="Game Trainer Launcher popular games screen" width="960" height="600">
+                    </figure>
+                    <figure class="demo-slide" data-demo-slide>
+                      <img src="./assets/demo-search-loaded.png" alt="Game Trainer Launcher search results screen" width="960" height="600" loading="lazy">
+                    </figure>
+                    <figure class="demo-slide" data-demo-slide>
+                      <img src="./assets/demo-library-loaded.png" alt="Game Trainer Launcher local library screen" width="960" height="600" loading="lazy">
+                    </figure>
+                    <figure class="demo-slide" data-demo-slide>
+                      <img src="./assets/demo-settings-loaded.png" alt="Game Trainer Launcher settings screen" width="960" height="600" loading="lazy">
+                    </figure>
+                  </div>
+                  <button class="carousel-btn carousel-prev" type="button" data-carousel-prev aria-label="Previous screenshot" title="Previous screenshot">‹</button>
+                  <button class="carousel-btn carousel-next" type="button" data-carousel-next aria-label="Next screenshot" title="Next screenshot">›</button>
+                  <div class="carousel-dots" role="tablist" aria-label="Product screenshots">
+                    <button class="carousel-dot is-active" type="button" data-carousel-dot aria-label="Show popular games screenshot" aria-selected="true"></button>
+                    <button class="carousel-dot" type="button" data-carousel-dot aria-label="Show search screenshot" aria-selected="false"></button>
+                    <button class="carousel-dot" type="button" data-carousel-dot aria-label="Show library screenshot" aria-selected="false"></button>
+                    <button class="carousel-dot" type="button" data-carousel-dot aria-label="Show settings screenshot" aria-selected="false"></button>
+                  </div>
+                </div>
+                <div class="product-caption">
+                  <strong data-i18n="hero.panelTitle">真实界面预览</strong>
+                  <span data-i18n="hero.panelDesc">当前桌面应用的实际操作演示</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="demo container">
-      <h2 data-i18n="demo.title">功能演示</h2>
-      <p class="demo-desc" data-i18n="demo.desc">下面是应用实际使用演示。</p>
-      <div class="demo-media">
-        <img src="./assets/demo.gif" alt="Game Trainer Launcher Demo">
+    <section class="section section-soft" id="workflow">
+      <div class="container">
+        <div class="section-heading">
+          <p class="section-kicker" data-i18n="workflow.kicker">How it works</p>
+          <h2 data-i18n="workflow.title">三步即可开始</h2>
+        </div>
+
+        <div class="workflow-grid">
+          <article class="step-card">
+            <div class="step-index">1</div>
+            <h3 data-i18n="workflow.step1.title">搜索与浏览</h3>
+            <p data-i18n="workflow.step1.desc">先走本地索引，再做后台同步，快速找到你要的修改器。</p>
+          </article>
+          <article class="step-card">
+            <div class="step-index">2</div>
+            <h3 data-i18n="workflow.step2.title">下载与管理</h3>
+            <p data-i18n="workflow.step2.desc">一键下载并加入本地库，版本状态和封面统一管理。</p>
+          </article>
+          <article class="step-card">
+            <div class="step-index">3</div>
+            <h3 data-i18n="workflow.step3.title">启动与维护</h3>
+            <p data-i18n="workflow.step3.desc">从库中直接启动游戏或修改器，更新检查与版本提示保持清晰。</p>
+          </article>
+        </div>
       </div>
     </section>
 
-    <section class="features container">
-      <h2 data-i18n="features.title">核心功能</h2>
-      <div class="feature-grid">
-        <article class="card">
-          <h3 data-i18n="features.search.title">中英文搜索</h3>
-          <p data-i18n="features.search.desc">优先本地索引秒回，后台增量同步，减少等待。</p>
-        </article>
-        <article class="card">
-          <h3 data-i18n="features.download.title">一键下载添加</h3>
-          <p data-i18n="features.download.desc">在热门或搜索页直接下载并添加到我的游戏。</p>
-        </article>
-        <article class="card">
-          <h3 data-i18n="features.library.title">我的游戏管理</h3>
-          <p data-i18n="features.library.desc">支持启动、移除、拖拽排序，新添加项目默认置顶。</p>
-        </article>
-        <article class="card">
-          <h3 data-i18n="features.update.title">自动更新</h3>
-          <p data-i18n="features.update.desc">基于 Velopack 和 GitHub Releases，支持检查更新与升级。</p>
-        </article>
+    <section class="section section-lined" id="features">
+      <div class="container">
+        <div class="section-heading">
+          <p class="section-kicker" data-i18n="features.kicker">Core features</p>
+          <h2 data-i18n="features.title">为玩家打造的高效工具</h2>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">⌕</div>
+            <h3 data-i18n="features.search.title">中英文搜索</h3>
+            <p data-i18n="features.search.desc">本地标题索引优先返回结果，减少等待时间。</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">▣</div>
+            <h3 data-i18n="features.library.title">本地库管理</h3>
+            <p data-i18n="features.library.desc">添加、拖拽排序、移除和封面补全都在一个界面完成。</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">◎</div>
+            <h3 data-i18n="features.version.title">版本选择</h3>
+            <p data-i18n="features.version.desc">下载前选择对应版本，降低版本不匹配带来的问题。</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">↻</div>
+            <h3 data-i18n="features.update.title">自带更新流程</h3>
+            <p data-i18n="features.update.desc">基于 Velopack 和 GitHub Releases，检查、下载并重启安装。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-trust" id="trust">
+      <div class="container trust-panel">
+        <div class="trust-copy">
+          <p class="section-kicker" data-i18n="trust.kicker">Open source and updates</p>
+          <h2 data-i18n="trust.title">开源、透明、可验证</h2>
+          <p class="trust-lead" data-i18n="trust.desc">完全开源，发布链路清晰，下载来源可追踪。</p>
+
+          <div class="trust-grid">
+            <article class="trust-card">
+              <h3 data-i18n="trust.point1.title">GPL-3.0</h3>
+              <p data-i18n="trust.point1.desc">代码公开，欢迎审阅与贡献。</p>
+            </article>
+            <article class="trust-card">
+              <h3 data-i18n="trust.point2.title">GitHub Releases</h3>
+              <p data-i18n="trust.point2.desc">安装包与版本记录统一托管。</p>
+            </article>
+            <article class="trust-card">
+              <h3 data-i18n="trust.point3.title">SHA256 校验</h3>
+              <p data-i18n="trust.point3.desc">发布产物附带校验清单，便于核验完整性。</p>
+            </article>
+            <article class="trust-card">
+              <h3 data-i18n="trust.point4.title">Windows 桌面定位</h3>
+              <p data-i18n="trust.point4.desc">专注 Windows 10/11，不做多余平台包装。</p>
+            </article>
+          </div>
+        </div>
+
+        <aside class="trust-note">
+          <div class="orb" aria-hidden="true"></div>
+          <div class="trust-note-copy">
+            <h3 data-i18n="trust.note.title">关于来源与使用</h3>
+            <p data-i18n="trust.note.desc">修改器内容依赖 FlingTrainer；本工具仅供学习与个人使用，请遵守当地法律与平台条款。</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section final-cta" id="download">
+      <div class="container cta-panel">
+        <p class="section-kicker" data-i18n="cta.kicker">Download</p>
+        <h2 data-i18n="cta.title">立即下载 Game Trainer Launcher</h2>
+        <p data-i18n="cta.desc">为 Windows 打造的修改器管理器，直接从 GitHub Releases 获取最新版。</p>
+        <a class="btn primary large" href="https://github.com/hwttop5/GameTrainerLauncher/releases" target="_blank" rel="noreferrer" data-i18n="cta.download">下载最新版</a>
+        <a class="cta-link" href="https://github.com/hwttop5/GameTrainerLauncher/releases" target="_blank" rel="noreferrer" data-i18n="cta.releases">前往 Releases 查看全部版本</a>
       </div>
     </section>
   </main>
@@ -67,10 +250,13 @@
   <footer class="site-footer">
     <div class="container footer-row">
       <span data-i18n="footer.copy">Game Trainer Launcher · GPL-3.0</span>
-      <a href="https://github.com/hwttop5/GameTrainerLauncher" target="_blank" rel="noreferrer" data-i18n="footer.repo">项目仓库</a>
+      <div class="footer-links">
+        <a href="https://github.com/hwttop5/GameTrainerLauncher" target="_blank" rel="noreferrer" data-i18n="footer.repo">项目仓库</a>
+        <a href="https://github.com/hwttop5/GameTrainerLauncher/blob/master/LICENSE" target="_blank" rel="noreferrer" data-i18n="footer.license">开源协议</a>
+      </div>
     </div>
   </footer>
 
-  <script src="./app.js"></script>
+  <script src="./app.js?v=20260511b"></script>
 </body>
 </html>
