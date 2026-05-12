@@ -13,7 +13,7 @@ const TEXT = {
     "nav.releases": "Releases",
     "nav.github": "GitHub",
     "hero.eyebrow": "Windows 桌面应用",
-    "hero.title": "更轻松地管理<br>游戏修改器",
+    "hero.title": "更轻松地管理游戏修改器",
     "hero.subtitle": "浏览、搜索、下载并启动修改器。支持中英文搜索与本地索引，启动快，管理稳。",
     "hero.download": "下载最新版",
     "hero.platform": "Windows 10/11 (64-bit)",
