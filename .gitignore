@@ -39,3 +39,17 @@ installer/Output/
 
 # Temporary workspace data
 tmp/
+
+# Local tooling state
+.playwright-mcp/
+_query_codex_db*.py
+
+# Local screenshot and design scratch outputs in repo root
+current-*.png
+revised-*.png
+site-*.png
+gtl-en-desktop.png
+game-trainer-carousel-check.png
+
+# Local design archives
+designs/

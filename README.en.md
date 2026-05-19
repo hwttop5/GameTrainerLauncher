@@ -1,114 +1,58 @@
 # Game Trainer Launcher
 
-| [中文版](README.md)
+[中文版](README.md)
 
-Tired of manually downloading and managing lots of game trainer .exe files, and don't want to pay for platforms like flyy.cn or wemod? Try this Windows desktop app based on [FlingTrainer](https://flingtrainer.com): browse, search, download, and launch trainers, and manage your game trainers with ease.
+A Windows desktop launcher focused on improving the `FlingTrainer` workflow for searching, downloading, organizing, and launching game trainers.
 
-**Download**: [https://github.com/hwttop5/GameTrainerLauncher/releases](https://github.com/hwttop5/GameTrainerLauncher/releases)
+## Downloads and Entry Points
 
-**Website**: [https://hwttop5.github.io/GameTrainerLauncher/](https://hwttop5.github.io/GameTrainerLauncher/)
+- Releases: <https://github.com/hwttop5/GameTrainerLauncher/releases>
+- Website: <https://hwttop5.github.io/GameTrainerLauncher/>
+- Main app entry: `GameTrainerLauncher.UI`
 
----
+## Core Features
 
-## Features
+- Search by Chinese or English game title with a local title index plus background backfill.
+- Browse popular trainers and add them to the local library.
+- Choose trainer versions before download to reduce version mismatch problems.
+- Manage a local trainer library with ordering, launch, removal, cover backfill, and status feedback.
+- Switch language and theme, and check for in-app updates.
 
-- **Search**: Search by game name in Chinese or English; local title index returns results immediately, then background incremental sync/backfill improves coverage; add results to library with per-card state.
-- **Popular Games**: Fetches popular trainers from FlingTrainer; add to library with one click (download + add), progress bar and timeout (1 min).
-- **Version Selection**: Choose the trainer version before downloading to match your game build and reduce version mismatch issues.
-- **My Library**: List of added trainers; newly added items are pinned to the top by default, with compatibility for historical sort data and stable ordering; drag to reorder; launch or remove; covers are downloaded locally when adding; when entering this page it checks whether each game has a local cover and backfills missing ones automatically; download missing trainers from this page; displays a friendly no-data prompt when the library is empty.
-- **Settings**: Language (Chinese/English), theme (light/dark), update checks, and a GitHub repository shortcut.
-- **App Update**: Check for updates, review current update status/release notes, then download and restart to install newer versions.
+## Tech Stack and Structure
 
----
+- Runtime: `.NET 8`, `WPF`, Windows only
+- UI: `WPF-UI` + `CommunityToolkit.Mvvm`
+- Data: `SQLite` + `Entity Framework Core 8`
+- Scraping and integrations: `HtmlAgilityPack`, local scanning, download, and launch services
 
-## Demo
+Main directories:
 
-<p align="center">
-  <img src="Docs/Images/demo-popular-loaded.png" alt="Popular games screen" width="48%">
-  <img src="Docs/Images/demo-search-loaded.png" alt="Search results screen" width="48%">
-  <img src="Docs/Images/demo-library-loaded.png" alt="Local library screen" width="48%">
-  <img src="Docs/Images/demo-settings-loaded.png" alt="Settings screen" width="48%">
-</p>
+- `GameTrainerLauncher.Core`: domain entities and interfaces
+- `GameTrainerLauncher.Infrastructure`: data, scraping, scanning, download, and launch implementations
+- `GameTrainerLauncher.UI`: WPF UI and application entry point
+- `Docs/site`: website source
+- `installer`: local packaging and release helper scripts
 
----
+## Quick Start
 
-## Tech Stack
+Requirements: Windows 10/11, `.NET 8 SDK`
 
-- **Runtime**: .NET 8, Windows only (WPF)
-- **UI**: WPF + [WPF-UI](https://github.com/lepo-co/wpf-ui) (Fluent-style) + [CommunityToolkit.Mvvm](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm/)
-- **Data**: SQLite + Entity Framework Core 8
-- **Scraping**: HtmlAgilityPack for FlingTrainer/Gamersky/Steam metadata (policy-driven background sync)
-- **Logging**: NLog (writes to `Data/Logs/log.txt` under the app directory)
-
-### Project structure
-
-- **GameTrainerLauncher.Core**: Domain entities and interfaces
-- **GameTrainerLauncher.Infrastructure**: Scraper, local scanning, database, trainer download and launch
-- **GameTrainerLauncher.UI**: WPF UI (MVVM)
-
----
-
-## Requirements & run
-
-- **Requirements**: .NET 8 SDK, Windows 10/11
-- **Restore & build**:
-  ```bash
-  dotnet restore
-  dotnet build
-  ```
-- **Run**:
-  ```bash
-  dotnet run --project GameTrainerLauncher.UI
-  ```
-  Or run `GameTrainerLauncher.UI.exe` from the output directory.
-
-Trainers and data live under `Data` next to the executable (e.g. `Data/Trainers`, `Data/game_trainer_launcher.db`, `Data/Logs`).
-
-> Note: To avoid write-permission issues under Program Files, app data is stored at `%LocalAppData%\GameTrainerLauncher\Data`.
-> Local cover cache: `%LocalAppData%\GameTrainerLauncher\Data\Covers` (files like `game_{id}.png/jpg/...`).
-> Title-index snapshot lives at `%LocalAppData%\GameTrainerLauncher\Data\title-index.snapshot.json`; first install initializes from bundled seed `GameTrainerLauncher.UI/Assets/title-index.seed.snapshot.json` and then continues incremental updates.
-
----
-
-## Packaging & release
-
-This project now uses **Velopack + GitHub Releases** for installation packages and auto updates.
-
-**Local package build** (from repo root):
 ```powershell
-dotnet tool restore
-.\installer\build-velopack.ps1
+dotnet restore
+dotnet build GameTrainerLauncher.UI/GameTrainerLauncher.UI.csproj
+dotnet run --project GameTrainerLauncher.UI
 ```
-Packages are generated under `artifacts/velopack`.
-The output also includes `checksums.txt` (SHA256 manifest) for post-download integrity verification.
 
-**Automatic GitHub release**:
-- Version is defined in `Directory.Build.props`
-- Push a matching tag in the form `vX.Y.Z`
-- GitHub Actions builds, validates versions, packs Velopack releases, and uploads assets to GitHub Releases automatically
-- Release assets include `checksums.txt` so users can verify local file hashes
+Application data is stored under `%LocalAppData%\GameTrainerLauncher\Data` by default.
 
-**Legacy Inno Setup**:
-```powershell
-.\installer\build-installer.ps1
-```
-This path is kept only as a compatibility/legacy installer flow and is no longer the primary update mechanism.
+## Documentation Map
 
-**Verification and false-positive reporting tips**:
-- Verify SHA256 first (using the `checksums.txt` file from the Release) to ensure the installer is intact.
-- If antivirus still flags the verified installer, submit it through official false-positive channels:
-  - Microsoft Defender submission: [https://www.microsoft.com/en-us/wdsi/filesubmission](https://www.microsoft.com/en-us/wdsi/filesubmission)
-  - Optional cross-engine check via VirusTotal: [https://www.virustotal.com/](https://www.virustotal.com/)
-
----
-
-## Notes & disclaimer
-
-- Trainer availability and content depend on FlingTrainer; if the site structure changes, the scraper may need updates.
-- This tool is for learning and personal use only; please comply with local laws and game/platform terms.
-
----
+- [AGENTS.md](AGENTS.md): repository guidance for coding agents
+- [README.md](README.md): Chinese project overview
+- [Docs/README.md](Docs/README.md): documentation map and boundaries
+- `Docs/site`: website source, not a development manual
+- `designs/`: local design-archive directory, not committed by default
 
 ## License
 
-This project is licensed under the **[GNU General Public License v3.0 (GPL-3.0)](LICENSE)**. Use, modification, and distribution must comply with the license.
+This project is licensed under the [GNU General Public License v3.0 (GPL-3.0)](LICENSE).
