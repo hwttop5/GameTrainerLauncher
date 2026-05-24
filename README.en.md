@@ -45,6 +45,22 @@ dotnet run --project GameTrainerLauncher.UI
 
 Application data is stored under `%LocalAppData%\GameTrainerLauncher\Data` by default.
 
+## Commit Convention
+
+This repository uses [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/).
+
+After the first clone, install commitlint and the Husky hook:
+
+```powershell
+npm install
+```
+
+Validate the current history manually:
+
+```powershell
+npm run commitlint:history -- HEAD
+```
+
 ## Documentation Map
 
 - [AGENTS.md](AGENTS.md): repository guidance for coding agents

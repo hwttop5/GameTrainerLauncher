@@ -27,6 +27,8 @@ dotnet restore
 dotnet build GameTrainerLauncher.UI/GameTrainerLauncher.UI.csproj
 dotnet run --project GameTrainerLauncher.UI
 dotnet tool restore
+npm install
+npm run commitlint:history -- HEAD
 ./installer/build-velopack.ps1
 ```
 
@@ -34,12 +36,15 @@ dotnet tool restore
 
 - 常规改动完成后，优先执行 `dotnet build GameTrainerLauncher.UI/GameTrainerLauncher.UI.csproj`。
 - 当前仓库没有独立测试项目；验证基线以构建通过和脚本/路径一致性为主。
+- 提交信息遵循 Conventional Commits 1.0.0；首次克隆后运行 `npm install` 安装 Husky commit-msg hook。
+- 可使用 `npm run commitlint:history -- HEAD` 校验当前分支历史；新增提交应使用 `feat:`、`fix:`、`docs:`、`chore:` 等小写类型。
 - 如果任务涉及打包或发布文档，检查 `installer/build-velopack.ps1`、`installer/generate-release-notes.ps1`、`.github/workflows/release.yml` 是否仍与文档一致。
 
 ## 验证要求
 
 - 文档改动后，确认文中命令、目录、脚本路径都真实存在。
 - 应用相关改动后，至少运行一次 `dotnet build GameTrainerLauncher.UI/GameTrainerLauncher.UI.csproj`。
+- 提交规范或历史改写相关改动后，运行 `npm ci`、`npm run commitlint:history -- HEAD`，并抽查 `.github/workflows/commitlint.yml`。
 - 官网相关改动后，确认 `Docs/site` 仍可作为静态站点源码使用。
 - 发布链路相关改动后，抽查以下文件的一致性:
   - `Directory.Build.props`

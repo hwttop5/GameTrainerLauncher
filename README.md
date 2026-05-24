@@ -45,6 +45,22 @@ dotnet run --project GameTrainerLauncher.UI
 
 应用数据默认位于 `%LocalAppData%\GameTrainerLauncher\Data`。
 
+## 提交规范
+
+本仓库使用 [Conventional Commits 1.0.0](https://www.conventionalcommits.org/zh-hans/v1.0.0/)。
+
+首次克隆后运行以下命令安装 commitlint 与 Husky hook:
+
+```powershell
+npm install
+```
+
+手动验证当前历史:
+
+```powershell
+npm run commitlint:history -- HEAD
+```
+
 ## 文档导航
 
 - [AGENTS.md](AGENTS.md): 面向 coding agent 的仓库协作与维护说明

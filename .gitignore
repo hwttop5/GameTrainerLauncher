@@ -16,6 +16,9 @@ obj/
 packages/
 .nuget/
 
+# Node tooling
+node_modules/
+
 # IDE
 .idea/
 *.rsuser
