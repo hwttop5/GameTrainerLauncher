@@ -1,4 +1,4 @@
-const STORAGE_KEYS = {
+﻿const STORAGE_KEYS = {
   lang: "gtl.site.lang",
   theme: "gtl.site.theme"
 };
@@ -85,7 +85,7 @@ const TEXT = {
     "nav.releases": "Releases",
     "nav.github": "GitHub",
     "hero.eyebrow": "Windows Desktop App",
-    "hero.title": "Manage Game Trainers with Less Friction",
+    "hero.title": "Manage Trainers<br>with Less Friction",
     "hero.subtitle": "Browse, search, download, and launch trainers with bilingual search, local index speed, and stable library management.",
     "hero.download": "Download Latest",
     "hero.platform": "Windows 10/11 (64-bit)",
@@ -105,7 +105,7 @@ const TEXT = {
     "hero.panelTitle": "Real product preview",
     "hero.panelDesc": "Actual workflow captured from the desktop app",
     "workflow.kicker": "How it works",
-    "workflow.title": "Start in Three Steps",
+    "workflow.title": "Three Steps to Start",
     "workflow.step1.title": "Search and Browse",
     "workflow.step1.desc": "Local index results come back first, then background sync fills in coverage.",
     "workflow.step2.title": "Download and Organize",
@@ -113,7 +113,7 @@ const TEXT = {
     "workflow.step3.title": "Launch and Maintain",
     "workflow.step3.desc": "Start trainers from the library directly and keep update prompts and status readable.",
     "features.kicker": "Core features",
-    "features.title": "A Practical Tool for Players",
+    "features.title": "A Practical Tool",
     "features.search.title": "Chinese + English Search",
     "features.search.desc": "Prioritizes local title index results to cut waiting time.",
     "features.library.title": "Local Library Management",
@@ -123,7 +123,7 @@ const TEXT = {
     "features.update.title": "Built-in Update Flow",
     "features.update.desc": "Powered by Velopack and GitHub Releases for checks, download, and restart-to-install.",
     "trust.kicker": "Open source and updates",
-    "trust.title": "Open, Transparent, and Verifiable",
+    "trust.title": "Open, Clear, Verifiable",
     "trust.desc": "The code is public, the release path is clear, and download sources are easy to inspect.",
     "trust.point1.title": "GPL-3.0",
     "trust.point1.desc": "Source code is public and open for review and contribution.",
@@ -145,7 +145,7 @@ const TEXT = {
     "footer.license": "License",
     "toggle.theme.light": "Light",
     "toggle.theme.dark": "Dark",
-    "toggle.lang": "简体中文",
+    "toggle.lang": "CN",
     "toggle.menu": "Menu"
   }
 };
@@ -180,6 +180,13 @@ function applyLanguage(lang) {
     const key = el.getAttribute("data-i18n");
     if (key && dict[key]) {
       el.textContent = dict[key];
+    }
+  });
+
+  document.querySelectorAll("[data-i18n-html]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-html");
+    if (key && dict[key]) {
+      el.innerHTML = dict[key];
     }
   });
 
@@ -313,3 +320,4 @@ function setupDemoCarousel() {
 applyLanguage(currentLang);
 setupDemoCarousel();
 setMenuOpen(false);
+
