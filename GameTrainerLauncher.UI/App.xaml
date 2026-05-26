@@ -24,6 +24,8 @@
             <converters:CanLaunchConverter x:Key="CanLaunchConverter" />
             <converters:IsCurrentLaunchingConverter x:Key="IsCurrentLaunchingConverter" />
             <converters:IsCurrentAddingConverter x:Key="IsCurrentAddingConverter" />
+            <converters:BrushOpacityConverter x:Key="BrushOpacityConverter" />
+            <converters:EnabledToPrimaryForegroundBrushConverter x:Key="EnabledToPrimaryForegroundBrushConverter" />
             
             <SolidColorBrush x:Key="SystemControlBackgroundChromeMediumLowBrush" Color="#1e2021" />
             <SolidColorBrush x:Key="ApplicationBackgroundBrush" Color="#1e2021" />
@@ -46,20 +48,21 @@
                 <Setter Property="Appearance" Value="Primary" />
                 <Setter Property="Background" Value="#0078D4" />
                 <Setter Property="Foreground" Value="White" />
-                <Setter Property="BorderBrush" Value="#0078D4" />
+                <!-- 边框线颜色始终等于按钮字体颜色 -->
+                <Setter Property="BorderBrush" Value="{Binding RelativeSource={RelativeSource Self}, Path=Foreground}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
                         <Setter Property="Background" Value="#106EBE" />
-                        <Setter Property="BorderBrush" Value="#106EBE" />
                     </Trigger>
                     <Trigger Property="IsPressed" Value="True">
                         <Setter Property="Background" Value="#005A9E" />
-                        <Setter Property="BorderBrush" Value="#005A9E" />
                     </Trigger>
                     <Trigger Property="IsEnabled" Value="False">
-                        <Setter Property="Background" Value="#A0A0A0" />
-                        <Setter Property="BorderBrush" Value="#A0A0A0" />
-                        <Setter Property="Foreground" Value="White" />
+                        <!-- 让“已添加/添加中”呈现图中那种灰字灰边框（边框跟随 Foreground） -->
+                        <Setter Property="Background" Value="Transparent" />
+                        <!-- Foreground 由控件本地 Binding 控制，避免被 Wpf.Ui 模板覆盖 -->
                     </Trigger>
                 </Style.Triggers>
             </Style>

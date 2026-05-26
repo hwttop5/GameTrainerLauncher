@@ -5,7 +5,7 @@
       xmlns:controls="clr-namespace:GameTrainerLauncher.UI.Controls"
       Title="{DynamicResource NavPopular}">
     <Grid Margin="10">
-        <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+        <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Panel.ZIndex="1000">
             <Grid.Style>
                 <Style TargetType="Grid">
                     <Setter Property="Opacity" Value="0"/>

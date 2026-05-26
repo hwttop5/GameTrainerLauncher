@@ -40,7 +40,7 @@
                         Command="{Binding NavigateToCommand}"
                         CommandParameter="MyGames"
                         Appearance="{Binding IsMyGamesSelected, Converter={StaticResource BoolToAppearanceConverter}}"/>
-                <ui:Button Margin="10,8" HorizontalAlignment="Stretch"
+                <ui:Button x:Name="NavSettingsButton" Margin="10,8" HorizontalAlignment="Stretch"
                         Content="{DynamicResource NavSettings}"
                         Command="{Binding NavigateToCommand}"
                         CommandParameter="Settings"
@@ -67,13 +67,21 @@
                         </ui:TextBox.InputBindings>
                     </ui:TextBox>
                     <!-- 搜索按钮：与左侧菜单选中态一致（蓝底白字） -->
-                    <ui:Button x:Name="SearchButton"
-                               Grid.Column="1"
-                               Content="{DynamicResource BtnSearch}"
-                               Command="{Binding SearchCommand}"
-                               Style="{StaticResource BluePrimaryButtonStyle}"
-                               Padding="16,6"
-                               VerticalAlignment="Center"/>
+                    <Border x:Name="SearchButtonBorder"
+                            Grid.Column="1"
+                            BorderThickness="1"
+                            BorderBrush="{Binding ElementName=SearchButton, Path=Foreground, Converter={StaticResource BrushOpacityConverter}, ConverterParameter=0.25}"
+                            CornerRadius="4"
+                            VerticalAlignment="Center">
+                        <ui:Button x:Name="SearchButton"
+                                   Content="{DynamicResource BtnSearch}"
+                                   Command="{Binding SearchCommand}"
+                                   Style="{StaticResource BluePrimaryButtonStyle}"
+                                   Foreground="{Binding RelativeSource={RelativeSource Self}, Path=IsEnabled, Converter={StaticResource EnabledToPrimaryForegroundBrushConverter}}"
+                                   BorderThickness="0"
+                                   Padding="16,6"
+                                   VerticalAlignment="Center"/>
+                    </Border>
                 </Grid>
                 <Frame x:Name="MainFrame" Grid.Row="1" NavigationUIVisibility="Hidden" Background="{DynamicResource ApplicationBackgroundBrush}"/>
             </Grid>

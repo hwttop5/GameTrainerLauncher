@@ -8,6 +8,7 @@ namespace GameTrainerLauncher.UI.Converters;
 /// <summary>
 /// IMultiValueConverter: values[0]=MatchedTrainer.ImageUrl, values[1]=CoverUrl.
 /// Returns BitmapImage from the first non-empty URL so that when MatchedTrainer.ImageUrl updates (e.g. backfill), the binding refreshes.
+/// Uses BitmapCacheOption.OnLoad so cover displays in installed app (no lazy decode/cache under Program Files).
 /// </summary>
 public class GameCoverFromPartsConverter : IMultiValueConverter
 {
@@ -25,7 +26,13 @@ public class GameCoverFromPartsConverter : IMultiValueConverter
                 url = FlingBaseUrl + url;
             else if (!url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
                 url = FlingBaseUrl + "/" + url.TrimStart('/');
-            return new BitmapImage(new Uri(url, UriKind.Absolute));
+            var uri = new Uri(url, UriKind.Absolute);
+            var img = new BitmapImage();
+            img.BeginInit();
+            img.CacheOption = BitmapCacheOption.OnLoad;
+            img.UriSource = uri;
+            img.EndInit();
+            return img;
         }
         catch
         {
