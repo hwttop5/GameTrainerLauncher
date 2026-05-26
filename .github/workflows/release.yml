@@ -147,29 +147,10 @@ jobs:
       - name: Generate release notes
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path "artifacts" | Out-Null
-          $tag = "${{ steps.version.outputs.tag }}"
-          $version = "${{ steps.version.outputs.version }}"
-          $previousTag = git describe --tags --abbrev=0 "$tag^" 2>$null
-
-          if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($previousTag)) {
-              $commits = git log "$previousTag..$tag" --pretty=format:"- %s" --no-merges
-          }
-          else {
-              $commits = git log -20 --pretty=format:"- %s" --no-merges
-          }
-
-          if ([string]::IsNullOrWhiteSpace($commits)) {
-              $commits = "- Release $version"
-          }
-
-          $notes = @(
-              "# Game Trainer Launcher v$version",
-              "",
-              $commits
-          ) -join [Environment]::NewLine
-
-          Set-Content -Path "artifacts/release-notes.md" -Value $notes -Encoding UTF8
+          powershell -ExecutionPolicy Bypass -File "installer/generate-release-notes.ps1" `
+            -Version "${{ steps.version.outputs.version }}" `
+            -Tag "${{ steps.version.outputs.tag }}" `
+            -OutputPath "artifacts/release-notes.md"
 
       - name: Download previous Velopack releases
         shell: pwsh

@@ -25,14 +25,9 @@ function Get-ReleaseNotesFile([string]$notesPath, [string]$version) {
     }
 
     $generatedPath = Join-Path $root "artifacts\release-notes.md"
-    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $generatedPath) | Out-Null
-    $content = @(
-        "# Game Trainer Launcher v$version",
-        "",
-        "- Automatic update support via Velopack.",
-        "- Packaging output for GitHub Releases."
-    ) -join [Environment]::NewLine
-    Set-Content -Path $generatedPath -Value $content -Encoding UTF8
+    powershell -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "generate-release-notes.ps1") `
+        -Version $version `
+        -OutputPath $generatedPath | Out-Null
     return $generatedPath
 }
 

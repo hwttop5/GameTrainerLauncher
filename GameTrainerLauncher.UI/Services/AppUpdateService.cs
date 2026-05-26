@@ -149,7 +149,7 @@ public sealed class AppUpdateService : IAppUpdateService
                     State = AppUpdateState.SkippedVersion,
                     CurrentVersion = currentVersion,
                     AvailableVersion = availableVersion,
-                    ReleaseNotesMarkdown = updateInfo.TargetFullRelease.NotesMarkdown,
+                    ReleaseNotesMarkdown = SanitizeReleaseNotesMarkdown(updateInfo.TargetFullRelease.NotesMarkdown),
                     CheckedAtUtc = checkedAtUtc
                 });
             }
@@ -159,7 +159,7 @@ public sealed class AppUpdateService : IAppUpdateService
                 State = AppUpdateState.UpdateAvailable,
                 CurrentVersion = currentVersion,
                 AvailableVersion = availableVersion,
-                ReleaseNotesMarkdown = updateInfo.TargetFullRelease.NotesMarkdown,
+                ReleaseNotesMarkdown = SanitizeReleaseNotesMarkdown(updateInfo.TargetFullRelease.NotesMarkdown),
                 CheckedAtUtc = checkedAtUtc,
                 UpdateInfo = updateInfo
             });
@@ -324,5 +324,35 @@ public sealed class AppUpdateService : IAppUpdateService
     {
         var plusIndex = version.IndexOf('+');
         return plusIndex >= 0 ? version[..plusIndex] : version;
+    }
+
+    private static string? SanitizeReleaseNotesMarkdown(string? markdown)
+    {
+        if (string.IsNullOrWhiteSpace(markdown))
+        {
+            return null;
+        }
+
+        var cleanedLines = markdown
+            .Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Split('\n')
+            .Where(line => !string.Equals(line.Trim(), "System.Object[]", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+        if (cleanedLines.Length == 0)
+        {
+            return null;
+        }
+
+        var hasUsefulContent = cleanedLines.Any(line =>
+            !string.IsNullOrWhiteSpace(line) &&
+            !line.TrimStart().StartsWith("#", StringComparison.Ordinal));
+
+        if (!hasUsefulContent)
+        {
+            return null;
+        }
+
+        return string.Join(Environment.NewLine, cleanedLines).Trim();
     }
 }
