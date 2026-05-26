@@ -12,8 +12,10 @@ public partial class Trainer : ObservableObject
     public string? LocalExePath { get; set; }
     public string? Version { get; set; }
     public string? ImageUrl { get; set; }
-    public DateTime? LastUpdated { get; set; }
-    
+
+    [ObservableProperty]
+    private DateTime? _lastUpdated;
+
     [ObservableProperty]
     private bool _isDownloaded;
 
