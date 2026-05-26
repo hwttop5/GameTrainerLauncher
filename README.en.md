@@ -4,12 +4,6 @@
 
 A Windows desktop launcher focused on improving the `FlingTrainer` workflow for searching, downloading, organizing, and launching game trainers.
 
-## Downloads and Entry Points
-
-- Releases: <https://github.com/hwttop5/GameTrainerLauncher/releases>
-- Website: <https://hwttop5.github.io/GameTrainerLauncher/>
-- Main app entry: `GameTrainerLauncher.UI`
-
 ## Core Features
 
 - Search by Chinese or English game title with a local title index plus background backfill.

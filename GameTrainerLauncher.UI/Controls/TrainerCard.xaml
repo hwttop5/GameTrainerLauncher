@@ -66,16 +66,17 @@
                     <ui:SymbolIcon Symbol="Games24"
                                    FontSize="36"
                                    Foreground="{DynamicResource FaintTextBrush}"
-                                   Visibility="{Binding ImageUrl, Converter={StaticResource NullOrEmptyToVisibilityConverter}}" />
-                    <Image Source="{Binding ImageUrl}" Stretch="UniformToFill">
+                                   Visibility="{Binding CoverImagePath, Converter={StaticResource NullOrEmptyToVisibilityConverter}}" />
+                    <Image Source="{Binding CoverImagePath, Converter={StaticResource GameCoverUrlConverter}, ConverterParameter=260}"
+                           Stretch="UniformToFill">
                         <Image.Style>
                             <Style TargetType="Image">
                                 <Setter Property="Visibility" Value="Visible" />
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ImageUrl}" Value="{x:Null}">
+                                    <DataTrigger Binding="{Binding CoverImagePath}" Value="{x:Null}">
                                         <Setter Property="Visibility" Value="Collapsed" />
                                     </DataTrigger>
-                                    <DataTrigger Binding="{Binding ImageUrl}" Value="">
+                                    <DataTrigger Binding="{Binding CoverImagePath}" Value="">
                                         <Setter Property="Visibility" Value="Collapsed" />
                                     </DataTrigger>
                                 </Style.Triggers>

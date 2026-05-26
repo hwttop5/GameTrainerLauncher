@@ -4,12 +4,6 @@
 
 一个基于 `FlingTrainer` 体验优化的 Windows 桌面启动器，用来搜索、下载、整理并启动游戏修改器。
 
-## 下载与入口
-
-- 下载发布包: <https://github.com/hwttop5/GameTrainerLauncher/releases>
-- 项目官网: <https://hwttop5.github.io/GameTrainerLauncher/>
-- 主程序入口: `GameTrainerLauncher.UI`
-
 ## 核心功能
 
 - 支持中英文游戏名搜索，并结合本地标题索引与后台增量补全。

@@ -24,6 +24,7 @@ public partial class SearchViewModel : PageFeedbackViewModelBase
     private readonly ITrainerVersionSelectionService _trainerVersionSelectionService;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IAppNotificationService _notificationService;
+    private readonly TrainerCoverHydrationService _coverHydrationService;
     private int _searchVersion;
 
     [ObservableProperty]
@@ -45,7 +46,8 @@ public partial class SearchViewModel : PageFeedbackViewModelBase
         ITrainerLibraryService trainerLibraryService,
         ITrainerVersionSelectionService trainerVersionSelectionService,
         IServiceScopeFactory scopeFactory,
-        IAppNotificationService notificationService)
+        IAppNotificationService notificationService,
+        TrainerCoverHydrationService coverHydrationService)
     {
         _scraperService = scraperService;
         _trainerSearchService = trainerSearchService;
@@ -54,6 +56,7 @@ public partial class SearchViewModel : PageFeedbackViewModelBase
         _trainerVersionSelectionService = trainerVersionSelectionService;
         _scopeFactory = scopeFactory;
         _notificationService = notificationService;
+        _coverHydrationService = coverHydrationService;
     }
 
     [RelayCommand]
@@ -135,7 +138,12 @@ public partial class SearchViewModel : PageFeedbackViewModelBase
 
             if (SearchResults.Count > 0)
             {
-                _ = HydrateSearchResultsAsync(currentSearchVersion, SearchResults.ToList());
+                var trainers = SearchResults.ToList();
+                _ = _coverHydrationService.HydrateAsync(
+                    trainers,
+                    () => currentSearchVersion == Volatile.Read(ref _searchVersion),
+                    CancellationToken.None);
+                _ = HydrateSearchResultsAsync(currentSearchVersion, trainers);
             }
 
             if (SearchResults.Count == 0)
@@ -195,12 +203,17 @@ public partial class SearchViewModel : PageFeedbackViewModelBase
                     trainer.ImageUrl = string.IsNullOrEmpty(details.ImageUrl) ? trainer.ImageUrl : details.ImageUrl;
                 });
 
-                await RefreshAlreadyInLibraryAsync();
+                _ = _coverHydrationService.HydrateAsync(
+                    [trainer],
+                    () => searchVersion == Volatile.Read(ref _searchVersion),
+                    CancellationToken.None);
             }
             catch
             {
             }
         }
+
+        await RefreshAlreadyInLibraryAsync();
     }
 
     [RelayCommand(AllowConcurrentExecutions = true)]

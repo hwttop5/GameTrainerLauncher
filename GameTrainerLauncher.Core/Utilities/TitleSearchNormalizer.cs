@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using System.Text;
 
 namespace GameTrainerLauncher.Core.Utilities;
 
@@ -76,7 +77,7 @@ public static partial class TitleSearchNormalizer
             return string.Empty;
         }
 
-        var trimmed = CollapseWhitespace(title);
+        var trimmed = CollapseWhitespace(NormalizeCompatibility(title));
         var match = TrainerSuffixRegex().Match(trimmed);
         return match.Success
             ? CollapseWhitespace(match.Groups["prefix"].Value)
@@ -95,7 +96,7 @@ public static partial class TitleSearchNormalizer
             return string.Empty;
         }
 
-        var lower = CollapseWhitespace(title).ToLowerInvariant();
+        var lower = CollapseWhitespace(NormalizeCompatibility(title)).ToLowerInvariant();
         lower = lower.Replace("’", string.Empty).Replace("'", string.Empty);
         lower = NonAlphaNumericRegex().Replace(lower, " ");
 
@@ -113,7 +114,7 @@ public static partial class TitleSearchNormalizer
             return string.Empty;
         }
 
-        var lower = CollapseWhitespace(title).ToLowerInvariant();
+        var lower = CollapseWhitespace(NormalizeCompatibility(title)).ToLowerInvariant();
         lower = lower.Replace("’", string.Empty).Replace("'", string.Empty);
         lower = NonAlphaNumericRegex().Replace(lower, " ");
         var tokens = lower
@@ -128,7 +129,7 @@ public static partial class TitleSearchNormalizer
             return string.Empty;
         }
 
-        var raw = CollapseWhitespace(title);
+        var raw = CollapseWhitespace(NormalizeCompatibility(title));
         var separators = new[] { " - ", " – ", " — ", ": " };
         foreach (var separator in separators)
         {
@@ -166,7 +167,7 @@ public static partial class TitleSearchNormalizer
             return string.Empty;
         }
 
-        var lower = CollapseWhitespace(title).ToLowerInvariant();
+        var lower = CollapseWhitespace(NormalizeCompatibility(title)).ToLowerInvariant();
         lower = lower.Replace("’", string.Empty).Replace("'", string.Empty);
         return NonLetterOrDigitRegex().Replace(lower, string.Empty);
     }
@@ -192,6 +193,13 @@ public static partial class TitleSearchNormalizer
         }
 
         return WhitespaceRegex().Replace(value.Trim(), " ");
+    }
+
+    private static string NormalizeCompatibility(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? string.Empty
+            : value.Normalize(NormalizationForm.FormKC);
     }
 
     [GeneratedRegex(@"^(?<prefix>.+?)\btrainer\b.*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]

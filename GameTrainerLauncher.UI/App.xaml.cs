@@ -53,6 +53,7 @@ public partial class App : Application
         services.AddSingleton<IMyGamesRefreshService, MyGamesRefreshService>();
         services.AddSingleton<ITrainerLibraryService, TrainerLibraryService>();
         services.AddSingleton<ITrainerVersionSelectionService, TrainerVersionSelectionService>();
+        services.AddSingleton<TrainerCoverHydrationService>();
 
         // ViewModels
         services.AddTransient<MainViewModel>();

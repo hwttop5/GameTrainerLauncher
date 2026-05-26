@@ -13,6 +13,7 @@ public class TrainerSearchService : ITrainerSearchService
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     private static readonly TimeSpan SearchSyncThreshold = TimeSpan.FromHours(24);
+    private static readonly TimeSpan KeywordSyncInlineBudget = TimeSpan.FromSeconds(2);
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IScraperService _scraperService;
     private readonly ITrainerTitleSyncService _trainerTitleSyncService;
@@ -57,7 +58,8 @@ public class TrainerSearchService : ITrainerSearchService
         {
             if (indexedResults.Count == 0 && indexState.IsPotentiallyIncomplete)
             {
-                QueueKeywordSynchronization(trimmedKeyword: trimmedKeyword);
+                await TryRunKeywordSynchronizationAsync(trimmedKeyword, cancellationToken);
+                indexedResults = await SearchIndexedTitlesAsync(trimmedKeyword, containsCjk, cancellationToken);
             }
 
             return new TrainerSearchResult
@@ -115,20 +117,29 @@ public class TrainerSearchService : ITrainerSearchService
         List<TrainerTitleIndexEntry> rows;
         if (containsCjk)
         {
-            var normalizedKeyword = TitleSearchNormalizer.NormalizeChineseTitle(keyword);
-            if (string.IsNullOrWhiteSpace(normalizedKeyword))
+            var normalizedChineseKeyword = TitleSearchNormalizer.NormalizeChineseTitle(keyword);
+            var normalizedMixedEnglishKeyword = TitleSearchNormalizer.NormalizeEnglishTitle(keyword);
+            if (string.IsNullOrWhiteSpace(normalizedChineseKeyword) &&
+                string.IsNullOrWhiteSpace(normalizedMixedEnglishKeyword))
             {
                 return [];
             }
 
+            var hasChineseKeyword = !string.IsNullOrWhiteSpace(normalizedChineseKeyword);
+            var hasEnglishKeyword = !string.IsNullOrWhiteSpace(normalizedMixedEnglishKeyword);
             rows = await query
                 .Where(row => row.MatchStatus == TrainerTitleIndexEntry.MatchStatusMatched &&
-                              row.NormalizedChineseName != null &&
-                              row.NormalizedChineseName.Contains(normalizedKeyword))
+                              ((hasChineseKeyword &&
+                                row.NormalizedChineseName != null &&
+                                row.NormalizedChineseName.Contains(normalizedChineseKeyword)) ||
+                               (hasEnglishKeyword &&
+                                (row.NormalizedFlingTitle.Contains(normalizedMixedEnglishKeyword) ||
+                                 (row.NormalizedEnglishName != null &&
+                                  row.NormalizedEnglishName.Contains(normalizedMixedEnglishKeyword))))))
                 .ToListAsync(cancellationToken);
 
             return rows
-                .OrderBy(row => GetChineseRank(row, normalizedKeyword))
+                .OrderBy(row => GetChineseRank(row, normalizedChineseKeyword, normalizedMixedEnglishKeyword))
                 .ThenBy(row => row.FlingTitle, StringComparer.OrdinalIgnoreCase)
                 .Select(row => ToTrainer(row, preferChinese: true))
                 .GroupBy(trainer => trainer.PageUrl, StringComparer.OrdinalIgnoreCase)
@@ -179,19 +190,49 @@ public class TrainerSearchService : ITrainerSearchService
         }
     }
 
-    private void QueueKeywordSynchronization(string trimmedKeyword)
+    private async Task TryRunKeywordSynchronizationAsync(string trimmedKeyword, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(trimmedKeyword))
         {
             return;
         }
 
-        lock (_keywordSyncLock)
+        if (!TryMarkKeywordSyncPending(trimmedKeyword))
         {
-            if (!_pendingKeywordSync.Add(trimmedKeyword))
-            {
-                return;
-            }
+            return;
+        }
+
+        var queueAfterClear = false;
+        try
+        {
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCts.CancelAfter(KeywordSyncInlineBudget);
+            await _trainerTitleSyncService.EnsureKeywordSynchronizedAsync(trimmedKeyword, timeoutCts.Token);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            queueAfterClear = true;
+        }
+        catch (Exception ex)
+        {
+            Logger.Warn(ex, "Keyword trainer title synchronization failed for {Keyword}.", trimmedKeyword);
+        }
+        finally
+        {
+            ClearKeywordSyncPending(trimmedKeyword);
+        }
+
+        if (queueAfterClear)
+        {
+            QueueKeywordSynchronization(trimmedKeyword);
+        }
+    }
+
+    private void QueueKeywordSynchronization(string trimmedKeyword)
+    {
+        if (!TryMarkKeywordSyncPending(trimmedKeyword))
+        {
+            return;
         }
 
         _ = Task.Run(async () =>
@@ -202,16 +243,29 @@ public class TrainerSearchService : ITrainerSearchService
             }
             catch (Exception ex)
             {
-                Logger.Warn(ex, "Keyword trainer title synchronization failed for {Keyword}.", trimmedKeyword);
+                Logger.Warn(ex, "Background keyword trainer title synchronization failed for {Keyword}.", trimmedKeyword);
             }
             finally
             {
-                lock (_keywordSyncLock)
-                {
-                    _pendingKeywordSync.Remove(trimmedKeyword);
-                }
+                ClearKeywordSyncPending(trimmedKeyword);
             }
         });
+    }
+
+    private bool TryMarkKeywordSyncPending(string keyword)
+    {
+        lock (_keywordSyncLock)
+        {
+            return _pendingKeywordSync.Add(keyword);
+        }
+    }
+
+    private void ClearKeywordSyncPending(string keyword)
+    {
+        lock (_keywordSyncLock)
+        {
+            _pendingKeywordSync.Remove(keyword);
+        }
     }
 
     private static Trainer ToTrainer(TrainerTitleIndexEntry row, bool preferChinese)
@@ -258,20 +312,40 @@ public class TrainerSearchService : ITrainerSearchService
         return trainer;
     }
 
-    private static int GetChineseRank(TrainerTitleIndexEntry row, string normalizedKeyword)
+    private static int GetChineseRank(
+        TrainerTitleIndexEntry row,
+        string normalizedChineseKeyword,
+        string normalizedEnglishKeyword)
     {
-        if (row.NormalizedChineseName == normalizedKeyword)
+        if (!string.IsNullOrWhiteSpace(normalizedChineseKeyword) &&
+            row.NormalizedChineseName == normalizedChineseKeyword)
         {
             return 0;
         }
 
-        if (!string.IsNullOrWhiteSpace(row.NormalizedChineseName) &&
-            row.NormalizedChineseName.StartsWith(normalizedKeyword, StringComparison.Ordinal))
+        if (!string.IsNullOrWhiteSpace(normalizedChineseKeyword) &&
+            !string.IsNullOrWhiteSpace(row.NormalizedChineseName) &&
+            row.NormalizedChineseName.StartsWith(normalizedChineseKeyword, StringComparison.Ordinal))
         {
             return 1;
         }
 
-        return 2;
+        if (!string.IsNullOrWhiteSpace(normalizedEnglishKeyword) &&
+            (row.NormalizedEnglishName == normalizedEnglishKeyword ||
+             row.NormalizedFlingTitle == normalizedEnglishKeyword))
+        {
+            return 2;
+        }
+
+        if (!string.IsNullOrWhiteSpace(normalizedEnglishKeyword) &&
+            ((!string.IsNullOrWhiteSpace(row.NormalizedEnglishName) &&
+              row.NormalizedEnglishName.StartsWith(normalizedEnglishKeyword, StringComparison.Ordinal)) ||
+             row.NormalizedFlingTitle.StartsWith(normalizedEnglishKeyword, StringComparison.Ordinal)))
+        {
+            return 3;
+        }
+
+        return 4;
     }
 
     private static int GetEnglishRank(TrainerTitleIndexEntry row, string normalizedKeyword)

@@ -2,16 +2,21 @@ namespace GameTrainerLauncher.Core.Interfaces;
 
 public interface IGameCoverService
 {
-    /// <summary>返回该游戏封面本地路径（若不存在则返回预期路径）。</summary>
+    /// <summary>Returns the expected local cover path for a library game.</summary>
     string GetCoverFilePath(int gameId, string? coverUrl = null);
 
-    /// <summary>检查本地是否已有封面文件。</summary>
+    /// <summary>Checks whether a library game already has a local cover file.</summary>
     bool HasCover(int gameId);
 
-    /// <summary>确保本地存在封面：若不存在则从 coverUrl 下载保存。</summary>
+    /// <summary>Ensures a library game cover exists locally.</summary>
     Task<bool> EnsureCoverAsync(int gameId, string? coverUrl, CancellationToken cancellationToken = default);
 
-    /// <summary>删除该游戏封面的本地文件（若存在）。</summary>
+    /// <summary>Tries to resolve a cached transient trainer cover path.</summary>
+    bool TryGetTrainerCoverPath(string? pageUrl, string? imageUrl, out string path);
+
+    /// <summary>Ensures a transient trainer cover exists locally and returns its path.</summary>
+    Task<string?> EnsureTrainerCoverAsync(string? pageUrl, string? imageUrl, CancellationToken cancellationToken = default);
+
+    /// <summary>Deletes local cover files for a library game.</summary>
     void DeleteCover(int gameId);
 }
-

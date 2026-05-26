@@ -153,29 +153,13 @@
                                     </ui:SymbolIcon>
                                     <Image Stretch="UniformToFill">
                                         <Image.Source>
-                                            <MultiBinding Converter="{StaticResource GameCoverFromPartsConverter}">
+                                            <MultiBinding Converter="{StaticResource GameCoverFromPartsConverter}"
+                                                          ConverterParameter="128">
                                                 <Binding Path="MatchedTrainer.ImageUrl" />
                                                 <Binding Path="CoverUrl" />
                                                 <Binding Path="Id" />
                                             </MultiBinding>
                                         </Image.Source>
-                                        <Image.Style>
-                                            <Style TargetType="Image">
-                                                <Setter Property="Visibility" Value="Visible" />
-                                                <Style.Triggers>
-                                                    <DataTrigger Value="{x:Null}">
-                                                        <DataTrigger.Binding>
-                                                            <MultiBinding Converter="{StaticResource GameCoverFromPartsConverter}">
-                                                                <Binding Path="MatchedTrainer.ImageUrl" />
-                                                                <Binding Path="CoverUrl" />
-                                                                <Binding Path="Id" />
-                                                            </MultiBinding>
-                                                        </DataTrigger.Binding>
-                                                        <Setter Property="Visibility" Value="Collapsed" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Image.Style>
                                     </Image>
                                 </Grid>
                             </Border>

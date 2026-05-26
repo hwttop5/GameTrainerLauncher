@@ -21,6 +21,7 @@ public partial class PopularGamesViewModel : PageFeedbackViewModelBase
     private readonly ITrainerVersionSelectionService _trainerVersionSelectionService;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IAppNotificationService _notificationService;
+    private readonly TrainerCoverHydrationService _coverHydrationService;
     private int _currentPage = 1;
 
     [ObservableProperty]
@@ -42,7 +43,8 @@ public partial class PopularGamesViewModel : PageFeedbackViewModelBase
         ITrainerLibraryService trainerLibraryService,
         ITrainerVersionSelectionService trainerVersionSelectionService,
         IServiceScopeFactory scopeFactory,
-        IAppNotificationService notificationService)
+        IAppNotificationService notificationService,
+        TrainerCoverHydrationService coverHydrationService)
     {
         _scraperService = scraperService;
         _dbContext = dbContext;
@@ -50,6 +52,7 @@ public partial class PopularGamesViewModel : PageFeedbackViewModelBase
         _trainerVersionSelectionService = trainerVersionSelectionService;
         _scopeFactory = scopeFactory;
         _notificationService = notificationService;
+        _coverHydrationService = coverHydrationService;
         LoadDataCommand.ExecuteAsync(null);
     }
 
@@ -111,6 +114,7 @@ public partial class PopularGamesViewModel : PageFeedbackViewModelBase
                 Trainers.Add(trainer);
             }
 
+            _ = _coverHydrationService.HydrateAsync(data.ToList(), () => true, CancellationToken.None);
             CanLoadMore = data.Count > 0;
         }
         catch (Exception ex)
@@ -160,6 +164,8 @@ public partial class PopularGamesViewModel : PageFeedbackViewModelBase
 
                 Trainers.Add(trainer);
             }
+
+            _ = _coverHydrationService.HydrateAsync(data.ToList(), () => true, CancellationToken.None);
         }
         catch (Exception ex)
         {

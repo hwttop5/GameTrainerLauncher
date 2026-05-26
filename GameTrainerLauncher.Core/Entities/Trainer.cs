@@ -20,6 +20,10 @@ public partial class Trainer : ObservableObject
     [ObservableProperty]
     private string? _imageUrl;
 
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    [ObservableProperty]
+    private string? _coverImagePath;
+
     [ObservableProperty]
     private DateTime? _lastUpdated;
 

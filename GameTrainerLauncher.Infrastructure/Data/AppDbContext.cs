@@ -30,6 +30,7 @@ public class AppDbContext : DbContext
             .Ignore(t => t.DownloadStatusText)
             .Ignore(t => t.IsDownloadProgressEstimated)
             .Ignore(t => t.DownloadStage)
+            .Ignore(t => t.CoverImagePath)
             .Ignore(t => t.PrimaryDisplayTitle)
             .Ignore(t => t.SecondaryDisplayTitle)
             .Ignore(t => t.MatchedChineseName)
